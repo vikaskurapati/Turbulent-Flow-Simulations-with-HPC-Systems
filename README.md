@@ -2,7 +2,7 @@
 
 ## General Information
 This code has been tested under Ubuntu 20.04 or higher. Other Linux distributions will probably work. However, we do not recommend using Windows or MacOS. If you do not have Linux installed on your computer, please use WSL, Virtual Machine, or similar.
-Since NS-EOF uses CMake, it should work unter Windows with MSVC and MacOS.
+Since NS-EOF uses CMake, it should work under Windows with MSVC or MacOS.
 
 ## Dependencies
 ### MPI (recommended OpenMPI)
@@ -16,7 +16,7 @@ Since NS-EOF uses CMake, it should work unter Windows with MSVC and MacOS.
 * Run `apt install cmake` to install CMake on your system.
 
 ## Dockerfile
-You can also use the Dockerfile included in the repository. This will create an image where everything is set up and you can just begin with compiling the code.
+You can use the Dockerfile included in the repository. This will create an image where everything is set up and you can just begin with compiling the code.
 
 Of course, you can also just look at the Dockerfile as a recipe on how to set up your environment.
 
