@@ -1,0 +1,122 @@
+\documentclass[a4paper]{article}
+
+\usepackage{geometry}
+\geometry{a4paper,left=15mm,right=15mm,top=15mm,bottom=15mm}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{titling}
+
+\begin{document}
+\title{Building PETSc from Sources}
+\maketitle
+
+In the context of the project, PETSc \url{http://www.mcs.anl.gov/petsc/} provides a collection of 
+solvers for the pressure equation. PETSc allows for greater flexibility by allowing to select the
+solver to use.
+
+This document should guide you on the process of compiling the source of the libraries and using
+them for the project.
+
+Here, it is assumed that you are using Ubuntu. However, these instructions are applicable to many
+Linux distributions, besides the process of obtaining the building tools.
+
+More details can be obtained from \url{http://www.mcs.anl.gov/petsc/documentation/installation.html}
+
+\subsection*{Installing the building tools}
+
+The required building tools for Ubuntu can be obtained with the following command:
+
+\begin{lstlisting}
+$ sudo apt-get install build-essential gfortran
+\end{lstlisting}
+
+Python 2 is also required for the configuration, but it is included in Ubuntu.
+
+\subsection*{Obtaining the sources}
+
+To begin with, retrieve the source code for PETSc. Right now, the program uses the interface of
+the version 3.3, so we'll get that file. The package can be located in
+\url{http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.3-p6.tar.gz}. Here, \texttt{p6}
+denotes the revision. You can select a more recent one and probably not encounter a problem,
+however, you will have to replace the version when entering the commands.
+
+You can obtain and extract the package by entering:
+
+\begin{lstlisting}
+$ wget http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.3-p6.tar.gz
+$ tar -xf petsc-3.3-p6.tar.gz
+\end{lstlisting}
+
+Enter the source directory by typing
+\begin{lstlisting}
+$ cd petsc-3.3-p6
+\end{lstlisting}
+
+\subsection*{Configure and build}
+
+You can configure by entering
+
+\begin{lstlisting}
+$ ./configure --with-shared-libraries=1 --with-cc=gcc --with-fc=gfortran
+--download-f-blas-lapack --download-mpich --prefix=INSTALLATION_DIRECTORY
+\end{lstlisting}
+
+This will download MPI and BLAS-LAPACK. If you already have these libraries, you can remove the
+corresponding option. If you decide not to download MPI and instead provide the path to the
+libraries already in your computer, you should also remove the options that
+specify the compiler to use (\texttt{--with-cc} and \texttt{--with-fc}).
+\mbox{INSTALLATION\_DIRECTORY} corresponds to the directory where you want to install Petsc.
+If a default directory should be chosen by Petsc, you can also skip this option.
+
+If you have problems running the configuration script, you can try explicitly calling Python:
+
+\begin{lstlisting}
+$ python ./configure <options>
+\end{lstlisting}
+
+%When the configuration is complete, it will print information about the \texttt{PETSC\_DIR} and \texttt{PETSC\_ARCH} variables. These values have to be available in order to use the libraries.
+%The values are not separated by spaces. Do not use the \texttt{all} part, that stands very near the end of the paths in one of the printed lines.
+
+%If you don't want to have to set them manually every time you start a console, you can place the following lines at the end of the \texttt{.bashrc} file in your home folder:
+
+%\begin{lstlisting}
+%export PETSC_DIR=<as it appeared in the terminal>
+%export PETSC_ARCH=<as it appeared in the terminal>
+%\end{lstlisting}
+
+%This file is executed every time you open a terminal, so the variable will be ready for you to use. It is important not to use spaces around the $=$ sign.
+
+After the configuration is complete, the configuration scripts ends and tells you the next steps. These are:
+
+\begin{lstlisting}
+$ make PETSC_DIR=CURRENT_DIRECTORY PETSC_ARCH=SOMEARCHITECTURE all
+\end{lstlisting}
+In the default installation, the architecture type will contain the keyword {\it debug} which states that your Petsc installation supports debugging options.
+This may be helpful during debugging of your program, however, it will reduce computational efficiency.
+In order to have a release installation, you may step through this installation once again adding the option ``--with-debugging=no'' during the configuration step and using another build directory INSTALL\_DIRECTORY for this build.
+
+After this command completed, you are again told what to do by the final output: just run the command
+
+\begin{lstlisting}
+$ make PETSC_DIR=CURRENT_DIRECTORY PETSC_ARCH=SOMEARCHITECTURE install
+\end{lstlisting}
+and your installation should be finished.
+
+You can subsequently test your installation by running the command:
+\begin{lstlisting}
+$ make PETSC_DIR=INSTALLATION_DIRECTORY test
+\end{lstlisting}
+
+In order to use the installation, you need to specify the location of your Petsc installation and so make it visible to your system.
+Therefore, change into your home directory by typing ``cd '' and open the file .bashrc by any editor of your choice.
+Add a line
+
+\begin{lstlisting}
+export PETSC_DIR=INSTALLATION_DIRECTORY
+\end{lstlisting}
+to the file, save and close it.
+Each time you open a terminal from now, INSTALLATION\_DIRECTORY will point to your Petsc installation.
+You should now be able to successfully compile NS-EOF on your system.
+
+\end{document}

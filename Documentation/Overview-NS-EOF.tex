@@ -1,0 +1,237 @@
+\documentclass[pdftex,A4]{article}
+
+\usepackage{multirow}
+
+\begin{document}
+\title{NS-EOF -- Overview}
+\maketitle
+
+\section{Purpose \& Prerequisites}
+NS-EOF can be used to simulate two- and three-dimensional incompressible Navier-Stokes problems on Cartesian grids.
+The solver follows the descriptions from Griebel and thus uses explicit Euler time-stepping for the evolution of
+the flow velocities and an implicit formulation for the pressure.
+The latter results in a Poisson equation that needs to be solved in each time step.
+The Poisson equation is solved using the PETSc library.
+Since the implementation makes use of MPI, you should further install OpenMPI.
+On Ubuntu systems, you may just use the library and headers from the Ubuntu repositories.
+
+\section{The Configuration File}\label{sec:the_configuration_file}
+
+The configuration is provided via an XML file. The outer node is called {\tt configuration}. As an example, the file looks somewhat like this:
+
+\begin{verbatim}
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <category1 attribute1="value1" atribute2="value2" />
+    <category2 attribute3="value3"> Some text </node2>
+    :
+    :
+</configuration>
+\end{verbatim}
+
+The hierarchy looks like this:
+
+\begin{description}
+\item [configuration]\hfill
+
+    \begin{description}
+    \item [flow] \hfill
+        \begin{itemize}
+            \item {\tt Re}: Reynolds number.
+        \end{itemize}
+    \item [simulation]: Contains text defining the type of simulation to run \hfill
+        \begin{itemize}
+            \item {\tt finalTime}: Goal final time for the simulation.
+        \end{itemize}
+    \item [timestep] \hfill
+        \begin{itemize}
+            \item {\tt dt}: Default time step
+            \item {\tt tau}: Time step security factor
+        \end{itemize}
+        {\tt dt} is only used if {\tt tau} is set to a negative number. Otherwise, the time step will be computed to keep the simulation stable.
+    \item [solver] \hfill
+        \begin{itemize}
+            \item {\tt gamma}: Weighting factor between finite differences and donor cell scheme.
+        \end{itemize}
+    \item [geometry] \hfill
+        \begin{itemize}
+            \item {\tt dx/dy/dz}: Dimensions of a cell.
+            \item {\tt lengthX/lengthY/lengthZ}: Dimensions of the domain.
+            \item {\tt sizeX/sizeY/sizeZ}: Number of cells in each direction.
+        \end{itemize}
+        Either the length of the cell or the length of the domain has to be set, not both at once.
+
+    \item [environment] \hfill
+        \begin{itemize}
+            \item {\tt gx/gy/gz}: gravity components.
+        \end{itemize}
+
+    \item [walls] \hfill
+
+        \begin{itemize}
+            \item {\tt periodicX/periodicY/periodicZ}: (boolean) Periodic boundaries in each direction.
+        \end{itemize}
+
+        \begin{description}
+            \item [left/right/bottom/top/front/back] \hfill
+            \begin{description}
+                \item [vector] \hfill
+                \begin{itemize}
+                    \item {\tt x/y/z}: Components of wall velocity.
+                \end{itemize}
+            \end{description}
+        \end{description}
+
+    \item [vtk]: Has text with the prefix for the output files \hfill
+        \begin{itemize}
+            \item {\tt interval}: number of steps between writing of VTK files.
+        \end{itemize}
+
+    \item [stdOut] \hfill
+        \begin{itemize}
+            \item {\tt interval}: interval for printing of output to the screen.
+        \end{itemize}
+
+    \item [parallel] \hfill
+        \begin{itemize}
+            \item {\tt numProcessorsX/numProcessorsY/numProcessorsZ}: Number of processors in each direction.
+        \end{itemize}
+
+    \end{description}
+\end{description}
+
+The meanings of the parameters {\tt tau} for the time step and {\tt gamma} for the solver are better explained in section 3 of Griebel.
+
+
+\section{Code Structure}\label{sec:code_structure}
+In the following, we step through the typical ingredients of a fluid simulation.
+We do this ``hierarchically'': we first consider the overall simulation flow and then dive into the different technical ingredients that are required.
+ 
+\subsection{The Main}\label{sec:time_stepping}
+The starting point of every program is the Main.cpp.
+In the current software, the main reads the configuration file, stores the global flow parameters (such as Reynolds number, boundary conditions etc.)
+in a {\tt Parameters} object, initialises the correct Simulation object and triggers the time stepping.
+You can thus find the respective time loop in the Main.cpp.
+
+\subsection{Algorithmic Phases}\label{sec:algorithmic_phases}
+A simulation time step consists of different algorithmic steps.
+In our case, for example, we need to
+  \begin{enumerate}
+  \item determine the current time step size
+  \item assemble the right hand side of the Poisson equation,
+  \item solve the Poisson equation,
+  \item update the velocity values for the next time step and
+  \item set suitable boundary conditions.
+  \end{enumerate}
+The sequence of these steps is implemented and triggered from the class {\tt Simulation}, cf. the method {\tt solveTimestep()} in Simulation.hpp.
+The latter method is virtual; you can thus inherit from the {\tt Simulation} class and define your own time stepping scheme.
+
+\subsection{Iterators and Stencils}\label{sec:iterators_and_stencils}
+
+\subsubsection{Iterators}\label{sec:iterators}
+In most of the algorithmic steps, we need to traverse all cells of the grid (or subsets of the grid) and carry out an operation on each cell.
+We typically do not have to deal with all kinds of different cell traversals (such as randomised cell access or particular ordering of the cells) and respective grid decompositions, but only need to perform operations on
+  \begin{itemize}
+  \item all grid cells
+  \item all inner grid cells or
+  \item all cells close or at a global or parallel boundary.
+  \end{itemize}
+We hence use a simple lexicographic ordering of the cells.
+This concept of traversing the cells is encapsulated in the class {\tt Iterator} and inherited classes, cf. Iterators.hpp.
+Given a certain type of cellwise operation in form of a {\tt Stencil} object (we come to this class in a second) and a compatible data set {\tt DataField} associated to these operations, an iterator loops over all cells and applies the cellwise operation of the stencil.
+Considering the implementation of the iterators, you may observe that the type of the data field, i.e. the kind of information that is stored in each grid cell, is handed over as {\it template parameter}.
+Thus, it does not matter which kind of data field we plug into the iterator. We only request that the data field and the stencil are compatible.
+
+\subsubsection{Stencils}\label{sec:stencils}
+A cellwise operation is encapsulated in form of a {\it stencil}, see also the header Stencil.h for different stencil classes.
+Let's consider the {\tt FieldStencil} in more detail.
+This stencil class can be used to execute cellwise operations on all cells of our data structure.
+Looking into the definition of the {\tt FieldStencil}, you can observe that
+  \begin{itemize}
+  \item the stencil is also a template and depends on the data field type {\tt FlowField} via the template's argument.
+  \item the stencil has abstract functions {\tt void apply(FlowField\&, int i, int j)} and {\tt void apply(FlowField\&, int i, int j, int k)}. Implementing one of these interface definitions (for 2D or 3D, you may choose one or the other method) is thus sufficient to define a cellwise operation.
+  \end{itemize}
+If we want do define a cellwise operation on a particular data field, we can thus inherit from the respective stencil (e.g. the FieldStencil $<$MyDataField$>$ where MyDataField is a respective data structure built from the available data structures in DataStructures.h) and implement the cellwise operation using the apply(...) methods.
+Since we have access to a respective data structure and the indices i,j,k of the current cell under consideration in the apply(...) method as well as access to a {\tt Parameters} object with the global simulation data (such as time step size, Reynolds number etc.) , we have everything that we need for our purposes.
+
+\subsubsection{Connecting Iterators and Stencils}\label{sec:connecting_iterators_and_stencils}
+We discussed how to iterate over the Cartesian grid and how to implement a cellwise operation.
+Let's bring the two concepts together. For this purpose, we consider the class {\tt RHSStencil} that can be found in the directory {\tt stencils}.
+The latter directory contains all stencil implementations that work on the data structure {\tt FlowField} which is a combination of all data fields
+(such as velocity, pressure and flagfield) required for the standard Navier-Stokes simulation program from Griebel.
+The {\tt RHSStencil} is used after evaluating the functions F,G and H and assembles the right hand side of the Poisson equation.
+An object of this stencil is thus defined and initialised---together with an iterator---in the {\tt Simulation} class as follows:
+\begin{verbatim}
+  private:
+    RHSStencil rhsStencil_;
+    FieldIterator<FlowField> rhsIterator_;
+    :
+    :
+    :
+  public:
+    Simulation(Parameters &parameters, FlowField &flowField):
+      parameters_(parameters),
+      flowField_(flowField),
+      :
+      rhsStencil_(parameters),
+      rhsIterator_(flowField_, rhsStencil_),
+      :
+
+    :
+    :
+    virtual void solveTimestep(){
+      :
+      rhsIterator_.iterate();
+      :
+    }
+\end{verbatim}
+We thus first define an object of our stencil.
+Then, we further define an object for a field iterator which should work on our data structure {\tt FlowField}.
+In the constructor of the simulation class, we now instantiate and initialise both objects:
+we first initialise the stencil and subsequently, we initialise the iterator which depends on the respective stencil.
+When we want to assemble the right hand side of the Poisson equation during one time step (see {\tt solveTimestep()}-part), we only trigger the iterator.
+This results in the following sequence of events:
+  \begin{itemize}
+  \item We call iterate() on our iterator {\tt rhsIterator\_}
+  \item The iterator loops over the respective domain. Since the {\tt rhsIterator\_} is a {\tt FieldIterator}, we will loop over the whole computational grid.
+  \item On each grid cell indexed by i,j,k, the iterator triggers a call to its  stencil's apply(...) method. In the current example, {\tt rhsStencil\_.apply(i,j,k)} is called for each grid cell.
+  \item After traversing the grid, the iterator returns and the function call ends.
+  \end{itemize}
+A word on the compatibility of stencils and iterators: obviously, we can only implement cellwise operations on data structures that are available during the grid traversal.
+Hence, the data structure (e.g. the {\tt FlowField} in the current example) must match for both the iterator and the stencil.
+Looking into the definition of the {\tt RHSStencil}, we see that this stencil inherits from {\tt FieldStencil<FlowField>}.
+Thus, everything is fine: the stencil wants to apply an operation on the {\tt FlowField} {\it and} the iterator traverses the correct data structure {\tt FlowField} as well.
+Incompatibilities should thus be avoided at this point.
+
+\subsection{Boundary Treatment}\label{sec:boundary_treatment}
+
+In order to supply boundary conditions, different iterators than the pure {\tt Field\-Iterator} are required.
+We further distinguish two types of boundaries: {\it global} and {\it parallel boundaries}.
+
+{\it Global boundaries} are located at the very outer sides of our simulation domain.
+The global simulation domain has a box-like shape, resulting in 4 (2D)/ 6 (3D) global boundaries.
+The {\it GlobalBoundaryIterator} can be used to traverse these regions and set appropriate (scenario-dependent) boundary conditions.
+
+Besides, {\it parallel boundaries} may occur in distributed simulations.
+Assume we can work with 8 processes to handle a 3D simulation.
+Dividing the global simulation domain into $2\times 2\times 2$ sub-domains, we observe that each sub-domain has three contributions to global boundaries {\it and} three local boundaries which separate this sub-domain and a neighbouring sub-domain on another process.
+The latter boundaries are referred to as {\it parallel boundaries}.
+A {\tt ParallelBoundaryIterator} is available, cf. Iterators.hpp.
+
+\section{Parallelisation}\label{sec:parallelisation}
+
+The parallelisation works by domain decomposition. The global rectangular domain is split into several subdomains by planes parallel to one of its faces. This also means that the subdomains will be rectangles themselves.
+Each of these subdomains is assigned to one of the processors. The assignment follows lexicographically, according to the position of the subdomain.
+
+In order to share information, each processor requires additional information, such as a definition of its subdomain and the ranks of its neighbors for communication. The {\tt Configuration} class should take care of initializing these values so that the program runs correctly with a single processor, but to work in parallel, the {\tt PetscParallelConfiguration} class should be used, which will properly set the {\tt Parameters} object.
+
+The communication is performed by the {\tt ParallelManager} class. The class has methods to communicate velocity and pressure between processors. When called, they will load output buffers, transmit information using MPI routines, read input buffers and set the data locally. Once the ghost cells are properly set, the simulation can continue using the other iterators.
+
+\section{Solving the Poisson Equation Using PETSc}\label{sec:solving_the_poisson_equation_using_petsc}
+In the algorithm, we need to solve a Poisson equation in each time step.
+The setup and solving of the respective linear system is accomplished using PETSc. The respective solver can be found in {\tt Solvers/PetscSolver.hpp}.
+This solver can be considered as {\it black box}, we are thus neither further interested in the solving methodology at this point nor in its parallel implementation.
+
+However, note that you may also use a simple PETSc-independent SOR-solver to solve the Poisson problem in sequential mode (see {\tt Solvers/SOR\-Solver.hpp}).
+In this case you may, however, adapt some lines in your {\tt Simulation} class to initialise the new solver. But be prepared for slower simulations.
+\end{document}
