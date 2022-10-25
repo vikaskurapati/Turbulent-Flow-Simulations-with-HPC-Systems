@@ -47,6 +47,12 @@ You can add new source files by just creating them somewhere within the `Source`
 ### Testing
 Some basic unit tests have been implemented (`make test`). Feel free to add your own test cases inside the `Tests` folder.
 
+### Creating a Doxygen documentation
+* Run the following CMake command: `cmake .. -DENABLE_DEVELOPER_MODE=ON -DOPT_ENABLE_DOXYGEN=ON`
+* `make doxygen-docs`
+* You should now see in your build directory a folder called `html`
+* Open `index.html` to see the generated documentation.
+
 ## Development Hints & FAQ
 ### It does not compile and everything seems fine?
 Make sure to use `make clean` before you use `make`. Sometimes there are build artifacts from previous build processes that spoil your current compilation process. `make clean` takes care of deleting everything that should not be there and allows the compiler to start from scratch.
