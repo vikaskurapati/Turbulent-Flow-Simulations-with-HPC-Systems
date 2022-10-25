@@ -1,5 +1,7 @@
 #include "StdAfx.hpp"
 
+#include <catch2/catch_test_macros.hpp>
+
 #include "DataStructures.hpp"
 #include "FlowField.hpp"
 #include "Iterators.hpp"
@@ -9,7 +11,7 @@
 constexpr auto SIZE_X = 20;
 constexpr auto SIZE_Y = 25;
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
+TEST_CASE("Test derivatives", "[single-file]") {
   spdlog::info("Testing derivatives");
 
   Parameters parameters;
@@ -33,10 +35,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   }
 
   for (int i = 0; i < 81; i++) {
-    if (!lv[i]) {
-      spdlog::error("Failed accessing all elements from coordinates and components");
-      return EXIT_FAILURE;
-    }
+    REQUIRE(lv[i]);
   }
 
   lv[Stencils::mapd(1, 0, 0, 0)]  = 3;
@@ -77,6 +76,4 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   spdlog::info(ss.str());
 
   spdlog::info("Test for derivatives completed successfully");
-
-  return EXIT_SUCCESS;
 }

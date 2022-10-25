@@ -1,5 +1,7 @@
 #include "StdAfx.hpp"
 
+#include <catch2/catch_test_macros.hpp>
+
 #include "DataStructures.hpp"
 
 constexpr auto SIZE_X = 10;
@@ -24,7 +26,7 @@ void setEntry(RealType* entry, RealType val, int dim = 2) {
   }
 }
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
+TEST_CASE("Test vector field", "[single-file]") {
   spdlog::info("Testing vector fields");
 
   RealType entry[3];
@@ -59,24 +61,16 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   for (int i = 0; i < SIZE_X; i++) {
     for (int j = 0; j < SIZE_Y; j++) {
       setEntry(entry, d2counter);
-      if (compareVectorsFails(entry, vfield2D.getVector(i, j))) {
-        spdlog::error("Test for 2D vector failed");
-        return EXIT_FAILURE;
-      }
+      REQUIRE(!compareVectorsFails(entry, vfield2D.getVector(i, j)));
       d2counter++;
 
       for (int k = 0; k < SIZE_Z; k++) {
         setEntry(entry, d3counter, 3);
-        if (compareVectorsFails(entry, vfield3D.getVector(i, j, k), 3)) {
-          spdlog::error("Test for 3D vector failed");
-          return EXIT_FAILURE;
-        }
+        REQUIRE(!compareVectorsFails(entry, vfield3D.getVector(i, j, k), 3));
         d3counter++;
       }
     }
   }
 
-  spdlog::error("Test for vector fields completed successfully");
-
-  return EXIT_SUCCESS;
+  spdlog::info("Test for vector fields completed successfully");
 }

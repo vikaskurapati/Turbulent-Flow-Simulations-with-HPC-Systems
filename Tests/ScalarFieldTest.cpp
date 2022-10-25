@@ -1,12 +1,14 @@
 #include "StdAfx.hpp"
 
+#include <catch2/catch_test_macros.hpp>
+
 #include "DataStructures.hpp"
 
 constexpr auto SIZE_X = 10;
 constexpr auto SIZE_Y = 10;
 constexpr auto SIZE_Z = 10;
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
+TEST_CASE("Test scalar field", "[single-file]") {
   spdlog::info("Testing scalar fields");
 
   ScalarField sfield2D(SIZE_X, SIZE_Y);
@@ -34,23 +36,15 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
   for (int i = 0; i < SIZE_X; i++) {
     for (int j = 0; j < SIZE_Y; j++) {
-      if (sfield2D.getScalar(i, j) != d2counter) {
-        spdlog::error("Error while reading the scalar values for 2D field");
-        return EXIT_FAILURE;
-      }
+      REQUIRE(sfield2D.getScalar(i, j) == d2counter);
       d2counter += 0.5;
 
       for (int k = 0; k < SIZE_Z; k++) {
-        if (sfield3D.getScalar(i, j, k) != d3counter) {
-          spdlog::error("Error while reading the scalar values for 3D field");
-          return EXIT_FAILURE;
-        }
+        REQUIRE(sfield3D.getScalar(i, j, k) == d3counter);
         d3counter += 0.5;
       }
     }
   }
 
   spdlog::info("Test for scalar fields completed successfully");
-
-  return EXIT_SUCCESS;
 }
