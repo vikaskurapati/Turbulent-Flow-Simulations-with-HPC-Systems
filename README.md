@@ -31,7 +31,7 @@ As build system configurator we use CMake. To compile the code execute the follo
 * (Optional): Choose the compiler being used (if you want to use a specific MPI compiler/version): `export CXX=mpic++`
 * Run CMake: `cmake ..` (this configures a `RelWithDebInfo` build, which is default. For a `Debug` build, run `cmake .. -DCMAKE_BUILD_TYPE=Debug`) and for a `Release` build, `cmake .. -DCMAKE_BUILD_TYPE=Release`. This is especially recommended in production and benchmark runs.
 * To enable PETSc, use `cmake .. -DENABLE_PETSC=ON`
-* For developing, consider `cmake .. -DENABLE_DEVELOPER_MODE=ON`. For an overview of all availble options, use `ccmake ..`
+* For developing, consider `cmake .. -DENABLE_DEVELOPER_MODE=ON`. For an overview of all available options, use `ccmake ..`
 * Run Make: `make` (or `make -j` for compiling with multiple cores)
 * (Optional): Run `make test` to validate your build (this will execute some unit tests and run some simulations).
 
