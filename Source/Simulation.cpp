@@ -14,8 +14,9 @@ Simulation::Simulation(Parameters& parameters, FlowField& flowField):
   globalBoundaryFactory_(parameters),
   wallVelocityIterator_(globalBoundaryFactory_.getGlobalBoundaryVelocityIterator(flowField_)),
   wallFGHIterator_(globalBoundaryFactory_.getGlobalBoundaryFGHIterator(flowField_)),
-  fghStencil_(parameters),
+  fghStencil_(parameters), rhsStencil_(parameters),
   fghIterator_(flowField_, parameters, fghStencil_),
+  rhsIterator_(flowField, parameters, rhsStencil_),
   velocityStencil_(parameters),
   obstacleStencil_(parameters),
   velocityIterator_(flowField_, parameters, velocityStencil_),
@@ -78,6 +79,7 @@ void Simulation::solveTimestep() {
   // Set global boundary values
   wallFGHIterator_.iterate();
   // TODO WS1: compute the right hand side (RHS)
+  rhsIterator_.iterate();
   // Solve for pressure
   solver_->solve();
   // TODO WS2: communicate pressure values
