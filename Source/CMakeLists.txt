@@ -29,7 +29,7 @@ if(ENABLE_SINGLE_PRECISION)
     target_compile_definitions(${META_PROJECT_NAME} PUBLIC ENABLE_SINGLE_PRECISION)
 endif()
 
-option(ENABLE_PETSC "Enable the Portable, Extensible Toolkit for Scientific Computation (PETSc)" OFF)
+option(ENABLE_PETSC "Enable the Portable, Extensible Toolkit for Scientific Computation (PETSc)" ON)
 if(ENABLE_PETSC)
     find_package(PETSc REQUIRED)
     target_compile_definitions(${META_PROJECT_NAME} PUBLIC ENABLE_PETSC)
