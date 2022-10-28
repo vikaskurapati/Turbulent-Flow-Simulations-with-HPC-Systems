@@ -6,3 +6,5 @@ FetchContent_Declare(
     GIT_TAG        v1.10.0
 )
 FetchContent_MakeAvailable(spdlog)
+
+target_disable_static_analysis(spdlog)

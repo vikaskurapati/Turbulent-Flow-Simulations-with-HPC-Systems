@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.20)
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
     execute_process(
@@ -48,6 +48,7 @@ set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${META_PROJECT_NAME})
 
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
+set(OPT_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
 include(FetchContent)
 FetchContent_Declare(
     _project_options

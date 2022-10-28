@@ -6,3 +6,6 @@ FetchContent_Declare(
     GIT_TAG        9.0.0
 )
 FetchContent_MakeAvailable(tinyxml2)
+
+target_disable_static_analysis(tinyxml2)
+target_disable_static_analysis(xmltest)
