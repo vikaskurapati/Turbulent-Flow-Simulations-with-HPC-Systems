@@ -6,6 +6,7 @@
 #include "Solvers/SORSolver.hpp"
 
 #include <iostream>
+#include <cfenv>
 
 Simulation::Simulation(Parameters& parameters, FlowField& flowField):
   parameters_(parameters),
@@ -102,27 +103,30 @@ void Simulation::plotVTK(int timeStep, RealType simulationTime) {
 }
 
 void Simulation::setTimeStep() {
+
   RealType localMin, globalMin;
   ASSERTION(parameters_.geometry.dim == 2 || parameters_.geometry.dim == 3);
-  RealType factor = 1.0 / (parameters_.meshsize->getDxMin() * parameters_.meshsize->getDxMin())
-                    + 1.0 / (parameters_.meshsize->getDyMin() * parameters_.meshsize->getDyMin());
+  // RealType factor = 1.0 / (parameters_.meshsize->getDxMin() * parameters_.meshsize->getDxMin())
+  //                   + 1.0 / (parameters_.meshsize->getDyMin() * parameters_.meshsize->getDyMin());
+
+  RealType factor = 1000;
   // Determine maximum velocity
   maxUStencil_.reset();
   maxUFieldIterator_.iterate();
   maxUBoundaryIterator_.iterate();
+  RealType u_min = maxUStencil_.getMaxValues()[0] < 1e-12 ? 1e-12 : maxUStencil_.getMaxValues()[0];
+  RealType v_min = maxUStencil_.getMaxValues()[1] < 1e-12 ? 1e-12 : maxUStencil_.getMaxValues()[1];
+  
   if (parameters_.geometry.dim == 3) {
+    RealType w_min = maxUStencil_.getMaxValues()[2] < 1e-12 ? 1e-12 : maxUStencil_.getMaxValues()[2];
     factor += 1.0 / (parameters_.meshsize->getDzMin() * parameters_.meshsize->getDzMin());
-    parameters_.timestep.dt = 1.0 / (maxUStencil_.getMaxValues()[2]);
+    parameters_.timestep.dt = 1.0 / (w_min);
   } else {
-    parameters_.timestep.dt = 1.0 / (maxUStencil_.getMaxValues()[0]);
+    parameters_.timestep.dt = 1.0 / (u_min);
   }
 
   // localMin = std::min(parameters_.timestep.dt, std::min(std::min(parameters_.flow.Re/(2 * factor), 1.0 /
   // maxUStencil_.getMaxValues()[0]), 1.0 / maxUStencil_.getMaxValues()[1]));
-
-  auto u_min = maxUStencil_.getMaxValues()[0] < 1e-12 ? 1e-12 : maxUStencil_.getMaxValues()[0];
-
-  auto v_min = maxUStencil_.getMaxValues()[1] < 1e-12 ? 1e-12 : maxUStencil_.getMaxValues()[1];
 
   localMin = std::min(
     parameters_.flow.Re / (2 * factor),
