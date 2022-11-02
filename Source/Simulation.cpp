@@ -5,6 +5,8 @@
 #include "Solvers/PetscSolver.hpp"
 #include "Solvers/SORSolver.hpp"
 
+#include <cfenv>
+
 Simulation::Simulation(Parameters& parameters, FlowField& flowField):
   parameters_(parameters),
   flowField_(flowField),
@@ -32,6 +34,16 @@ Simulation::Simulation(Parameters& parameters, FlowField& flowField):
 }
 
 void Simulation::initializeFlowField() {
+
+  #ifndef NDEBUG
+
+    feclearexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
+    if(fetestexcept(FE_ALL_EXCEPT & ~FE_INEXACT))
+      raise(SIGFPE);
+  
+  #endif
+
+
   if (parameters_.simulation.scenario == "taylor-green") {
     // Currently, a particular initialisation is only required for the taylor-green vortex.
     Stencils::InitTaylorGreenFlowFieldStencil stencil(parameters_);
@@ -72,6 +84,14 @@ void Simulation::initializeFlowField() {
 }
 
 void Simulation::solveTimestep() {
+
+  #ifndef NDEBUG
+
+  feclearexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
+  if(fetestexcept(FE_ALL_EXCEPT & ~FE_INEXACT))
+    raise(SIGFPE);
+  #endif
+
   // Determine and set max. timestep which is allowed in this simulation
   setTimeStep();
   // Compute FGH
@@ -101,12 +121,19 @@ void Simulation::plotVTK(int timeStep, RealType simulationTime) {
 
 void Simulation::setTimeStep() {
 
+  #ifndef NDEBUG
+
+  feclearexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
+  if(fetestexcept(FE_ALL_EXCEPT & ~FE_INEXACT))
+    raise(SIGFPE);
+  #endif
+
+
   RealType localMin, globalMin;
   ASSERTION(parameters_.geometry.dim == 2 || parameters_.geometry.dim == 3);
-  // RealType factor = 1.0 / (parameters_.meshsize->getDxMin() * parameters_.meshsize->getDxMin())
-  //                   + 1.0 / (parameters_.meshsize->getDyMin() * parameters_.meshsize->getDyMin());
+  RealType factor = 1.0 / (parameters_.meshsize->getDxMin() * parameters_.meshsize->getDxMin())
+                    + 1.0 / (parameters_.meshsize->getDyMin() * parameters_.meshsize->getDyMin());
 
-  RealType factor = 1000;
   // Determine maximum velocity
   maxUStencil_.reset();
   maxUFieldIterator_.iterate();
@@ -124,10 +151,11 @@ void Simulation::setTimeStep() {
 
   // localMin = std::min(parameters_.timestep.dt, std::min(std::min(parameters_.flow.Re/(2 * factor), 1.0 /
   // maxUStencil_.getMaxValues()[0]), 1.0 / maxUStencil_.getMaxValues()[1]));
+
   localMin = std::min(
     parameters_.flow.Re / (2 * factor),
     std::min(
-      parameters_.timestep.dt, std::min(1 / (maxUStencil_.getMaxValues()[0]), 1 / (maxUStencil_.getMaxValues()[1]))
+      parameters_.timestep.dt, std::min(1 / (u_min), 1 / (v_min))
     )
   );
 
