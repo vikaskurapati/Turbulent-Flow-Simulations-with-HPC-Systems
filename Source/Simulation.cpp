@@ -5,9 +5,6 @@
 #include "Solvers/PetscSolver.hpp"
 #include "Solvers/SORSolver.hpp"
 
-#include <iostream>
-#include <cfenv>
-
 Simulation::Simulation(Parameters& parameters, FlowField& flowField):
   parameters_(parameters),
   flowField_(flowField),
@@ -127,11 +124,10 @@ void Simulation::setTimeStep() {
 
   // localMin = std::min(parameters_.timestep.dt, std::min(std::min(parameters_.flow.Re/(2 * factor), 1.0 /
   // maxUStencil_.getMaxValues()[0]), 1.0 / maxUStencil_.getMaxValues()[1]));
-
   localMin = std::min(
     parameters_.flow.Re / (2 * factor),
     std::min(
-      parameters_.timestep.dt, std::min(1 / (u_min), 1 / (v_min))
+      parameters_.timestep.dt, std::min(1 / (maxUStencil_.getMaxValues()[0]), 1 / (maxUStencil_.getMaxValues()[1]))
     )
   );
 
