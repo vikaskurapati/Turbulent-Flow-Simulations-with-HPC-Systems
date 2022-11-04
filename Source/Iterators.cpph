@@ -1,3 +1,5 @@
+#include <cfenv>
+
 template <class FlowFieldType>
 FieldIterator<FlowFieldType>::FieldIterator(
   FlowFieldType&                         flowField,
@@ -13,6 +15,15 @@ FieldIterator<FlowFieldType>::FieldIterator(
 
 template <class FlowFieldType>
 void FieldIterator<FlowFieldType>::iterate() {
+
+  #ifndef NDEBUG
+
+  feclearexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
+  if(fetestexcept(FE_ALL_EXCEPT & ~FE_INEXACT))
+    raise(SIGFPE);
+  #endif
+
+
   const int cellsX = Iterator<FlowFieldType>::flowField_.getCellsX();
   const int cellsY = Iterator<FlowFieldType>::flowField_.getCellsY();
   const int cellsZ = Iterator<FlowFieldType>::flowField_.getCellsZ();
@@ -110,6 +121,15 @@ GlobalBoundaryIterator<FlowFieldType>::GlobalBoundaryIterator(
 
 template <class FlowFieldType>
 void GlobalBoundaryIterator<FlowFieldType>::iterate() {
+
+  #ifndef NDEBUG
+
+  feclearexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
+  if(fetestexcept(FE_ALL_EXCEPT & ~FE_INEXACT))
+    raise(SIGFPE);
+  #endif
+
+
   if (Iterator<FlowFieldType>::parameters_.geometry.dim == 2) {
     if (Iterator<FlowFieldType>::parameters_.parallel.leftNb < 0) {
       for (int j = lowOffset_; j < Iterator<FlowFieldType>::flowField_.getCellsY() + highOffset_; j++) {

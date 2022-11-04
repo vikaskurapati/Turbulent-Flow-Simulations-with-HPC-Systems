@@ -2,6 +2,7 @@
 
 #ifdef ENABLE_PETSC
 
+#include <cfenv>
 #include "PetscSolver.hpp"
 
 static constexpr unsigned char LEFT_WALL_BIT   = 1 << 0;
@@ -284,6 +285,15 @@ Solvers::PetscSolver::PetscSolver(FlowField& flowField, Parameters& parameters):
 }
 
 void Solvers::PetscSolver::solve() {
+
+    #ifndef NDEBUG
+
+  feclearexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
+  if(fetestexcept(FE_ALL_EXCEPT & ~FE_INEXACT))
+    raise(SIGFPE);
+  #endif
+
+
   ScalarField& pressure = flowField_.getPressure();
 
   if (parameters_.geometry.dim == 2) {
