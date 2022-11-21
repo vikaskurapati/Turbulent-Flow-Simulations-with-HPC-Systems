@@ -9,6 +9,7 @@
 #include "Stencils/BFInputStencils.hpp"
 #include "Stencils/BFStepInitStencil.hpp"
 #include "Stencils/FGHStencil.hpp"
+#include "Stencils/RHSStencil.hpp"
 #include "Stencils/InitTaylorGreenFlowFieldStencil.hpp"
 #include "Stencils/MaxUStencil.hpp"
 #include "Stencils/MovingWallStencils.hpp"
@@ -32,9 +33,11 @@ protected:
   GlobalBoundaryFactory             globalBoundaryFactory_;
   GlobalBoundaryIterator<FlowField> wallVelocityIterator_;
   GlobalBoundaryIterator<FlowField> wallFGHIterator_;
-
+  
   Stencils::FGHStencil     fghStencil_;
+  Stencils::RHSStencil rhsStencil_;
   FieldIterator<FlowField> fghIterator_;
+  FieldIterator<FlowField> rhsIterator_;
 
   Stencils::VelocityStencil velocityStencil_;
   Stencils::ObstacleStencil obstacleStencil_;
