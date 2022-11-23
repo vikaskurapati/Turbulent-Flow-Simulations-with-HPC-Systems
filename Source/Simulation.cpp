@@ -2,10 +2,10 @@
 
 #include "Simulation.hpp"
 
+#include <cfenv>
+
 #include "Solvers/PetscSolver.hpp"
 #include "Solvers/SORSolver.hpp"
-
-#include <cfenv>
 
 Simulation::Simulation(Parameters& parameters, FlowField& flowField):
   parameters_(parameters),
@@ -16,7 +16,8 @@ Simulation::Simulation(Parameters& parameters, FlowField& flowField):
   globalBoundaryFactory_(parameters),
   wallVelocityIterator_(globalBoundaryFactory_.getGlobalBoundaryVelocityIterator(flowField_)),
   wallFGHIterator_(globalBoundaryFactory_.getGlobalBoundaryFGHIterator(flowField_)),
-  fghStencil_(parameters), rhsStencil_(parameters),
+  fghStencil_(parameters),
+  rhsStencil_(parameters),
   fghIterator_(flowField_, parameters, fghStencil_),
   rhsIterator_(flowField, parameters, rhsStencil_),
   velocityStencil_(parameters),
@@ -34,15 +35,6 @@ Simulation::Simulation(Parameters& parameters, FlowField& flowField):
 }
 
 void Simulation::initializeFlowField() {
-
-  #ifndef NDEBUG
-
-    feclearexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
-    if(fetestexcept(FE_ALL_EXCEPT & ~FE_INEXACT))
-      raise(SIGFPE);
-  
-  #endif
-
 
   if (parameters_.simulation.scenario == "taylor-green") {
     // Currently, a particular initialisation is only required for the taylor-green vortex.
@@ -85,13 +77,6 @@ void Simulation::initializeFlowField() {
 
 void Simulation::solveTimestep() {
 
-  #ifndef NDEBUG
-
-  feclearexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
-  if(fetestexcept(FE_ALL_EXCEPT & ~FE_INEXACT))
-    raise(SIGFPE);
-  #endif
-
   // Determine and set max. timestep which is allowed in this simulation
   setTimeStep();
   // Compute FGH
@@ -121,41 +106,27 @@ void Simulation::plotVTK(int timeStep, RealType simulationTime) {
 
 void Simulation::setTimeStep() {
 
-  #ifndef NDEBUG
-
-  feclearexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
-  if(fetestexcept(FE_ALL_EXCEPT & ~FE_INEXACT))
-    raise(SIGFPE);
-  #endif
-
-
   RealType localMin, globalMin;
   ASSERTION(parameters_.geometry.dim == 2 || parameters_.geometry.dim == 3);
   RealType factor = 1.0 / (parameters_.meshsize->getDxMin() * parameters_.meshsize->getDxMin())
                     + 1.0 / (parameters_.meshsize->getDyMin() * parameters_.meshsize->getDyMin());
-
   // Determine maximum velocity
   maxUStencil_.reset();
   maxUFieldIterator_.iterate();
   maxUBoundaryIterator_.iterate();
-  RealType u_min = maxUStencil_.getMaxValues()[0] < 1e-12 ? 1e-12 : maxUStencil_.getMaxValues()[0];
-  RealType v_min = maxUStencil_.getMaxValues()[1] < 1e-12 ? 1e-12 : maxUStencil_.getMaxValues()[1];
-  
   if (parameters_.geometry.dim == 3) {
-    RealType w_min = maxUStencil_.getMaxValues()[2] < 1e-12 ? 1e-12 : maxUStencil_.getMaxValues()[2];
     factor += 1.0 / (parameters_.meshsize->getDzMin() * parameters_.meshsize->getDzMin());
-    parameters_.timestep.dt = 1.0 / (w_min);
+    parameters_.timestep.dt = 1.0 / (maxUStencil_.getMaxValues()[2] + EPSILON);
   } else {
-    parameters_.timestep.dt = 1.0 / (u_min);
+    parameters_.timestep.dt = 1.0 / (maxUStencil_.getMaxValues()[0] + EPSILON);
   }
 
   // localMin = std::min(parameters_.timestep.dt, std::min(std::min(parameters_.flow.Re/(2 * factor), 1.0 /
   // maxUStencil_.getMaxValues()[0]), 1.0 / maxUStencil_.getMaxValues()[1]));
-
   localMin = std::min(
     parameters_.flow.Re / (2 * factor),
     std::min(
-      parameters_.timestep.dt, std::min(1 / (u_min), 1 / (v_min))
+      parameters_.timestep.dt, std::min(1 / (maxUStencil_.getMaxValues()[0] + EPSILON), 1 / (maxUStencil_.getMaxValues()[1] +EPSILON))
     )
   );
 

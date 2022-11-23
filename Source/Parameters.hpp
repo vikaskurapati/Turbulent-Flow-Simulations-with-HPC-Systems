@@ -152,6 +152,8 @@ public:
   ParallelParameters      parallel;
   StdOutParameters        stdOut;
   BFStepParameters        bfStep;
+
   // TODO WS2: include parameters for turbulence
+  
   Meshsize* meshsize;
 };

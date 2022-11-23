@@ -38,10 +38,8 @@ int main(int argc, char* argv[]) {
 
 #ifndef NDEBUG
   spdlog::warn("Running in Debug mode; make sure to switch to Release mode for production/benchmark runs.");
-
-  if (fetestexcept(FE_ALL_EXCEPT & ~FE_INEXACT))
-  {  raise(SIGFPE);
-  }
+  
+  feenableexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
 #else
   spdlog::info("Running in Release mode");
 #endif
