@@ -7,7 +7,7 @@
 #include "Parameters.hpp"
 #include <algorithm>
 #include <memory>
-#include <vector>
+
 
 namespace Stencils {
 
@@ -28,12 +28,12 @@ namespace Stencils {
     void applyFrontWall(FlowField& flowField, int i, int j, int k) override;
     void applyBackWall(FlowField& flowField, int i, int j, int k) override;
 
-    std::unique_ptr<RealType[]> leftPressureBuffer;
-    std::unique_ptr<RealType[]> rightPressureBuffer;
-    std::unique_ptr<RealType[]> topPressureBuffer;
-    std::unique_ptr<RealType[]> bottomPressureBuffer;
-    std::unique_ptr<RealType[]> frontPressureBuffer;
-    std::unique_ptr<RealType[]> backPressureBuffer;
+    std::unique_ptr<RealType[]> leftPressureFillBuffer;
+    std::unique_ptr<RealType[]> rightPressureFillBuffer;
+    std::unique_ptr<RealType[]> topPressureFillBuffer;
+    std::unique_ptr<RealType[]> bottomPressureFillBuffer;
+    std::unique_ptr<RealType[]> frontPressureFillBuffer;
+    std::unique_ptr<RealType[]> backPressureFillBuffer;
     
     const int* localSize;
 
