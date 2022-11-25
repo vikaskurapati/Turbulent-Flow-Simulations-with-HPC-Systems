@@ -11,11 +11,11 @@
 
 namespace Stencils {
 
-  class PressureBufferFillStencil: public BoundaryStencil<FlowField> {
+  class PressureBufferReadStencil: public BoundaryStencil<FlowField> {
   public:
 
-    PressureBufferFillStencil(const Parameters& parameters);
-    ~PressureBufferFillStencil() override = default;
+    PressureBufferReadStencil(const Parameters& parameters);
+    ~PressureBufferReadStencil() override = default;
 
     void applyLeftWall(FlowField& flowField, int i, int j) override;
     void applyRightWall(FlowField& flowField, int i, int j) override;
@@ -36,5 +36,6 @@ namespace Stencils {
     std::unique_ptr<RealType[]> frontPressureReadBuffer;
     std::unique_ptr<RealType[]> backPressureReadBuffer;
 
+    const int* localSize; 
     };
 } // namespace Stencils
