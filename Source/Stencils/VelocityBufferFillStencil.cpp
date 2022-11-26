@@ -73,11 +73,11 @@ else if  ((i == 1))  {
 
 void Stencils::VelocityBufferFillStencil::applyBottomWall(FlowField& flowField, int i, int j) {
   if ((i >= 2) ) {
-		*(topVelocityFillBuffer.get() + (i - 1) ) = (flowField.getVelocity().getVector(i, j+1))[0];
-    *(topVelocityFillBuffer.get() + localSize[0] + (i - 1)) = (flowField.getVelocity().getVector(i, j+1))[1];
+		*(bottomVelocityFillBuffer.get() + (i - 1) ) = (flowField.getVelocity().getVector(i, j+1))[0];
+    *(bottomVelocityFillBuffer.get() + localSize[0] + (i - 1)) = (flowField.getVelocity().getVector(i, j+1))[1];
 }
 else if  ((i == 1))  {
-    *(topVelocityFillBuffer.get() + (i - 1)) = (flowField.getVelocity().getVector(i, j+1))[0];
+    *(bottomVelocityFillBuffer.get() + (i - 1)) = (flowField.getVelocity().getVector(i, j+1))[0];
 }
 }
 // End of 2D apply functions

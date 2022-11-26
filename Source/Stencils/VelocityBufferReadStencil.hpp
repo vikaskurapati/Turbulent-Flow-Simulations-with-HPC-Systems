@@ -9,10 +9,9 @@
 #include "FlowField.hpp"
 #include "Parameters.hpp"
 
-namespace Stencils{
-      class VelocityBufferReadStencil: public BoundaryStencil<FlowField> {
+namespace Stencils {
+  class VelocityBufferReadStencil: public BoundaryStencil<FlowField> {
   public:
-
     VelocityBufferReadStencil(const Parameters& parameters);
     ~VelocityBufferReadStencil() override = default;
 
@@ -35,8 +34,7 @@ namespace Stencils{
     std::unique_ptr<RealType[]> frontVelocityReadBuffer;
     std::unique_ptr<RealType[]> backVelocityReadBuffer;
 
-    const int* localSize; 
+    const int* localSize;
+  };
 
-      }
-
-}
+} // namespace Stencils
