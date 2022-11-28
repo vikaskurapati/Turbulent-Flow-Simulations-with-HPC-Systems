@@ -54,10 +54,10 @@ void Stencils::VelocityBufferFillStencil::applyLeftWall(FlowField& flowField, in
 void Stencils::VelocityBufferFillStencil::applyRightWall(FlowField& flowField, int i, int j) {
   if(j>=2){
     *(rightVelocityFillBuffer.get() + (j - 2)) = (flowField.getVelocity().getVector(i-1,j))[0];
-    *(rightVelocityFillBuffer.get() + localSize[1] + (j-1)) = (flowField.getVelocity().getVector(i-1,j))[1];
+    *(rightVelocityFillBuffer.get() + localSize[1] + (j-1)) = (flowField.getVelocity().getVector(i,j))[1];
   }
   else if(j==1){
-    *(rightVelocityFillBuffer.get() + localSize[1] + (j-1)) =(flowField.getVelocity().getVector(i-1,j))[1];
+    *(rightVelocityFillBuffer.get() + localSize[1] + (j-1)) =(flowField.getVelocity().getVector(i,j))[1];
   }
 }
 
@@ -87,44 +87,44 @@ void Stencils::VelocityBufferFillStencil::applyLeftWall(FlowField& flowField, in
   
   if(j>=2 && k>=2){
     *(leftVelocityFillBuffer.get() + (j - 2) + (k - 2) * localSize[1]) = (flowField.getVelocity().getVector(i+1,j,k))[0];
-    *(leftVelocityFillBuffer.get() + localSize[1]*localSize[2] + (j-1)*localSize[2] + k-2) = (flowField.getVelocity().getVector(i+1,j,k))[1];
-    *(leftVelocityFillBuffer.get() + localSize[1]*localSize[2] + (localSize[1]+1)*localSize[2] + (j-2) + (k-1)*localSize[1]) = (flowField.getVelocity().getVector(i+1,j,k))[2];
+    *(leftVelocityFillBuffer.get() + (localSize[1]*localSize[2]) + ((j-1)*localSize[2]) + (k-2)) = (flowField.getVelocity().getVector(i+1,j,k))[1];
+    *(leftVelocityFillBuffer.get() + (localSize[1]*localSize[2]) + ((localSize[1]+1)*localSize[2]) + (j-2) + ((k-1)*localSize[1])) = (flowField.getVelocity().getVector(i+1,j,k))[2];
   }
   else if(j==1 && k>=2){
-    *(leftVelocityFillBuffer.get() + localSize[1]*localSize[2] + (j-1)*localSize[2]+ (k-2)) =(flowField.getVelocity().getVector(i+1,j,k))[1] ;
+    *(leftVelocityFillBuffer.get() + (localSize[1]*localSize[2]) + ((j-1)*localSize[2])+ (k-2)) =(flowField.getVelocity().getVector(i+1,j,k))[1] ;
   }
   else if(k==1 && j>=2){
-    *(leftVelocityFillBuffer.get()+ ((localSize[1]) * (localSize[2]))+ ((localSize[1] + 1) * (localSize[2])) + (j - 2)+ (k - 1) * localSize[1]) = (flowField.getVelocity().getVector(i + 1, j, k))[2];
+    *(leftVelocityFillBuffer.get()+ (localSize[1] * localSize[2])+ ((localSize[1] + 1) * (localSize[2])) + (j - 2)+ ((k - 1) * localSize[1])) = (flowField.getVelocity().getVector(i + 1, j, k))[2];
   }
 }
 
 void Stencils::VelocityBufferFillStencil::applyRightWall(FlowField& flowField, int i, int j, int k) {
   if ((j >= 2) && (k >= 2)) {
-		*(rightVelocityFillBuffer.get() +(j - 2) + (k - 2) * localSize[1]) =(flowField.getVelocity().getVector(i - 1, j, k))[0];
-    //check if i-1 in RHS is correct or not for the below two
-    *(rightVelocityFillBuffer.get() + localSize[1]*localSize[2] + (j-1)*localSize[2] + k-2) = (flowField.getVelocity().getVector(i-1,j,k))[1];
-    *(rightVelocityFillBuffer.get() + localSize[1]*localSize[2] + (localSize[1]+1)*localSize[2] + (j-2) + (k-1)*localSize[1]) = (flowField.getVelocity().getVector(i-1,j,k))[2];
+		*(rightVelocityFillBuffer.get() +(j - 2) + ((k - 2) * localSize[1])) =(flowField.getVelocity().getVector(i - 1, j, k))[0];
+    //check if i-1 in RHS is correct or not for the below two (modified back to --)
+    *(rightVelocityFillBuffer.get() + (localSize[1]*localSize[2]) + ((j-1)*localSize[2]) + (k-2)) = (flowField.getVelocity().getVector(i,j,k))[1];
+    *(rightVelocityFillBuffer.get() + (localSize[1]*localSize[2]) + (localSize[1]+1)*localSize[2] + (j-2) + (k-1)*localSize[1]) = (flowField.getVelocity().getVector(i,j,k))[2];
 }
  else if ((j == 1) && (k >= 2)) {
-  //check if i-1 in RHS is correct or not for the below 
-  *(rightVelocityFillBuffer.get() + localSize[1]*localSize[2] + (j-1)*localSize[2]+ (k-2)) =(flowField.getVelocity().getVector(i-1,j,k))[1];
+  //check if i-1 in RHS is correct or not for the below (modified back to --)
+  *(rightVelocityFillBuffer.get() + (localSize[1]*localSize[2]) + ((j-1)*localSize[2])+ (k-2)) =(flowField.getVelocity().getVector(i,j,k))[1];
  
  }
   else if ((k == 1) && (j >= 2)) {
-    //check if i-1 is correct or not for the below 
-    *(rightVelocityFillBuffer.get()+ (localSize[1] * localSize[2])+ ((localSize[1] + 1) * (localSize[2])) + (j - 2)+ (k - 1) * localSize[1]) = (flowField.getVelocity().getVector(i - 1, j, k))[2];
+    //check if i-1 is correct or not for the below (modified back to --)
+    *(rightVelocityFillBuffer.get()+ (localSize[1] * localSize[2])+ ((localSize[1] + 1) * (localSize[2])) + (j - 2)+ ((k - 1) * localSize[1])) = (flowField.getVelocity().getVector(i , j, k))[2];
   }
 }
 
 void Stencils::VelocityBufferFillStencil::applyTopWall(FlowField& flowField, int i, int j, int k) {
 if ((i >= 2) && (k >= 2)) {
-		*(topVelocityFillBuffer.get() + (i - 1) * localSize[2] + (k - 2)) = (flowField.getVelocity().getVector(i, j, k))[0];
-    *(topVelocityFillBuffer.get() + ((localSize[0] + 1) * localSize[2]) + (i - 2) * localSize[2] + (k - 2)) = (flowField.getVelocity().getVector(i, j-1, k))[1];
+		*(topVelocityFillBuffer.get() + ((i - 1) * localSize[2]) + (k - 2)) = (flowField.getVelocity().getVector(i, j, k))[0];
+    *(topVelocityFillBuffer.get() + ((localSize[0] + 1) * localSize[2]) + ((i - 2) * localSize[2]) + (k - 2)) = (flowField.getVelocity().getVector(i, j-1, k))[1];
     *(topVelocityFillBuffer.get() + ((localSize[0] + 1) *localSize[2]) + (localSize[0] * localSize[2]) + ((k - 1) * localSize[0])+ (i - 2) ) =(flowField.getVelocity().getVector(i, j, k))[2];
 }
 
 else if  ((i == 1) && (k >= 2))  {
-    *(topVelocityFillBuffer.get() + (i - 1) * localSize[2] + (k - 2)) = (flowField.getVelocity().getVector(i, j, k))[0];
+    *(topVelocityFillBuffer.get() + ((i - 1) * localSize[2]) + (k - 2)) = (flowField.getVelocity().getVector(i, j, k))[0];
 }
 
 else if ((k == 1) && (i >= 2)){
@@ -136,13 +136,13 @@ else if ((k == 1) && (i >= 2)){
 void Stencils::VelocityBufferFillStencil::applyBottomWall(FlowField& flowField, int i, int j, int k) {
 
 if ((i >= 2) && (k >= 2)) {
-		*(bottomVelocityFillBuffer.get() + (i - 1) * localSize[2] + (k - 2)) = (flowField.getVelocity().getVector(i, j+1, k))[0];
-    *(bottomVelocityFillBuffer.get() + ((localSize[0] + 1) * localSize[2]) + (i - 2) * localSize[2] + (k - 2)) = (flowField.getVelocity().getVector(i, j+1, k))[1];
+		*(bottomVelocityFillBuffer.get() + ((i - 1) * localSize[2]) + (k - 2)) = (flowField.getVelocity().getVector(i, j+1, k))[0];
+    *(bottomVelocityFillBuffer.get() + ((localSize[0] + 1) * localSize[2]) + ((i - 2) * localSize[2]) + (k - 2)) = (flowField.getVelocity().getVector(i, j+1, k))[1];
     *(bottomVelocityFillBuffer.get() + ((localSize[0] + 1) *localSize[2]) + (localSize[0] * localSize[2]) + ((k - 1) * localSize[0])+ (i - 2) ) =(flowField.getVelocity().getVector(i, j+1, k))[2];
 }
 
 else if  ((i == 1) && (k >= 2))  {
-    *(bottomVelocityFillBuffer.get() + (i - 1) * localSize[2] + (k - 2)) = (flowField.getVelocity().getVector(i, j+1, k))[0];
+    *(bottomVelocityFillBuffer.get() + ((i - 1) * localSize[2]) + (k - 2)) = (flowField.getVelocity().getVector(i, j+1, k))[0];
 }
 
 else if ((k == 1) && (i >= 2)){
@@ -153,30 +153,30 @@ else if ((k == 1) && (i >= 2)){
 void Stencils::VelocityBufferFillStencil::applyFrontWall(FlowField& flowField, int i, int j, int k) {
 
   if ((i >= 2) & (j >= 2)) {
-    *(frontVelocityFillBuffer.get() + (i - 1) * localSize[1] + (j - 2)  )= (flowField.getVelocity().getVector(i, j, k + 1))[0];
-    *(frontVelocityFillBuffer.get() +  ((localSize[0] + 1) *localSize[1])+ (j - 1) * localSize[0] + (i - 2)) = (flowField.getVelocity().getVector(i, j, k + 1))[1];
-    *(frontVelocityFillBuffer.get() +  (localSize[0]*(localSize[1]+1)) + ((localSize[0]+1)*localSize[1]) + (i-2)*localSize[1] + (j-2)) = (flowField.getVelocity().getVector(i, j, k + 1))[2];
+    *(frontVelocityFillBuffer.get() + ((i - 1) * localSize[1]) + (j - 2)  )= (flowField.getVelocity().getVector(i, j, k + 1))[0];
+    *(frontVelocityFillBuffer.get() +  ((localSize[0] + 1) *localSize[1])+ ((j - 1) * localSize[0]) + (i - 2)) = (flowField.getVelocity().getVector(i, j, k + 1))[1];
+    *(frontVelocityFillBuffer.get() +  (localSize[0]*(localSize[1]+1)) + ((localSize[0]+1)*localSize[1]) + ((i-2)*localSize[1]) + (j-2)) = (flowField.getVelocity().getVector(i, j, k + 1))[2];
   }
   else if ((i == 1) & (j >= 2)) {
-    *(frontVelocityFillBuffer.get() + (i - 1) * localSize[1] + (j - 2)  )= (flowField.getVelocity().getVector(i, j, k + 1))[0];
+    *(frontVelocityFillBuffer.get() + ((i - 1) * localSize[1]) + (j - 2)  )= (flowField.getVelocity().getVector(i, j, k + 1))[0];
   }
   else if ((j == 1) & (i >= 2)) {
-    *(frontVelocityFillBuffer.get() +  ((localSize[0] + 1) *localSize[1])+ (j - 1) * localSize[0] + (i - 2)) = (flowField.getVelocity().getVector(i, j, k + 1))[1];
+    *(frontVelocityFillBuffer.get() +  ((localSize[0] + 1) *localSize[1])+ ((j - 1) * localSize[0]) + (i - 2)) = (flowField.getVelocity().getVector(i, j, k + 1))[1];
   }
 
 }
 
 void Stencils::VelocityBufferFillStencil::applyBackWall(FlowField& flowField, int i, int j, int k) {
   if ((i >= 2) & (j >= 2)) {
-    *(backVelocityFillBuffer.get() + (i - 1) * localSize[1] + (j - 2)  )= (flowField.getVelocity().getVector(i, j, k))[0];
-    *(backVelocityFillBuffer.get() +  ((localSize[0] + 1) *localSize[1])+ (j - 1) * localSize[0] + (i - 2)) = (flowField.getVelocity().getVector(i, j, k))[1];
-    *(backVelocityFillBuffer.get() +  (localSize[0]*(localSize[1]+1)) + ((localSize[0]+1)*localSize[1]) + (i-2)*localSize[1] + (j-2)) = (flowField.getVelocity().getVector(i, j, k - 1))[2];
+    *(backVelocityFillBuffer.get() + ((i - 1) * localSize[1]) + (j - 2)  )= (flowField.getVelocity().getVector(i, j, k))[0];
+    *(backVelocityFillBuffer.get() +  ((localSize[0] + 1) *localSize[1])+ ((j - 1) * localSize[0]) + (i - 2)) = (flowField.getVelocity().getVector(i, j, k))[1];
+    *(backVelocityFillBuffer.get() +  (localSize[0]*(localSize[1]+1)) + ((localSize[0]+1)*localSize[1]) + ((i-2)*localSize[1]) + (j-2)) = (flowField.getVelocity().getVector(i, j, k - 1))[2];
   }
   else if ((i == 1) & (j >= 2)) {
-    *(backVelocityFillBuffer.get() + (i - 1) * localSize[1] + (j - 2)  )= (flowField.getVelocity().getVector(i, j, k))[0];
+    *(backVelocityFillBuffer.get() + ((i - 1) * localSize[1]) + (j - 2)  )= (flowField.getVelocity().getVector(i, j, k))[0];
   }
   else if ((j == 1) & (i >= 2)) {
-    *(backVelocityFillBuffer.get() +  ((localSize[0] + 1) *localSize[1])+ (j - 1) * localSize[0] + (i - 2)) = (flowField.getVelocity().getVector(i, j, k))[1];
+    *(backVelocityFillBuffer.get() +  ((localSize[0] + 1) *localSize[1])+ ((j - 1) * localSize[0]) + (i - 2)) = (flowField.getVelocity().getVector(i, j, k))[1];
   }
 
 }
