@@ -3,6 +3,9 @@
 #include "Simulation.hpp"
 
 #include <cfenv>
+#include <mpi.h>
+
+#include "Iterators.hpp"
 
 #include "Solvers/PetscSolver.hpp"
 #include "Solvers/SORSolver.hpp"
@@ -23,15 +26,17 @@ Simulation::Simulation(Parameters& parameters, FlowField& flowField):
   velocityStencil_(parameters),
   obstacleStencil_(parameters),
   velocityIterator_(flowField_, parameters, velocityStencil_),
-  obstacleIterator_(flowField_, parameters, obstacleStencil_)
+  obstacleIterator_(flowField_, parameters, obstacleStencil_),
 #ifdef ENABLE_PETSC
-  ,
-  solver_(std::make_unique<Solvers::PetscSolver>(flowField_, parameters))
+  solver_(std::make_unique<Solvers::PetscSolver>(flowField_, parameters)),
 #else
-  ,
-  solver_(std::make_unique<Solvers::SORSolver>(flowField_, parameters))
+  solver_(std::make_unique<Solvers::SORSolver>(flowField_, parameters)),
 #endif
+  comm_(parameters, flowField),
+  velocityParallelBoundaryIterator_(flowField, parameters, velocityStencil_, 1, 0)
+  // fghParallelBoundaryIterator_(flowField, parameters, fghStencil_, 1, -1)
 {
+  MPI_Comm_rank(PETSC_COMM_WORLD, &rank_);
 }
 
 void Simulation::initializeFlowField() {
@@ -126,7 +131,8 @@ void Simulation::setTimeStep() {
   localMin = std::min(
     parameters_.flow.Re / (2 * factor),
     std::min(
-      parameters_.timestep.dt, std::min(1 / (maxUStencil_.getMaxValues()[0] + EPSILON), 1 / (maxUStencil_.getMaxValues()[1] +EPSILON))
+      parameters_.timestep.dt,
+      std::min(1 / (maxUStencil_.getMaxValues()[0] + EPSILON), 1 / (maxUStencil_.getMaxValues()[1] + EPSILON))
     )
   );
 
