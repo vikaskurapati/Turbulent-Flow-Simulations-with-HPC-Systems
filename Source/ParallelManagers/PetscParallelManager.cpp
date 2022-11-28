@@ -25,19 +25,19 @@ void ParallelManagers::PetscParallelManager::communicatePressure() {
 
     MPI_Isend(
       // left to right
-      fillPressureStencil.leftPressureFillBuffer,
+      fillPressureStencil.leftPressureFillBuffer.get(),
       localSize[1] * localSize[2],
       MY_MPI_FLOAT,
-      _parameters.parallel.leftNb,
+      parameters_.parallel.leftNb,
       201,
       PETSC_COMM_WORLD,
       &request[0]
     );
     MPI_Irecv(
-      readPressureStencil.rightPressureReadBuffer,
+      readPressureStencil.rightPressureReadBuffer.get(),
       localSize[1] * localSize[2],
       MY_MPI_FLOAT,
-      _parameters.parallel.rightNb,
+      parameters_.parallel.rightNb,
       201,
       PETSC_COMM_WORLD,
       &request[1]
@@ -45,95 +45,95 @@ void ParallelManagers::PetscParallelManager::communicatePressure() {
 
     MPI_Isend(
       // right to left
-      fillPressureStencil.rightPressureFillBuffer,
+      fillPressureStencil.rightPressureFillBuffer.get(),
       localSize[1] * localSize[2],
       MY_MPI_FLOAT,
-      _parameters.parallel.rightNb,
+      parameters_.parallel.rightNb,
       202,
       PETSC_COMM_WORLD,
       &request[2]
     );
     MPI_Irecv(
-      readPressureStencil.leftPressureReadBuffer,
+      readPressureStencil.leftPressureReadBuffer.get(),
       localSize[1] * localSize[2],
       MY_MPI_FLOAT,
-      _parameters.parallel.leftNb,
+      parameters_.parallel.leftNb,
       202,
       PETSC_COMM_WORLD,
       &request[3]
     );
     MPI_Isend(
       // top to bottom
-      fillPressureStencil.topPressureFillBuffer,
+      fillPressureStencil.topPressureFillBuffer.get(),
       localSize[0] * localSize[2],
       MY_MPI_FLOAT,
-      _parameters.parallel.topNb,
+      parameters_.parallel.topNb,
       203,
       PETSC_COMM_WORLD,
       &request[4]
     );
     MPI_Irecv(
-      readPressureStencil.bottomPressureReadBuffer,
+      readPressureStencil.bottomPressureReadBuffer.get(),
       localSize[0] * localSize[2],
       MY_MPI_FLOAT,
-      _parameters.parallel.bottomNb,
+      parameters_.parallel.bottomNb,
       203,
       PETSC_COMM_WORLD,
       &request[5]
     );
     MPI_Isend(
       // bottom to top
-      fillPressureStencil.bottomPressureFillBuffer,
+      fillPressureStencil.bottomPressureFillBuffer.get(),
       localSize[0] * localSize[2],
       MY_MPI_FLOAT,
-      _parameters.parallel.bottomNb,
+      parameters_.parallel.bottomNb,
       204,
       PETSC_COMM_WORLD,
       &request[6]
     );
     MPI_Irecv(
-      readPressureStencil.topPressureReadBuffer,
+      readPressureStencil.topPressureReadBuffer.get(),
       localSize[0] * localSize[2],
       MY_MPI_FLOAT,
-      _parameters.parallel.topNb,
+      parameters_.parallel.topNb,
       204,
       PETSC_COMM_WORLD,
       &request[7]
     );
     MPI_Isend(
       // front to back
-      fillPressureStencil.frontPressureFillBuffer,
+      fillPressureStencil.frontPressureFillBuffer.get(),
       localSize[0] * localSize[1],
       MY_MPI_FLOAT,
-      _parameters.parallel.frontNb,
+      parameters_.parallel.frontNb,
       205,
       PETSC_COMM_WORLD,
       &request[8]
     );
     MPI_Irecv(
-      readPressureStencil.backPressureReadBuffer,
+      readPressureStencil.backPressureReadBuffer.get(),
       localSize[0] * localSize[1],
       MY_MPI_FLOAT,
-      _parameters.parallel.backNb,
+      parameters_.parallel.backNb,
       205,
       PETSC_COMM_WORLD,
       &request[9]
     );
     MPI_Isend(
       // back to front
-      fillPressureStencil.backPressureFillBuffer,
+      fillPressureStencil.backPressureFillBuffer.get(),
       localSize[0] * localSize[1],
       MY_MPI_FLOAT,
-      _parameters.parallel.backNb,
+      parameters_.parallel.backNb,
       206,
       PETSC_COMM_WORLD,
       &request[10]
     );
     MPI_Irecv(
-      readPressureStencil.frontPressureReadBuffer,
+      readPressureStencil.frontPressureReadBuffer.get(),
       localSize[0] * localSize[1],
       MY_MPI_FLOAT,
-      _parameters.parallel.frontNb,
+      parameters_.parallel.frontNb,
       206,
       PETSC_COMM_WORLD,
       &request[11]
@@ -152,19 +152,19 @@ void ParallelManagers::PetscParallelManager::communicatePressure() {
 
     MPI_Isend(
       // left to right
-      fillPressureStencil.leftPressureFillBuffer,
+      fillPressureStencil.leftPressureFillBuffer.get(),
       localSize[1],
       MY_MPI_FLOAT,
-      _parameters.parallel.leftNb,
+      parameters_.parallel.leftNb,
       201,
       PETSC_COMM_WORLD,
       &request[0]
     );
     MPI_Irecv(
-      readPressureStencil.rightPressureReadBuffer,
+      readPressureStencil.rightPressureReadBuffer.get(),
       localSize[1],
       MY_MPI_FLOAT,
-      _parameters.parallel.rightNb,
+      parameters_.parallel.rightNb,
       201,
       PETSC_COMM_WORLD,
       &request[1]
@@ -172,62 +172,63 @@ void ParallelManagers::PetscParallelManager::communicatePressure() {
 
     MPI_Isend(
       // right to left
-      fillPressureStencil.rightPressureFillBuffer,
+      fillPressureStencil.rightPressureFillBuffer.get(),
       localSize[1],
       MY_MPI_FLOAT,
-      _parameters.parallel.rightNb,
+      parameters_.parallel.rightNb,
       202,
       PETSC_COMM_WORLD,
       &request[2]
     );
     MPI_Irecv(
-      readPressureStencil.leftPressureReadBuffer,
+      readPressureStencil.leftPressureReadBuffer.get(),
       localSize[1],
       MY_MPI_FLOAT,
-      _parameters.parallel.leftNb,
+      parameters_.parallel.leftNb,
       202,
       PETSC_COMM_WORLD,
       &request[3]
     );
     MPI_Isend(
       // top to bottom
-      fillPressureStencil.topPressureFillBuffer,
+      fillPressureStencil.topPressureFillBuffer.get(),
       localSize[0],
       MY_MPI_FLOAT,
-      _parameters.parallel.topNb,
+      parameters_.parallel.topNb,
       203,
       PETSC_COMM_WORLD,
       &request[4]
     );
     MPI_Irecv(
-      readPressureStencil.bottomPressureReadBuffer,
+      readPressureStencil.bottomPressureReadBuffer.get(),
       localSize[0],
       MY_MPI_FLOAT,
-      _parameters.parallel.bottomNb,
+      parameters_.parallel.bottomNb,
       203,
       PETSC_COMM_WORLD,
       &request[5]
     );
     MPI_Isend(
       // bottom to top
-      fillPressureStencil.bottomPressureFillBuffer,
+      fillPressureStencil.bottomPressureFillBuffer.get(),
       localSize[0],
       MY_MPI_FLOAT,
-      _parameters.parallel.bottomNb,
+      parameters_.parallel.bottomNb,
       204,
       PETSC_COMM_WORLD,
       &request[6]
     );
     MPI_Irecv(
-      readPressureStencil.topPressureReadBuffer,
+      readPressureStencil.topPressureReadBuffer.get(),
       localSize[0],
       MY_MPI_FLOAT,
-      _parameters.parallel.topNb,
+      parameters_.parallel.topNb,
       204,
       PETSC_COMM_WORLD,
       &request[7]
     );
   }
+  pressurereadIterator.iterate();
 }
 
 void ParallelManagers::PetscParallelManager::communicateVelocity() {
