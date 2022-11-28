@@ -33,8 +33,7 @@ namespace ParallelManagers {
     PetscParallelManager(Parameters& parameters, FlowField& flowfield);
     void communicateVelocity();
     void communicatePressure();
-    void communicateParameters();
-
+    
     ~PetscParallelManager() {}
   };
 } // namespace ParallelManagers
