@@ -39,7 +39,7 @@ void Stencils::PressureBufferFillStencil::applyLeftWall(FlowField& flowField, in
 void Stencils::PressureBufferFillStencil::applyRightWall(FlowField& flowField, int i, int j) {
     if (j >= 2) {
     //Need to verify indices
-    *(rightPressureFillBuffer.get() + (j - 2)) = (flowField.getPressure().getScalar(i-1, j));
+    *(rightPressureFillBuffer.get() + (j - 2)) = (flowField.getPressure().getScalar(i, j));
   }
 }
 
@@ -52,7 +52,7 @@ void Stencils::PressureBufferFillStencil::applyBottomWall(FlowField& flowField, 
 void Stencils::PressureBufferFillStencil::applyTopWall(FlowField& flowField, int i, int j) {
       if ((i >= 2)) {
         //Need to verify indices
-    *(topPressureFillBuffer.get() + (i - 2) * localSize[2]) = (flowField.getPressure().getScalar(i, j-1));
+    *(topPressureFillBuffer.get() + (i - 2) * localSize[2]) = (flowField.getPressure().getScalar(i, j));
   }
 }
 
@@ -66,7 +66,7 @@ void Stencils::PressureBufferFillStencil::applyLeftWall(FlowField& flowField, in
 void Stencils::PressureBufferFillStencil::applyRightWall(FlowField& flowField, int i, int j, int k) {
   if ((j >= 2) && (k >= 2)) {
     //Need to verify indices
-    *(rightPressureFillBuffer.get() + (j - 2) + (k - 2) * localSize[1]) = (flowField.getPressure().getScalar(i - 1, j, k));
+    *(rightPressureFillBuffer.get() + (j - 2) + (k - 2) * localSize[1]) = (flowField.getPressure().getScalar(i, j, k));
   }
 }
 
@@ -79,7 +79,7 @@ void Stencils::PressureBufferFillStencil::applyBottomWall(FlowField& flowField, 
 void Stencils::PressureBufferFillStencil::applyTopWall(FlowField& flowField, int i, int j, int k) {
   if ((i >= 2) && (k >= 2)) {
     //Need to verify indices
-    *(topPressureFillBuffer.get() + (i - 2) * localSize[2] + (k - 2)) = (flowField.getPressure().getScalar(i, j -1 , k));
+    *(topPressureFillBuffer.get() + (i - 2) * localSize[2] + (k - 2)) = (flowField.getPressure().getScalar(i, j , k));
   }
 }
 
@@ -92,6 +92,6 @@ void Stencils::PressureBufferFillStencil::applyFrontWall(FlowField& flowField, i
 void Stencils::PressureBufferFillStencil::applyBackWall(FlowField& flowField, int i, int j, int k) {
   if ((i >= 2) && (j >= 2)) {
     //Need to verify indices
-    *(backPressureFillBuffer.get() + (i - 2) * localSize[1] + (j - 2)) = (flowField.getPressure().getScalar(i, j, k -1));
+    *(backPressureFillBuffer.get() + (i - 2) * localSize[1] + (j - 2)) = (flowField.getPressure().getScalar(i, j, k));
   }
 }

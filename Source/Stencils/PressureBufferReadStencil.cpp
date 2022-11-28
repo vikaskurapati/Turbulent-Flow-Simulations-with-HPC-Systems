@@ -43,7 +43,7 @@ void Stencils::PressureBufferReadStencil::applyRightWall(FlowField& flowField, i
     if(parameters_.parallel.rightNb >=0 ){
     if (j >= 2) {
     //Need to verify indices
-     flowField.getPressure().getScalar(i-1, j) = *(rightPressureReadBuffer.get() + (j - 2));
+     flowField.getPressure().getScalar(i, j) = *(rightPressureReadBuffer.get() + (j - 2));
   }
     }
 }
@@ -60,7 +60,7 @@ void Stencils::PressureBufferReadStencil::applyTopWall(FlowField& flowField, int
       if(parameters_.parallel.topNb >=0 ){
       if ((i >= 2)) {
         //Need to verify indices
-     flowField.getPressure().getScalar(i, j-1)= *(topPressureReadBuffer.get() + (i - 2) * localSize[2]);
+     flowField.getPressure().getScalar(i, j)= *(topPressureReadBuffer.get() + (i - 2) * localSize[2]);
   }
       }
 }
@@ -70,7 +70,7 @@ void Stencils::PressureBufferReadStencil::applyLeftWall(FlowField & flowfield, i
     if(parameters_.parallel.leftNb >=0 ){
         if((j>=2) && (k>=2)){
             //Check indices
-            flowfield.getPressure().getScalar(i - 1,j,k) = *(leftPressureReadBuffer.get() + (j-2) + (k-2)*localSize[1]);
+            flowfield.getPressure().getScalar(i,j,k) = *(leftPressureReadBuffer.get() + (j-2) + (k-2)*localSize[1]);
         }
     }
 }
@@ -87,7 +87,7 @@ void Stencils::PressureBufferReadStencil::applyBottomWall(FlowField & flowfield,
     if(parameters_.parallel.bottomNb >=0 ){
         if((i>=2) && (k>=2)){
             //Check indices
-            flowfield.getPressure().getScalar(i,j -1,k) = *(bottomPressureReadBuffer.get() + (k-2) + (i-2)*localSize[2]);
+            flowfield.getPressure().getScalar(i,j,k) = *(bottomPressureReadBuffer.get() + (k-2) + (i-2)*localSize[2]);
         }
     }
 }
@@ -104,7 +104,7 @@ void Stencils::PressureBufferReadStencil::applyFrontWall(FlowField & flowfield, 
     if(parameters_.parallel.frontNb >=0 ){
         if((i>=2) & (j>=2)){
             //Check Indices
-            flowfield.getPressure().getScalar(i,j,k - 1) = *(frontPressureReadBuffer.get() + (j-2) + (i-2)*localSize[1]);
+            flowfield.getPressure().getScalar(i,j,k) = *(frontPressureReadBuffer.get() + (j-2) + (i-2)*localSize[1]);
         }
     }
 }
