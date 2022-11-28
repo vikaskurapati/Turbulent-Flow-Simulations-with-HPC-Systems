@@ -1,4 +1,5 @@
 #pragma once
+#include <assert.h>
 
 struct Assertion {
   static bool throwAssertionException;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <mpi.h>
+#include <petscsystypes.h>
 #include "BoundaryType.hpp"
 #include "Definitions.hpp"
 #include "Meshsize.hpp"
