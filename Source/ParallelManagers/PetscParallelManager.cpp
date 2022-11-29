@@ -8,12 +8,12 @@ ParallelManagers::PetscParallelManager::PetscParallelManager(Parameters& paramet
   flowfield_(flowfield),
   fillVelocityStencil(parameters),
   readVelocityStencil(parameters),
-  velocityfillIterator(flowfield, parameters, fillVelocityStencil, 1, -1),
-  velocityreadIterator(flowfield, parameters, readVelocityStencil, 1, -1),
+  velocityfillIterator(flowfield, parameters, fillVelocityStencil, 0, 0),
+  velocityreadIterator(flowfield, parameters, readVelocityStencil, 0, 0),
   fillPressureStencil(parameters),
   readPressureStencil(parameters),
-  pressurefillIterator(flowfield, parameters, fillPressureStencil, 1, -1),
-  pressurereadIterator(flowfield, parameters, readPressureStencil, 1, -1) {}
+  pressurefillIterator(flowfield, parameters, fillPressureStencil, 0, 0),
+  pressurereadIterator(flowfield, parameters, readPressureStencil, 0, 0) {}
 
 void ParallelManagers::PetscParallelManager::communicatePressure() {
   pressurefillIterator.iterate();

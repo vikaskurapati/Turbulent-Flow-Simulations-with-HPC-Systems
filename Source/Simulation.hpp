@@ -47,10 +47,12 @@ protected:
 
   std::unique_ptr<Solvers::LinearSolver> solver_;
 
+  ParallelManagers::PetscParallelManager parallel_manager_;
+
   virtual void setTimeStep();
 
-  ParallelManagers::PetscParallelManager comm_;
-  ParallelBoundaryIterator<FlowField> velocityParallelBoundaryIterator_;
+  //ParallelManagers::PetscParallelManager comm_;
+  //ParallelBoundaryIterator<FlowField> velocityParallelBoundaryIterator_;
   // ParallelBoundaryIterator<FlowField> fghParallelBoundaryIterator_;
 
   int rank_;

@@ -32,11 +32,12 @@ Simulation::Simulation(Parameters& parameters, FlowField& flowField):
 #else
   solver_(std::make_unique<Solvers::SORSolver>(flowField_, parameters)),
 #endif
-  comm_(parameters, flowField),
-  velocityParallelBoundaryIterator_(flowField, parameters, velocityStencil_, 1, 0)
+  //comm_(parameters, flowField),
+  parallel_manager_(parameters, flowField)
+  //velocityParallelBoundaryIterator_(flowField, parameters, velocityStencil_, 1, 0)
   // fghParallelBoundaryIterator_(flowField, parameters, fghStencil_, 1, -1)
 {
-  MPI_Comm_rank(PETSC_COMM_WORLD, &rank_);
+  
 }
 
 void Simulation::initializeFlowField() {
@@ -92,10 +93,12 @@ void Simulation::solveTimestep() {
   rhsIterator_.iterate();
   // Solve for pressure
   solver_->solve();
+  parallel_manager_.communicatePressure();
   // TODO WS2: communicate pressure values
   // Compute velocity
   velocityIterator_.iterate();
   obstacleIterator_.iterate();
+  parallel_manager_.communicateVelocity();
   // TODO WS2: communicate velocity values
   // Iterate for velocities on the boundary
   wallVelocityIterator_.iterate();
