@@ -6,6 +6,12 @@
 
 //! Classes for the parts of the parameters
 //@{
+class TurbulenceParameters {
+public:
+  RealType kappa = 0;
+  std::string boundaryLayerType;
+};
+
 class TimestepParameters {
 public:
   RealType dt  = 0; //! Timestep
@@ -153,5 +159,6 @@ public:
   StdOutParameters        stdOut;
   BFStepParameters        bfStep;
   // TODO WS2: include parameters for turbulence
+  TurbulenceParameters    turbulence;
   Meshsize* meshsize;
 };

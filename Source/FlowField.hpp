@@ -17,8 +17,8 @@ private:
   const int cellsY_;
   const int cellsZ_;
 
-  wallDistance_;         //! Scalar field representing the nearest wall distance
-  turbulentViscosity_;   //! Scalar field representing the turbulent viscosity
+  ScalarField wallDistance_;         //! Scalar field representing the nearest wall distance
+  ScalarField turbulentViscosity_;   //! Scalar field representing the turbulent viscosity
   ScalarField pressure_; //! Scalar field representing the pressure
   VectorField velocity_; //! Multicomponent field representing velocity
 
@@ -81,6 +81,9 @@ public:
   int getCellsX() const;
   int getCellsY() const;
   int getCellsZ() const;
+
+  ScalarField& getWallDistance();
+  ScalarField& getTurbulentViscosity();
 
   ScalarField& getPressure();
   VectorField& getVelocity();

@@ -18,6 +18,7 @@
 #include "Stencils/PeriodicBoundaryStencils.hpp"
 #include "Stencils/VelocityStencil.hpp"
 #include "Stencils/VTKStencil.hpp"
+#include "Stencils/TurbulentViscosityStencil.hpp"
 
 class Simulation {
 protected:
@@ -35,9 +36,12 @@ protected:
   GlobalBoundaryIterator<FlowField> wallFGHIterator_;
   
   Stencils::FGHStencil     fghStencil_;
-  Stencils::RHSStencil rhsStencil_;
+  Stencils::RHSStencil     rhsStencil_;
   FieldIterator<FlowField> fghIterator_;
   FieldIterator<FlowField> rhsIterator_;
+
+  Stencils::TurbulentViscosityStencil turbulentViscosityStencil_;
+  FieldIterator<FlowField>            turbulentViscosityIterator_;
 
   Stencils::VelocityStencil velocityStencil_;
   Stencils::ObstacleStencil obstacleStencil_;

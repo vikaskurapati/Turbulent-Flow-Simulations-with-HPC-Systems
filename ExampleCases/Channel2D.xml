@@ -5,6 +5,9 @@
         <type>dns</type>
         <scenario>channel</scenario>
     </simulation>
+    <turbulence kappa = 0.41>
+        <boundaryLayerType>laminar</boundaryLayerType>
+    </turbulence>
     <timestep dt="1" tau="0.5" />
     <solver gamma="0.5" />
     <geometry
