@@ -189,44 +189,47 @@ void ParallelManagers::PetscParallelManager::communicatePressure() {
       PETSC_COMM_WORLD,
       &request[3]
     );
-    MPI_Isend(
-      // top to bottom
-      fillPressureStencil.topPressureFillBuffer.get(),
-      localSize[0],
-      MY_MPI_FLOAT,
-      parameters_.parallel.topNb,
-      203,
-      PETSC_COMM_WORLD,
-      &request[4]
-    );
-    MPI_Irecv(
-      readPressureStencil.bottomPressureReadBuffer.get(),
-      localSize[0],
-      MY_MPI_FLOAT,
-      parameters_.parallel.bottomNb,
-      203,
-      PETSC_COMM_WORLD,
-      &request[5]
-    );
-    MPI_Isend(
-      // bottom to top
-      fillPressureStencil.bottomPressureFillBuffer.get(),
-      localSize[0],
-      MY_MPI_FLOAT,
-      parameters_.parallel.bottomNb,
-      204,
-      PETSC_COMM_WORLD,
-      &request[6]
-    );
-    MPI_Irecv(
-      readPressureStencil.topPressureReadBuffer.get(),
-      localSize[0],
-      MY_MPI_FLOAT,
-      parameters_.parallel.topNb,
-      204,
-      PETSC_COMM_WORLD,
-      &request[7]
-    );
+    // MPI_Isend(
+    //   // top to bottom
+    //   fillPressureStencil.topPressureFillBuffer.get(),
+    //   localSize[0],
+    //   MY_MPI_FLOAT,
+    //   parameters_.parallel.topNb,
+    //   203,
+    //   PETSC_COMM_WORLD,
+    //   &request[4]
+    // );
+    // MPI_Irecv(
+    //   readPressureStencil.bottomPressureReadBuffer.get(),
+    //   localSize[0],
+    //   MY_MPI_FLOAT,
+    //   parameters_.parallel.bottomNb,
+    //   203,
+    //   PETSC_COMM_WORLD,
+    //   &request[5]
+    // );
+    // MPI_Isend(
+    //   // bottom to top
+    //   fillPressureStencil.bottomPressureFillBuffer.get(),
+    //   localSize[0],
+    //   MY_MPI_FLOAT,
+    //   parameters_.parallel.bottomNb,
+    //   204,
+    //   PETSC_COMM_WORLD,
+    //   &request[6]
+    // );
+    // MPI_Irecv(
+    //   readPressureStencil.topPressureReadBuffer.get(),
+    //   localSize[0],
+    //   MY_MPI_FLOAT,
+    //   parameters_.parallel.topNb,
+    //   204,
+    //   PETSC_COMM_WORLD,
+    //   &request[7]
+    // );
+    for (size_t i = 0; i < 4; i++) {
+      MPI_Wait(&request[i], &status[i]);
+    }
   }
   pressurereadIterator.iterate();
 }
@@ -409,47 +412,47 @@ void ParallelManagers::PetscParallelManager::communicateVelocity() {
       &request[3]
     );
 
-    MPI_Isend(
-      // top to bottom
-      fillVelocityStencil.topVelocityFillBuffer.get(),
-      (localSize[0]) + (localSize[0] + 1),
-      MY_MPI_FLOAT,
-      parameters_.parallel.topNb,
-      103,
-      PETSC_COMM_WORLD,
-      &request[4]
-    );
-    MPI_Irecv(
-      readVelocityStencil.bottomVelocityReadBuffer.get(),
-      (localSize[0]) + (localSize[0] + 1),
-      MY_MPI_FLOAT,
-      parameters_.parallel.bottomNb,
-      103,
-      PETSC_COMM_WORLD,
-      &request[5]
-    );
+    // MPI_Isend(
+    //   // top to bottom
+    //   fillVelocityStencil.topVelocityFillBuffer.get(),
+    //   (localSize[0]) + (localSize[0] + 1),
+    //   MY_MPI_FLOAT,
+    //   parameters_.parallel.topNb,
+    //   103,
+    //   PETSC_COMM_WORLD,
+    //   &request[4]
+    // );
+    // MPI_Irecv(
+    //   readVelocityStencil.bottomVelocityReadBuffer.get(),
+    //   (localSize[0]) + (localSize[0] + 1),
+    //   MY_MPI_FLOAT,
+    //   parameters_.parallel.bottomNb,
+    //   103,
+    //   PETSC_COMM_WORLD,
+    //   &request[5]
+    // );
 
-    MPI_Isend(
-      // bottom to top
-      fillVelocityStencil.bottomVelocityFillBuffer.get(),
-      (localSize[0]) + (localSize[0] + 1),
-      MY_MPI_FLOAT,
-      parameters_.parallel.bottomNb,
-      104,
-      PETSC_COMM_WORLD,
-      &request[6]
-    );
-    MPI_Irecv(
-      readVelocityStencil.topVelocityReadBuffer.get(),
-      (localSize[0]) + (localSize[0] + 1),
-      MY_MPI_FLOAT,
-      parameters_.parallel.topNb,
-      104,
-      PETSC_COMM_WORLD,
-      &request[7]
-    );
+    // MPI_Isend(
+    //   // bottom to top
+    //   fillVelocityStencil.bottomVelocityFillBuffer.get(),
+    //   (localSize[0]) + (localSize[0] + 1),
+    //   MY_MPI_FLOAT,
+    //   parameters_.parallel.bottomNb,
+    //   104,
+    //   PETSC_COMM_WORLD,
+    //   &request[6]
+    // );
+    // MPI_Irecv(
+    //   readVelocityStencil.topVelocityReadBuffer.get(),
+    //   (localSize[0]) + (localSize[0] + 1),
+    //   MY_MPI_FLOAT,
+    //   parameters_.parallel.topNb,
+    //   104,
+    //   PETSC_COMM_WORLD,
+    //   &request[7]
+    // );
 
-    for (size_t i = 0; i < 8; i++) {
+    for (size_t i = 0; i < 4; i++) {
       MPI_Wait(&request[i], &status[i]);
     }
   }

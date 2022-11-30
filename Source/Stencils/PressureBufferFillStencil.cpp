@@ -32,14 +32,14 @@ Stencils::PressureBufferFillStencil::PressureBufferFillStencil(const Parameters&
 // For 2D Cases
 void Stencils::PressureBufferFillStencil::applyLeftWall(FlowField& flowField, int i, int j) {
     if (j >= 2) {
-    *(leftPressureFillBuffer.get() + (j - 2)) = (flowField.getPressure().getScalar(i + 1, j));
+    *(leftPressureFillBuffer.get() + (j - 2)) = (flowField.getPressure().getScalar(i + 2, j));
   }
 }
 
 void Stencils::PressureBufferFillStencil::applyRightWall(FlowField& flowField, int i, int j) {
     if (j >= 2) {
     //Need to verify indices
-    *(rightPressureFillBuffer.get() + (j - 2)) = (flowField.getPressure().getScalar(i, j));
+    *(rightPressureFillBuffer.get() + (j - 2)) = (flowField.getPressure().getScalar(i-1, j));
   }
 }
 
