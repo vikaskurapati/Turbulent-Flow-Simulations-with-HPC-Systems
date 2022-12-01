@@ -245,7 +245,7 @@ void ParallelManagers::PetscParallelManager::communicateVelocity() {
     MPI_Isend(
       // left to right
       fillVelocityStencil.leftVelocityFillBuffer.get(),
-      (localSize[1] * localSize[2]) + localSize[1] * (localSize[2] + 1) + (localSize[1] + 1) * localSize[2],
+      localSize[1] * localSize[2] + (localSize[1] + 1) * localSize[2] + localSize[1] * (localSize[2] + 1),
       MY_MPI_FLOAT,
       parameters_.parallel.leftNb,
       101,
@@ -254,7 +254,7 @@ void ParallelManagers::PetscParallelManager::communicateVelocity() {
     );
     MPI_Irecv(
       readVelocityStencil.rightVelocityReadBuffer.get(),
-      (localSize[1] * localSize[2]) + localSize[1] * (localSize[2] + 1) + (localSize[1] + 1) * localSize[2],
+      localSize[1] * localSize[2] + (localSize[1] + 1) * localSize[2] + localSize[1] * (localSize[2] + 1),
       MY_MPI_FLOAT,
       parameters_.parallel.rightNb,
       101,
@@ -265,7 +265,7 @@ void ParallelManagers::PetscParallelManager::communicateVelocity() {
     MPI_Isend(
       // right to left
       fillVelocityStencil.rightVelocityFillBuffer.get(),
-      (localSize[1] * localSize[2]) + localSize[1] * (localSize[2] + 1) + (localSize[1] + 1) * localSize[2],
+      localSize[1] * localSize[2] + (localSize[1] + 1) * localSize[2] + localSize[1] * (localSize[2] + 1),
       MY_MPI_FLOAT,
       parameters_.parallel.rightNb,
       102,
@@ -274,7 +274,7 @@ void ParallelManagers::PetscParallelManager::communicateVelocity() {
     );
     MPI_Irecv(
       readVelocityStencil.leftVelocityReadBuffer.get(),
-      (localSize[1] * localSize[2]) + localSize[1] * (localSize[2] + 1) + (localSize[1] + 1) * localSize[2],
+      localSize[1] * localSize[2] + (localSize[1] + 1) * localSize[2] + localSize[1] * (localSize[2] + 1),
       MY_MPI_FLOAT,
       parameters_.parallel.leftNb,
       102,
