@@ -41,7 +41,7 @@ Stencils::VelocityBufferFillStencil::VelocityBufferFillStencil(const Parameters&
 // For 2D
 void Stencils::VelocityBufferFillStencil::applyLeftWall(FlowField& flowField, int i, int j) {  
   //In the domain where we want to exchange the velocities, say we have 4 cells, we need to exchange 4 u , 5 v values
-  if(j>=2){
+  if(j>=2  && j <= (localSize[1]+1)){
     *(leftVelocityFillBuffer.get() + (j - 2)) = (flowField.getVelocity().getVector(i+2,j))[0];
     *(leftVelocityFillBuffer.get() + localSize[1] + (j-1)) = (flowField.getVelocity().getVector(i+2,j))[1];
   }
@@ -51,7 +51,7 @@ void Stencils::VelocityBufferFillStencil::applyLeftWall(FlowField& flowField, in
   }
 
 void Stencils::VelocityBufferFillStencil::applyRightWall(FlowField& flowField, int i, int j) {
-  if(j>=2){
+  if(j>=2 && j <= (localSize[1]+1)){
     *(rightVelocityFillBuffer.get() + (j - 2)) = (flowField.getVelocity().getVector(i-2,j))[0];
     *(rightVelocityFillBuffer.get() + localSize[1] + (j-1)) = (flowField.getVelocity().getVector(i-1,j))[1];
   }

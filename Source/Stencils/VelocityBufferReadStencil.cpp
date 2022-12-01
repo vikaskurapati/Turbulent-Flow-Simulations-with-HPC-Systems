@@ -39,7 +39,7 @@ Stencils::VelocityBufferReadStencil::VelocityBufferReadStencil(const Parameters&
 //For 2D
 void Stencils::VelocityBufferReadStencil::applyLeftWall(FlowField& flowField, int i, int j) {
 if( parameters_.parallel.leftNb >= 0){
-  if(j>=2){
+  if(j>=2 && j <= (localSize[1]+1)){
    (flowField.getVelocity().getVector(i,j))[0] =  *(leftVelocityReadBuffer.get() + (j - 2));
    (flowField.getVelocity().getVector(i+1,j))[1] = *(leftVelocityReadBuffer.get() + localSize[1] + (j-1));
   }
@@ -51,7 +51,7 @@ if( parameters_.parallel.leftNb >= 0){
 
 void Stencils::VelocityBufferReadStencil::applyRightWall(FlowField& flowField, int i, int j) {
 if( parameters_.parallel.rightNb >= 0){
-  if(j>=2){
+  if(j>=2 && j <= (localSize[1]+1)){
     (flowField.getVelocity().getVector(i,j))[0] = *(rightVelocityReadBuffer.get() + (j - 2));
     (flowField.getVelocity().getVector(i,j))[1] = *(rightVelocityReadBuffer.get() + localSize[1] + (j-1));
   }

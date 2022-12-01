@@ -33,7 +33,7 @@ Stencils::PressureBufferReadStencil::PressureBufferReadStencil(const Parameters&
 // For 2D Cases
 void Stencils::PressureBufferReadStencil::applyLeftWall(FlowField& flowField, int i, int j) {
     if(parameters_.parallel.leftNb >=0 ){
-    if (j >= 2) {
+    if (j >= 2 && j <= (localSize[1]+1)) {
     flowField.getPressure().getScalar(i + 1, j) = *(leftPressureReadBuffer.get() + (j - 2));
   }
     }
@@ -41,7 +41,7 @@ void Stencils::PressureBufferReadStencil::applyLeftWall(FlowField& flowField, in
 
 void Stencils::PressureBufferReadStencil::applyRightWall(FlowField& flowField, int i, int j) {
     if(parameters_.parallel.rightNb >=0 ){
-    if (j >= 2) {
+    if (j >= 2 && j <= (localSize[1]+1)) {
     //Need to verify indices
      flowField.getPressure().getScalar(i, j) = *(rightPressureReadBuffer.get() + (j - 2));
   }
@@ -50,7 +50,7 @@ void Stencils::PressureBufferReadStencil::applyRightWall(FlowField& flowField, i
 
 void Stencils::PressureBufferReadStencil::applyBottomWall(FlowField& flowField, int i, int j) {
       if(parameters_.parallel.bottomNb >=0 ){
-      if ((i >= 2)) {
+      if ((i >= 2  && i <= localSize[0]+1)) {
      flowField.getPressure().getScalar(i, j + 1) = *(bottomPressureReadBuffer.get() + (i - 2));
   }
       }
@@ -58,7 +58,7 @@ void Stencils::PressureBufferReadStencil::applyBottomWall(FlowField& flowField, 
 
 void Stencils::PressureBufferReadStencil::applyTopWall(FlowField& flowField, int i, int j) {
       if(parameters_.parallel.topNb >=0 ){
-      if ((i >= 2)) {
+      if ((i >= 2  && i <= localSize[0]+1)) {
         //Need to verify indices
      flowField.getPressure().getScalar(i, j) = *(topPressureReadBuffer.get() + (i - 2));
   }
