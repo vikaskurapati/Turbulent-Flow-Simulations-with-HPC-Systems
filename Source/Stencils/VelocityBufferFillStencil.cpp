@@ -165,36 +165,36 @@ void Stencils::VelocityBufferFillStencil::applyBottomWall(FlowField& flowField, 
 void Stencils::VelocityBufferFillStencil::applyFrontWall(FlowField& flowField, int i, int j, int k) {
 
   if ((i >= 2) && (j >= 2) && i <= (localSize[0] + 1) && j <= (localSize[1] + 1)) {
-    *(frontVelocityFillBuffer.get() + ((i - 1) * localSize[1]) + (j - 2)
+    *(frontVelocityFillBuffer.get() + (i-1) + (j-2)*(localSize[0]+1)
     ) = (flowField.getVelocity().getVector(i, j, k + 2))[0];
-    *(frontVelocityFillBuffer.get() + ((localSize[0] + 1) * localSize[1]) + ((j - 1) * localSize[0]) + (i - 2)
+    *(frontVelocityFillBuffer.get() + ((localSize[0] + 1) * localSize[1]) + (j - 1) + ((i - 2) * (localSize[1]+1))
     ) = (flowField.getVelocity().getVector(i, j, k + 2))[1];
     *(frontVelocityFillBuffer.get() + (localSize[0] * (localSize[1] + 1)) + ((localSize[0] + 1) * localSize[1])
-      + ((i - 2) * localSize[1]) + (j - 2)
+      + (j-2) + ((i-2) * localSize[1])
     ) = (flowField.getVelocity().getVector(i, j, k + 2))[2];
   } else if ((i == 1) && (j >= 2) && j <= (localSize[1] + 1)) {
-    *(frontVelocityFillBuffer.get() + ((i - 1) * localSize[1]) + (j - 2)
+    *(frontVelocityFillBuffer.get() + (i-1) + (j-2)*(localSize[0]+1)
     ) = (flowField.getVelocity().getVector(i, j, k + 2))[0];
   } else if ((j == 1) && (i >= 2) && i <= (localSize[0] + 1)) {
-    *(frontVelocityFillBuffer.get() + ((localSize[0] + 1) * localSize[1]) + ((j - 1) * localSize[0]) + (i - 2)
+    *(frontVelocityFillBuffer.get() + ((localSize[0] + 1) * localSize[1]) + (j - 1) + ((i - 2) * (localSize[1]+1))
     ) = (flowField.getVelocity().getVector(i, j, k + 2))[1];
   }
 }
 
 void Stencils::VelocityBufferFillStencil::applyBackWall(FlowField& flowField, int i, int j, int k) {
   if ((i >= 2) && (j >= 2) && i <= (localSize[0] + 1) && j <= (localSize[1] + 1)) {
-    *(backVelocityFillBuffer.get() + ((i - 1) * localSize[1]) + (j - 2)
+    *(backVelocityFillBuffer.get() + (i-1) + (j-2)*(localSize[0]+1)
     ) = (flowField.getVelocity().getVector(i, j, k - 1))[0];
-    *(backVelocityFillBuffer.get() + ((localSize[0] + 1) * localSize[1]) + ((j - 1) * localSize[0]) + (i - 2)
+    *(backVelocityFillBuffer.get() + ((localSize[0] + 1) * localSize[1]) + (j - 1) + ((i - 2) * (localSize[1]+1))
     ) = (flowField.getVelocity().getVector(i, j, k - 1))[1];
     *(backVelocityFillBuffer.get() + (localSize[0] * (localSize[1] + 1)) + ((localSize[0] + 1) * localSize[1])
-      + ((i - 2) * localSize[1]) + (j - 2)
+      + (j-2) + ((i-2) * localSize[1])
     ) = (flowField.getVelocity().getVector(i, j, k - 2))[2];
   } else if ((i == 1) && (j >= 2) && j <= (localSize[1] + 1)) {
-    *(backVelocityFillBuffer.get() + ((i - 1) * localSize[1]) + (j - 2)
+    *(backVelocityFillBuffer.get() + (i-1) + (j-2)*(localSize[0]+1)
     ) = (flowField.getVelocity().getVector(i, j, k - 1))[0];
   } else if ((j == 1) && (i >= 2) && i <= (localSize[0] + 1)) {
-    *(backVelocityFillBuffer.get() + ((localSize[0] + 1) * localSize[1]) + ((j - 1) * localSize[0]) + (i - 2)
+    *(backVelocityFillBuffer.get() + ((localSize[0] + 1) * localSize[1]) + (j - 1) + ((i - 2) * (localSize[1]+1))
     ) = (flowField.getVelocity().getVector(i, j, k - 1))[1];
   }
 }
