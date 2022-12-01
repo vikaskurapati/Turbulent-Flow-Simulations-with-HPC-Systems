@@ -45,14 +45,14 @@ void Stencils::PressureBufferFillStencil::applyRightWall(FlowField& flowField, i
 
 void Stencils::PressureBufferFillStencil::applyBottomWall(FlowField& flowField, int i, int j) {
       if ((i >= 2)) {
-    *(bottomPressureFillBuffer.get() + (i - 2) * localSize[2]) = (flowField.getPressure().getScalar(i, j + 1));
+    *(bottomPressureFillBuffer.get() + (i - 2)) = (flowField.getPressure().getScalar(i, j + 2));
   }
 }
 
 void Stencils::PressureBufferFillStencil::applyTopWall(FlowField& flowField, int i, int j) {
       if ((i >= 2)) {
         //Need to verify indices
-    *(topPressureFillBuffer.get() + (i - 2) * localSize[2]) = (flowField.getPressure().getScalar(i, j));
+    *(topPressureFillBuffer.get() + (i - 2)) = (flowField.getPressure().getScalar(i, j - 1));
   }
 }
 
