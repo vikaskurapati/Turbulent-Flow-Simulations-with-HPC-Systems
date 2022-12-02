@@ -96,4 +96,6 @@ public:
 
   void getPressureAndVelocity(RealType& pressure, RealType* const velocity, int i, int j);
   void getPressureAndVelocity(RealType& pressure, RealType* const velocity, int i, int j, int k);
+  void getViscosity(RealType& viscosity, int i, int j);
+  void getViscosity(RealType& viscosity, int i, int j, int k);
 };

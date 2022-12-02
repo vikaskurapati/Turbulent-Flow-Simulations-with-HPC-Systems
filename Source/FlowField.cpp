@@ -123,3 +123,11 @@ void FlowField::getPressureAndVelocity(RealType& pressure, RealType* const veloc
 
   pressure = getPressure().getScalar(i, j, k);
 }
+
+void FlowField::getViscosity(RealType& viscosity, int i, int j) {
+  viscosity = getTurbulentViscosity().getScalar(i, j);
+}
+
+void FlowField::getViscosity(RealType& viscosity, int i, int j, int k) {
+  viscosity = getTurbulentViscosity().getScalar(i, j, k);
+}

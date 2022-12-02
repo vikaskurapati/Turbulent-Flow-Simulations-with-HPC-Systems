@@ -82,6 +82,14 @@ void Simulation::initializeFlowField() {
     iterator.iterate();
   }
 
+  // Adding Nearest Wall distance for turbulence
+  if (parameters_.simulation.type == "turbulence") {
+    // This initialisation is only required to calculate Nearest Wall distance for turbulence.
+    Stencils::InitWallDistanceStencil wallDistancestencil(parameters_);
+    FieldIterator<FlowField>          wallDistanceiterator(flowField_, parameters_, wallDistancestencil);
+    wallDistanceiterator.iterate();
+  }
+
   solver_->reInitMatrix();
 }
 
@@ -93,6 +101,10 @@ void Simulation::solveTimestep() {
   if(fetestexcept(FE_ALL_EXCEPT & ~FE_INEXACT))
     raise(SIGFPE);
   #endif
+
+  if (parameters_.turbulence.boundaryLayerType != "laminar") {
+    turbulentViscosityIterator_.iterate();
+  }
 
   // Determine and set max. timestep which is allowed in this simulation
   setTimeStep();
