@@ -177,7 +177,9 @@ void Stencils::VTKStencil::write(FlowField& flowField, int timeStep, RealType si
 
     // Write viscosity
     if(parameters_.simulation.type == "turbulence"){
-      ofile_ << "SCALARS viscosity float 1" << std::endl;
+      ofile_
+      << "SCALARS viscosity float 1" << std::endl
+      << "LOOKUP_TABLE default" << std::endl;
       ofile_ << viscosityStream_.str() << std::endl;
       viscosityStream_.str("");
     }
@@ -199,7 +201,9 @@ void Stencils::VTKStencil::write(FlowField& flowField, int timeStep, RealType si
 
     // Write viscosity
     if(parameters_.simulation.type == "turbulence"){
-      ofile_ << "SCALARS viscosity float 1" << std::endl;
+      ofile_
+      << "SCALARS viscosity float 1" << std::endl
+      << "LOOKUP_TABLE default" << std::endl;
       ofile_ << viscosityStream_.str() << std::endl;
       viscosityStream_.str("");
     }

@@ -273,24 +273,6 @@ void Configuration::loadParameters(Parameters& parameters, const MPI_Comm& commu
     }
 
     //--------------------------------------------------
-    // Turbulence parameters
-    //--------------------------------------------------
-    node = confFile.FirstChildElement()->FirstChildElement("turbulence");
-
-    if (node == NULL) {
-      throw std::runtime_error("Error loading turbulence parameters");
-    }
-
-    readFloatMandatory(parameters.turbulence.kappa, node, "kappa");
-
-    subNode = node->FirstChildElement("boundaryLayerType");
-    if (subNode != NULL) {
-      readStringMandatory(parameters.turbulence.boundaryLayerType, subNode);
-    } else {
-      throw std::runtime_error("Missing boundary layert type in the turbulence parameters");
-    }
-
-    //--------------------------------------------------
     // VTK parameters
     //--------------------------------------------------
     node = confFile.FirstChildElement()->FirstChildElement("vtk");
@@ -414,7 +396,22 @@ void Configuration::loadParameters(Parameters& parameters, const MPI_Comm& commu
     //------------------------------------------------------
     // TODO WS2: Turbulence
     //------------------------------------------------------
-    
+    if (parameters.simulation.type == "turbulence") {
+      node = confFile.FirstChildElement()->FirstChildElement("turbulence");
+
+      if (node == NULL) {
+        throw std::runtime_error("Error loading turbulence parameters");
+      }
+
+      readFloatMandatory(parameters.turbulence.kappa, node, "kappa");
+
+      subNode = node->FirstChildElement("boundaryLayerType");
+      if (subNode != NULL) {
+        readStringMandatory(parameters.turbulence.boundaryLayerType, subNode);
+      } else {
+        throw std::runtime_error("Missing boundary layer type in the turbulence parameters");
+      }
+    }
   }
 
   // Broadcasting of the values

@@ -2,10 +2,10 @@
 <configuration>
     <flow Re="100" />
     <simulation finalTime="10.0" >
-        <type>dns</type>
+        <type>turbulence</type>
         <scenario>channel</scenario>
     </simulation>
-    <turbulence kappa = 0.41>
+    <turbulence kappa = "0.41">
         <boundaryLayerType>laminar</boundaryLayerType>
     </turbulence>
     <timestep dt="1" tau="0.5" />
