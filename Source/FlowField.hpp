@@ -17,6 +17,7 @@ private:
   const int cellsY_;
   const int cellsZ_;
 
+  ScalarField boundaryLayerThickness_;         //! Scalar field representing the Local boundary layer thickness
   ScalarField wallDistance_;         //! Scalar field representing the nearest wall distance
   ScalarField turbulentViscosity_;   //! Scalar field representing the turbulent viscosity
   ScalarField pressure_; //! Scalar field representing the pressure
@@ -82,6 +83,7 @@ public:
   int getCellsY() const;
   int getCellsZ() const;
 
+  ScalarField& getBoundaryLayerThickness();
   ScalarField& getWallDistance();
   ScalarField& getTurbulentViscosity();
 

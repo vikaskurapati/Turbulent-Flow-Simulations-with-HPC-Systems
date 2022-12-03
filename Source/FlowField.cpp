@@ -11,6 +11,7 @@ FlowField::FlowField(int Nx, int Ny):
   cellsZ_(1),
   // Pressure field doesn't need to have an extra layer, but this allows to address the same
   // positions with the same iterator for both pressures and velocities.
+  boundaryLayerThickness_(ScalarField(Nx + 3, Ny + 3)),
   wallDistance_(ScalarField(Nx + 3, Ny + 3)),
   turbulentViscosity_(ScalarField(Nx + 3, Ny + 3)),
   pressure_(ScalarField(Nx + 3, Ny + 3)),
@@ -30,6 +31,7 @@ FlowField::FlowField(int Nx, int Ny, int Nz):
   cellsX_(Nx + 3),
   cellsY_(Ny + 3),
   cellsZ_(Nz + 3),
+  boundaryLayerThickness_(ScalarField(Nx + 3, Ny + 3, Nz + 3)),
   wallDistance_(ScalarField(Nx + 3, Ny + 3, Nz + 3)),
   turbulentViscosity_(ScalarField(Nx + 3, Ny + 3, Nz + 3)),
   pressure_(ScalarField(Nx + 3, Ny + 3, Nz + 3)),
@@ -50,6 +52,9 @@ FlowField::FlowField(const Parameters& parameters):
   cellsX_(sizeX_ + 3),
   cellsY_(sizeY_ + 3),
   cellsZ_(parameters.geometry.dim == 2 ? 1 : sizeZ_ + 3),
+  boundaryLayerThickness_(
+    parameters.geometry.dim == 2 ? ScalarField(sizeX_ + 3, sizeY_ + 3) : ScalarField(sizeX_ + 3, sizeY_ + 3, sizeZ_ + 3)
+  ),
   wallDistance_(
     parameters.geometry.dim == 2 ? ScalarField(sizeX_ + 3, sizeY_ + 3) : ScalarField(sizeX_ + 3, sizeY_ + 3, sizeZ_ + 3)
   ),
@@ -85,6 +90,8 @@ int FlowField::getCellsX() const { return cellsX_; }
 int FlowField::getCellsY() const { return cellsY_; }
 
 int FlowField::getCellsZ() const { return cellsZ_; }
+
+ScalarField& FlowField::getBoundaryLayerThickness() { return boundaryLayerThickness_; }
 
 ScalarField& FlowField::getWallDistance() { return wallDistance_; }
 
