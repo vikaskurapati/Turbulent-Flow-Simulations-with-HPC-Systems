@@ -22,7 +22,9 @@ Simulation::Simulation(Parameters& parameters, FlowField& flowField):
   fghStencil_(parameters),
   rhsStencil_(parameters),
   fghIterator_(flowField_, parameters, fghStencil_),
-  rhsIterator_(flowField, parameters, rhsStencil_),
+  rhsIterator_(flowField_, parameters, rhsStencil_),
+  turbulentViscosityStencil_(parameters),
+  turbulentViscosityIterator_(flowField_, parameters, turbulentViscosityStencil_),
   velocityStencil_(parameters),
   obstacleStencil_(parameters),
   velocityIterator_(flowField_, parameters, velocityStencil_),
@@ -78,10 +80,29 @@ void Simulation::initializeFlowField() {
     iterator.iterate();
   }
 
+  // Adding Nearest Wall distance for turbulence
+  if (parameters_.simulation.type == "turbulence") {
+    // This initialisation is only required to calculate Nearest Wall distance for turbulence.
+    Stencils::InitWallDistanceStencil wallDistancestencil(parameters_);
+    FieldIterator<FlowField>          wallDistanceiterator(flowField_, parameters_, wallDistancestencil);
+    wallDistanceiterator.iterate();
+  }
+
   solver_->reInitMatrix();
 }
 
 void Simulation::solveTimestep() {
+
+  #ifndef NDEBUG
+
+  feclearexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
+  if(fetestexcept(FE_ALL_EXCEPT & ~FE_INEXACT))
+    raise(SIGFPE);
+  #endif
+
+  if (parameters_.turbulence.boundaryLayerType != "laminar") {
+    turbulentViscosityIterator_.iterate();
+  }
 
   // Determine and set max. timestep which is allowed in this simulation
   setTimeStep();

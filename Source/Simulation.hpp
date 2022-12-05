@@ -11,6 +11,7 @@
 #include "Stencils/FGHStencil.hpp"
 #include "Stencils/RHSStencil.hpp"
 #include "Stencils/InitTaylorGreenFlowFieldStencil.hpp"
+#include "Stencils/InitWallDistanceStencil.hpp"
 #include "Stencils/MaxUStencil.hpp"
 #include "Stencils/MovingWallStencils.hpp"
 #include "Stencils/NeumannBoundaryStencils.hpp"
@@ -19,6 +20,7 @@
 #include "Stencils/VelocityStencil.hpp"
 #include "Stencils/VTKStencil.hpp"
 #include "./ParallelManagers/PetscParallelManager.hpp"
+#include "Stencils/TurbulentViscosityStencil.hpp"
 
 class Simulation {
 protected:
@@ -36,9 +38,12 @@ protected:
   GlobalBoundaryIterator<FlowField> wallFGHIterator_;
   
   Stencils::FGHStencil     fghStencil_;
-  Stencils::RHSStencil rhsStencil_;
+  Stencils::RHSStencil     rhsStencil_;
   FieldIterator<FlowField> fghIterator_;
   FieldIterator<FlowField> rhsIterator_;
+
+  Stencils::TurbulentViscosityStencil turbulentViscosityStencil_;
+  FieldIterator<FlowField>            turbulentViscosityIterator_;
 
   Stencils::VelocityStencil velocityStencil_;
   Stencils::ObstacleStencil obstacleStencil_;

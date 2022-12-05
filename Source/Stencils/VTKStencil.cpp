@@ -95,15 +95,24 @@ void Stencils::VTKStencil::apply(FlowField& flowField, int i, int j) {
 
   RealType pressure    = 0.0;
   RealType velocity[2] = {0.0, 0.0};
+  RealType viscosity    = 0.0;
 
   if ((flowField.getFlags().getValue(i, j) & OBSTACLE_SELF) == 0) {
     flowField.getPressureAndVelocity(pressure, velocity, i, j);
 
     pressureStream_ << pressure << std::endl;
     velocityStream_ << velocity[0] << " " << velocity[1] << " 0" << std::endl;
+    if(parameters_.simulation.type == "turbulence"){
+      flowField.getViscosity(viscosity, i, j);
+
+      viscosityStream_ << viscosity << std::endl;
+    }
   } else {
     pressureStream_ << "0.0" << std::endl;
     velocityStream_ << "0.0 0.0 0.0" << std::endl;
+    if(parameters_.simulation.type == "turbulence"){
+      viscosityStream_ << "0.0" << std::endl;
+    }
   }
 }
 
@@ -112,15 +121,24 @@ void Stencils::VTKStencil::apply(FlowField& flowField, int i, int j, int k) {
 
   RealType pressure    = 0.0;
   RealType velocity[3] = {0.0, 0.0, 0.0};
+  RealType viscosity    = 0.0;
 
   if ((flowField.getFlags().getValue(i, j, k) & OBSTACLE_SELF) == 0) {
     flowField.getPressureAndVelocity(pressure, velocity, i, j, k);
 
     pressureStream_ << pressure << std::endl;
     velocityStream_ << velocity[0] << " " << velocity[1] << " " << velocity[2] << std::endl;
+    if(parameters_.simulation.type == "turbulence"){
+      flowField.getViscosity(viscosity, i, j, k);
+
+      viscosityStream_ << viscosity << std::endl;
+    }
   } else {
     pressureStream_ << "0.0" << std::endl;
     velocityStream_ << "0.0 0.0 0.0" << std::endl;
+    if(parameters_.simulation.type == "turbulence"){
+      viscosityStream_ << "0.0" << std::endl;
+    }
   }
 }
 
@@ -156,6 +174,15 @@ void Stencils::VTKStencil::write(FlowField& flowField, int timeStep, RealType si
     ofile_ << "VECTORS velocity float" << std::endl;
     ofile_ << velocityStream_.str() << std::endl;
     velocityStream_.str("");
+
+    // Write viscosity
+    if(parameters_.simulation.type == "turbulence"){
+      ofile_
+      << "SCALARS viscosity float 1" << std::endl
+      << "LOOKUP_TABLE default" << std::endl;
+      ofile_ << viscosityStream_.str() << std::endl;
+      viscosityStream_.str("");
+    }
   }
 
   if (FieldStencil<FlowField>::parameters_.geometry.dim == 3) {
@@ -171,6 +198,15 @@ void Stencils::VTKStencil::write(FlowField& flowField, int timeStep, RealType si
     ofile_ << "VECTORS velocity float" << std::endl;
     ofile_ << velocityStream_.str() << std::endl;
     velocityStream_.str("");
+
+    // Write viscosity
+    if(parameters_.simulation.type == "turbulence"){
+      ofile_
+      << "SCALARS viscosity float 1" << std::endl
+      << "LOOKUP_TABLE default" << std::endl;
+      ofile_ << viscosityStream_.str() << std::endl;
+      viscosityStream_.str("");
+    }
   }
 
   written_ = true;
