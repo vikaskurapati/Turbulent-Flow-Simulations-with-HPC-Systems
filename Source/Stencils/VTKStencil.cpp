@@ -95,6 +95,7 @@ void Stencils::VTKStencil::apply(FlowField& flowField, int i, int j) {
 
   RealType pressure    = 0.0;
   RealType h    = 0.0;
+  RealType delta    = 0.0;
   RealType velocity[2] = {0.0, 0.0};
   RealType viscosity    = 0.0;
 
@@ -102,13 +103,14 @@ void Stencils::VTKStencil::apply(FlowField& flowField, int i, int j) {
     flowField.getPressureAndVelocity(pressure, velocity, i, j);
 
     pressureStream_ << pressure << std::endl;
-    hStream << h <<std::endl;
     velocityStream_ << velocity[0] << " " << velocity[1] << " 0" << std::endl;
     if(parameters_.simulation.type == "turbulence"){
       flowField.getViscosity(viscosity, i, j);
       flowField.getH(h , i, j);
+      flowField.getDelta(delta,i,j);
       viscosityStream_ << viscosity << std::endl;
       hStream << h << std::endl;
+      deltaStream << delta <<std::endl;
     }
   } else {
     pressureStream_ << "0.0" << std::endl;
@@ -116,6 +118,7 @@ void Stencils::VTKStencil::apply(FlowField& flowField, int i, int j) {
     if(parameters_.simulation.type == "turbulence"){
       viscosityStream_ << "0.0" << std::endl;
       hStream << "0.0" << std::endl;
+      deltaStream << "0.0"<<std::endl;
     }
   }
 }
@@ -127,6 +130,7 @@ void Stencils::VTKStencil::apply(FlowField& flowField, int i, int j, int k) {
   RealType velocity[3] = {0.0, 0.0, 0.0};
   RealType viscosity    = 0.0;
   RealType h    = 0.0;
+  RealType delta    = 0.0;
 
 
   if ((flowField.getFlags().getValue(i, j, k) & OBSTACLE_SELF) == 0) {
@@ -137,9 +141,10 @@ void Stencils::VTKStencil::apply(FlowField& flowField, int i, int j, int k) {
     if(parameters_.simulation.type == "turbulence"){
       flowField.getViscosity(viscosity, i, j, k);
       flowField.getH(h , i, j, k);
-
+      flowField.getDelta(delta , i, j, k);
       viscosityStream_ << viscosity << std::endl;
       hStream << h << std::endl;
+      deltaStream << delta << std::endl;
     }
   } else {
     pressureStream_ << "0.0" << std::endl;
@@ -147,6 +152,7 @@ void Stencils::VTKStencil::apply(FlowField& flowField, int i, int j, int k) {
     if(parameters_.simulation.type == "turbulence"){
       viscosityStream_ << "0.0" << std::endl;
       hStream << "0.0" << std::endl;
+      deltaStream << "0.0"<< std::endl;
     }
   }
 }
@@ -184,7 +190,7 @@ void Stencils::VTKStencil::write(FlowField& flowField, int timeStep, RealType si
     ofile_ << velocityStream_.str() << std::endl;
     velocityStream_.str("");
 
-    // Write viscosity
+    // Write viscosity, nearest wall thickness(h) and boundary layer thickness(delta)
     if(parameters_.simulation.type == "turbulence"){
       ofile_
       << "SCALARS viscosity float 1" << std::endl
@@ -196,6 +202,11 @@ void Stencils::VTKStencil::write(FlowField& flowField, int timeStep, RealType si
       << "LOOKUP_TABLE default" << std::endl;
       ofile_ << hStream.str() << std::endl;
       hStream.str("");
+      ofile_
+      << "SCALARS delta float 1" << std::endl
+      << "LOOKUP_TABLE default" << std::endl;
+      ofile_ << deltaStream.str() << std::endl;
+      deltaStream.str("");
     }
   }
 
@@ -213,7 +224,7 @@ void Stencils::VTKStencil::write(FlowField& flowField, int timeStep, RealType si
     ofile_ << velocityStream_.str() << std::endl;
     velocityStream_.str("");
 
-    // Write viscosity
+    // Write viscosity, nearest wall distance(h), boundary layer thickness(delta)
     if(parameters_.simulation.type == "turbulence"){
       ofile_
       << "SCALARS viscosity float 1" << std::endl
@@ -225,6 +236,11 @@ void Stencils::VTKStencil::write(FlowField& flowField, int timeStep, RealType si
       << "LOOKUP_TABLE default" << std::endl;
       ofile_ << hStream.str() << std::endl;
       hStream.str("");
+      ofile_
+      << "SCALARS delta float 1" << std::endl
+      << "LOOKUP_TABLE default" << std::endl;
+      ofile_ << deltaStream.str() << std::endl;
+      deltaStream.str("");
     }
   }
 
