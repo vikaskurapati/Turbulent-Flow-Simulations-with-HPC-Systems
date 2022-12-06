@@ -86,6 +86,10 @@ void Simulation::initializeFlowField() {
     Stencils::InitWallDistanceStencil wallDistancestencil(parameters_);
     FieldIterator<FlowField>          wallDistanceiterator(flowField_, parameters_, wallDistancestencil);
     wallDistanceiterator.iterate();
+
+    Stencils::InitBoundaryLayerThickness boundaryLayerThicknessstencil(parameters_);
+    FieldIterator<FlowField>          boundaryLayerThicknesssiterator(flowField_, parameters_, boundaryLayerThicknessstencil);
+    boundaryLayerThicknesssiterator.iterate();
   }
 
   solver_->reInitMatrix();

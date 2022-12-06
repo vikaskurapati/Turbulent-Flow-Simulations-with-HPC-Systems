@@ -12,6 +12,7 @@
 #include "Stencils/RHSStencil.hpp"
 #include "Stencils/InitTaylorGreenFlowFieldStencil.hpp"
 #include "Stencils/InitWallDistanceStencil.hpp"
+#include "Stencils/InitBoundaryLayerThickness.hpp"
 #include "Stencils/MaxUStencil.hpp"
 #include "Stencils/MovingWallStencils.hpp"
 #include "Stencils/NeumannBoundaryStencils.hpp"
