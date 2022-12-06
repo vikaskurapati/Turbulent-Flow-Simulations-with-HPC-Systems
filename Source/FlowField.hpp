@@ -20,7 +20,6 @@ private:
   ScalarField boundaryLayerThickness_;         //! Scalar field representing the Local boundary layer thickness
   ScalarField wallDistance_;         //! Scalar field representing the nearest wall distance
   ScalarField turbulentViscosity_;   //! Scalar field representing the turbulent viscosity
-  ScalarField h;
   ScalarField pressure_; //! Scalar field representing the pressure
   VectorField velocity_; //! Multicomponent field representing velocity
 
@@ -102,7 +101,10 @@ public:
   
   void getViscosity(RealType& viscosity, int i, int j);
   void getViscosity(RealType& viscosity, int i, int j, int k);
-  
-  void getH(RealType& viscosity, int i, int j);
-  void getH(RealType& , int i, int j, int k);
+
+  void getH(RealType& h, int i, int j);
+  void getH(RealType& h, int i, int j, int k);
+
+  void getDelta(RealType& delta, int i, int j);
+  void getDelta(RealType& delta , int i, int j, int k);
 };

@@ -18,8 +18,7 @@ FlowField::FlowField(int Nx, int Ny):
   velocity_(VectorField(Nx + 3, Ny + 3)),
   flags_(IntScalarField(Nx + 3, Ny + 3)),
   FGH_(VectorField(Nx + 3, Ny + 3)),
-  RHS_(ScalarField(Nx + 3, Ny + 3)),
-  h(ScalarField(Nx + 3, Ny + 3)) {
+  RHS_(ScalarField(Nx + 3, Ny + 3)) {
 
   ASSERTION(Nx > 0);
   ASSERTION(Ny > 0);
@@ -39,8 +38,7 @@ FlowField::FlowField(int Nx, int Ny, int Nz):
   velocity_(VectorField(Nx + 3, Ny + 3, Nz + 3)),
   flags_(IntScalarField(Nx + 3, Ny + 3, Nz + 3)),
   FGH_(VectorField(Nx + 3, Ny + 3, Nz + 3)),
-  RHS_(ScalarField(Nx + 3, Ny + 3, Nz + 3)),
-  h(ScalarField(Nx + 3, Ny + 3, Nz + 3))  {
+  RHS_(ScalarField(Nx + 3, Ny + 3, Nz + 3)){
 
   ASSERTION(Nx > 0);
   ASSERTION(Ny > 0);
@@ -61,9 +59,6 @@ FlowField::FlowField(const Parameters& parameters):
     parameters.geometry.dim == 2 ? ScalarField(sizeX_ + 3, sizeY_ + 3) : ScalarField(sizeX_ + 3, sizeY_ + 3, sizeZ_ + 3)
   ),
   turbulentViscosity_(
-    parameters.geometry.dim == 2 ? ScalarField(sizeX_ + 3, sizeY_ + 3) : ScalarField(sizeX_ + 3, sizeY_ + 3, sizeZ_ + 3)
-  ),
-  h(
     parameters.geometry.dim == 2 ? ScalarField(sizeX_ + 3, sizeY_ + 3) : ScalarField(sizeX_ + 3, sizeY_ + 3, sizeZ_ + 3)
   ),
   pressure_(
@@ -150,4 +145,12 @@ void FlowField::getH(RealType& h, int i, int j) {
 
 void FlowField::getH(RealType& h, int i, int j, int k) {
   h = getWallDistance().getScalar(i, j, k);
+}
+
+void FlowField::getDelta(RealType& delta, int i, int j) {
+  delta = getBoundaryLayerThickness().getScalar(i, j);
+}
+
+void FlowField::getDelta(RealType& delta, int i, int j, int k) {
+  delta  = getBoundaryLayerThickness().getScalar(i, j, k);
 }
