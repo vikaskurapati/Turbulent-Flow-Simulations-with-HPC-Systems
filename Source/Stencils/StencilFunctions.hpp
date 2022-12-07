@@ -792,7 +792,7 @@ inline RealType computeF2D(
   }
 
   inline RealType computeF3D(
-    FlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j
+    FlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j, int k
   ) {
     RealType dx = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(1,0,0,0)])/2;
     RealType dy = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,1,0,1)])/2;
@@ -813,7 +813,7 @@ inline RealType computeF2D(
   }
 
   inline RealType computeG3D(
-    FlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j
+    FlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j, int k
   ) {
     RealType dx = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(1,0,0,0)])/2;
     RealType dy = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,1,0,1)])/2;
@@ -834,7 +834,7 @@ inline RealType computeF2D(
   }
 
   inline RealType computeH3D(
-    FlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j
+    FlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j, int k
   ) {
     RealType dx = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(1,0,0,0)])/2;
     RealType dy = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,1,0,1)])/2;

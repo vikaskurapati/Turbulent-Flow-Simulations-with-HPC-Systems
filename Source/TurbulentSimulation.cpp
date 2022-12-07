@@ -1,7 +1,12 @@
 #include "TurbulentSimulation.hpp"
+#include "StdAfx.hpp"
+#include "Stencils/MaxNuStencil.hpp"
+
 
 TurbulentSimulation::TurbulentSimulation(Parameters& parameters, FlowField& flowField):
-    Simulation(Parameters& parameters, FlowField& flowField) {}
+    Simulation(parameters, flowField),
+    maxNuStencil_(parameters)
+    {}
 
 void TurbulentSimulation::initializeFlowField() {
 
@@ -54,7 +59,7 @@ void TurbulentSimulation::initializeFlowField() {
   solver_->reInitMatrix();
 }
 
-void Simulation::setTimeStep() {
+void TurbulentSimulation::setTimeStep() {
 
   RealType localMin, globalMin;
   ASSERTION(parameters_.geometry.dim == 2 || parameters_.geometry.dim == 3);
@@ -74,7 +79,7 @@ void Simulation::setTimeStep() {
   // localMin = std::min(parameters_.timestep.dt, std::min(std::min(parameters_.flow.Re/(2 * factor), 1.0 /
   // maxUStencil_.getMaxValues()[0]), 1.0 / maxUStencil_.getMaxValues()[1]));
   localMin = std::min(
-    parameters_.flow.Re / (2 * factor),
+    1/(1/parameters_.flow.Re+maxNuStencil_.getMaxNuValues()) / (2 * factor),
     std::min(
       parameters_.timestep.dt,
       std::min(1 / (maxUStencil_.getMaxValues()[0] + EPSILON), 1 / (maxUStencil_.getMaxValues()[1] + EPSILON))

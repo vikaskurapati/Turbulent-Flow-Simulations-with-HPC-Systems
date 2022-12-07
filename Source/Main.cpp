@@ -4,6 +4,7 @@
 #include "Configuration.hpp"
 #include "MeshsizeFactory.hpp"
 #include "Simulation.hpp"
+#include "TurbulentSimulation.hpp"
 
 #include <cfenv>
 
@@ -88,7 +89,7 @@ int main(int argc, char* argv[]) {
     if (flowField == NULL) {
       throw std::runtime_error("flowField == NULL!");
     }
-    simulation = new Simulation(parameters, *flowField);
+    simulation = new TurbulentSimulation(parameters, *flowField);
   } else if (parameters.simulation.type == "dns") {
     if (rank == 0) {
       spdlog::info("Start DNS simulation in {}D", parameters.geometry.dim);
