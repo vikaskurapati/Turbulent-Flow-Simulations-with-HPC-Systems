@@ -104,7 +104,7 @@ void Simulation::solveTimestep() {
     raise(SIGFPE);
   #endif
 
-  if (parameters_.turbulence.boundaryLayerType != "laminar") {
+  if (parameters_.simulation.scenario != "dns") {
     turbulentViscosityIterator_.iterate();
   }
 
