@@ -16,8 +16,16 @@ void Stencils::FGHStencil::apply(FlowField& flowField, int i, int j) {
   RealType* const values = flowField.getFGH().getVector(i, j);
 
   // Now the localVelocity array should contain lexicographically ordered elements around the given index
+  if (parameters_.simulation.type == "dns")
+  {
   values[0] = computeF2D(localVelocity_, localMeshsize_, parameters_, parameters_.timestep.dt);
   values[1] = computeG2D(localVelocity_, localMeshsize_, parameters_, parameters_.timestep.dt);
+  }
+  else
+  {
+  values[0] = computeF2D(flowField, localVelocity_, localMeshsize_, parameters_, parameters_.timestep.dt, i, j);
+  values[1] = computeG2D(flowField, localVelocity_, localMeshsize_, parameters_, parameters_.timestep.dt, i, j);
+  }
 }
 
 void Stencils::FGHStencil::apply(FlowField& flowField, int i, int j, int k) {

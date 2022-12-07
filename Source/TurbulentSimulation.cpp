@@ -1,48 +1,9 @@
-#include "StdAfx.hpp"
+#include "TurbulentSimulation.hpp"
 
-#include "Simulation.hpp"
+TurbulentSimulation::TurbulentSimulation(Parameters& parameters, FlowField& flowField):
+    Simulation(Parameters& parameters, FlowField& flowField) {}
 
-#include <cfenv>
-#include <mpi.h>
-
-#include "Iterators.hpp"
-
-#include "Solvers/PetscSolver.hpp"
-#include "Solvers/SORSolver.hpp"
-
-Simulation::Simulation(Parameters& parameters, FlowField& flowField):
-  parameters_(parameters),
-  flowField_(flowField),
-  maxUStencil_(parameters),
-  maxUFieldIterator_(flowField_, parameters, maxUStencil_),
-  maxUBoundaryIterator_(flowField_, parameters, maxUStencil_),
-  globalBoundaryFactory_(parameters),
-  wallVelocityIterator_(globalBoundaryFactory_.getGlobalBoundaryVelocityIterator(flowField_)),
-  wallFGHIterator_(globalBoundaryFactory_.getGlobalBoundaryFGHIterator(flowField_)),
-  fghStencil_(parameters),
-  rhsStencil_(parameters),
-  fghIterator_(flowField_, parameters, fghStencil_),
-  rhsIterator_(flowField_, parameters, rhsStencil_),
-  turbulentViscosityStencil_(parameters),
-  turbulentViscosityIterator_(flowField_, parameters, turbulentViscosityStencil_),
-  velocityStencil_(parameters),
-  obstacleStencil_(parameters),
-  velocityIterator_(flowField_, parameters, velocityStencil_),
-  obstacleIterator_(flowField_, parameters, obstacleStencil_),
-#ifdef ENABLE_PETSC
-  solver_(std::make_unique<Solvers::PetscSolver>(flowField_, parameters)),
-#else
-  solver_(std::make_unique<Solvers::SORSolver>(flowField_, parameters)),
-#endif
-  //comm_(parameters, flowField),
-  parallel_manager_(parameters, flowField)
-  //velocityParallelBoundaryIterator_(flowField, parameters, velocityStencil_, 1, 0)
-  // fghParallelBoundaryIterator_(flowField, parameters, fghStencil_, 1, -1)
-{
-  
-}
-
-void Simulation::initializeFlowField() {
+void TurbulentSimulation::initializeFlowField() {
 
   if (parameters_.simulation.scenario == "taylor-green") {
     // Currently, a particular initialisation is only required for the taylor-green vortex.
@@ -79,9 +40,8 @@ void Simulation::initializeFlowField() {
     FieldIterator<FlowField>    iterator(flowField_, parameters_, stencil, 0, 1);
     iterator.iterate();
   }
-  //////////////////////////////////REMOVE LATER ///////////////////////////////////////////////////
+
   // Adding Nearest Wall distance for turbulence
-  if (parameters_.simulation.type == "turbulence") {
     // This initialisation is only required to calculate Nearest Wall distance for turbulence.
     Stencils::InitWallDistanceStencil wallDistancestencil(parameters_);
     FieldIterator<FlowField>          wallDistanceiterator(flowField_, parameters_, wallDistancestencil);
@@ -90,51 +50,8 @@ void Simulation::initializeFlowField() {
     Stencils::InitBoundaryLayerThickness boundaryLayerThicknessstencil(parameters_);
     FieldIterator<FlowField>          boundaryLayerThicknesssiterator(flowField_, parameters_, boundaryLayerThicknessstencil);
     boundaryLayerThicknesssiterator.iterate();
-  }
 
   solver_->reInitMatrix();
-}
-
-void Simulation::solveTimestep() {
-
-  #ifndef NDEBUG
-
-  feclearexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
-  if(fetestexcept(FE_ALL_EXCEPT & ~FE_INEXACT))
-    raise(SIGFPE);
-  #endif
-
-  if (parameters_.simulation.scenario != "dns") {
-    turbulentViscosityIterator_.iterate();
-  }
-
-  // Determine and set max. timestep which is allowed in this simulation
-  setTimeStep();
-  // Compute FGH
-  fghIterator_.iterate();
-  // Set global boundary values
-  wallFGHIterator_.iterate();
-  // TODO WS1: compute the right hand side (RHS)
-  rhsIterator_.iterate();
-  // Solve for pressure
-  solver_->solve();
-  parallel_manager_.communicatePressure();
-  // TODO WS2: communicate pressure values
-  // Compute velocity
-  velocityIterator_.iterate();
-  obstacleIterator_.iterate();
-  parallel_manager_.communicateVelocity();
-  // TODO WS2: communicate velocity values
-  // Iterate for velocities on the boundary
-  wallVelocityIterator_.iterate();
-}
-
-void Simulation::plotVTK(int timeStep, RealType simulationTime) {
-  Stencils::VTKStencil     vtkStencil(parameters_);
-  FieldIterator<FlowField> vtkIterator(flowField_, parameters_, vtkStencil, 1, 0);
-
-  vtkIterator.iterate();
-  vtkStencil.write(flowField_, timeStep, simulationTime);
 }
 
 void Simulation::setTimeStep() {
