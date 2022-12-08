@@ -79,7 +79,7 @@ void TurbulentSimulation::setTimeStep() {
   // localMin = std::min(parameters_.timestep.dt, std::min(std::min(parameters_.flow.Re/(2 * factor), 1.0 /
   // maxUStencil_.getMaxValues()[0]), 1.0 / maxUStencil_.getMaxValues()[1]));
   localMin = std::min(
-    1/(1/parameters_.flow.Re+maxNuStencil_.getMaxNuValues()) / (2 * factor),
+    1/((1/parameters_.flow.Re)+maxNuStencil_.getMaxNuValues()) / (2 * factor),
     std::min(
       parameters_.timestep.dt,
       std::min(1 / (maxUStencil_.getMaxValues()[0] + EPSILON), 1 / (maxUStencil_.getMaxValues()[1] + EPSILON))
