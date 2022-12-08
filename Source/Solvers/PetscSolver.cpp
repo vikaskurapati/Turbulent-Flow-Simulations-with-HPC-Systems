@@ -1,4 +1,6 @@
 #include "StdAfx.hpp"
+#include <petscksp.h>
+#include <petscpc.h>
 
 #ifdef ENABLE_PETSC
 
@@ -100,6 +102,8 @@ Solvers::PetscSolver::PetscSolver(FlowField& flowField, Parameters& parameters):
 
   KSPCreate(PETSC_COMM_WORLD, &ksp_);
   PCCreate(PETSC_COMM_WORLD, &pc_);
+  KSPSetType(ksp_, KSPBCGS);
+  PCSetType(pc_, PCJACOBI);
 
   PetscErrorCode (*computeMatrix)(KSP, Mat, Mat, void*) = NULL;
 
