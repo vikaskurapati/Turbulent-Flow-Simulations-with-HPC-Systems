@@ -1,15 +1,18 @@
 #include "StdAfx.hpp"
-#include "Stencils/MaxNuStencil.hpp"
+
 #include "Simulation.hpp"
 
-class TurbulentSimulation: public Simulation{
+#include "Stencils/MaxNuStencil.hpp"
 
-    Stencils::MaxNuStencil maxNuStencil_;
-    
-    TurbulentSimulation(Parameters& parameters, FlowField& flowField);
-    ~TurbulentSimulation();
+class TurbulentSimulation: public Simulation {
 
-    void setTimeStep() override;
+public:
+  TurbulentSimulation(Parameters& parameters, FlowField& flowField);
+  ~TurbulentSimulation() = default;
 
-    void initializeFlowField() override;
+private:
+  Stencils::MaxNuStencil maxNuStencil_;
+  void                   setTimeStep() override;
+
+  void initializeFlowField() override;
 };

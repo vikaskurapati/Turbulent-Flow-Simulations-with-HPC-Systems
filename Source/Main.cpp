@@ -57,6 +57,7 @@ int main(int argc, char* argv[]) {
   ParallelManagers::PetscParallelConfiguration parallelConfiguration(parameters);
   MeshsizeFactory::getInstance().initMeshsize(parameters);
   FlowField*  flowField  = NULL;
+
   Simulation* simulation = NULL;
 
   spdlog::debug(
@@ -90,7 +91,9 @@ int main(int argc, char* argv[]) {
       throw std::runtime_error("flowField == NULL!");
     }
     simulation = new TurbulentSimulation(parameters, *flowField);
-  } else if (parameters.simulation.type == "dns") {
+  } 
+  
+  else if (parameters.simulation.type == "dns") {
     if (rank == 0) {
       spdlog::info("Start DNS simulation in {}D", parameters.geometry.dim);
     }
@@ -99,7 +102,9 @@ int main(int argc, char* argv[]) {
       throw std::runtime_error("flowField == NULL!");
     }
     simulation = new Simulation(parameters, *flowField);
-  } else {
+  } 
+  
+  else {
     throw std::runtime_error("Unknown simulation type! Currently supported: dns, turbulence");
   }
 
