@@ -16,17 +16,38 @@ void Stencils::TurbulentViscosityStencil::apply(FlowField& flowField, int i, int
       // calculating shear stress term Sij*Sij
     RealType Sij_e2 ,S11, S22, S12;
     
-    S11 = (flowField.getVelocity().getVector(i + 1, j)[0] - flowField.getVelocity().getVector(i - 1, j)[0])
-          / (2 * parameters_.meshsize->getDx(i, j));
-    S22 = (flowField.getVelocity().getVector(i, j + 1)[1] - flowField.getVelocity().getVector(i, j - 1)[1])
-          / (2 * parameters_.meshsize->getDy(i, j));
+    // S11 = (flowField.getVelocity().getVector(i + 1, j)[0] - flowField.getVelocity().getVector(i - 1, j)[0])
+    //       / (2 * parameters_.meshsize->getDx(i, j));
+    // S22 = (flowField.getVelocity().getVector(i, j + 1)[1] - flowField.getVelocity().getVector(i, j - 1)[1])
+    //       / (2 * parameters_.meshsize->getDy(i, j));
 
-    S12 = 0.5*( (( flowField.getVelocity().getVector( i, j + 1)[0]- flowField.getVelocity().getVector( i, j - 1)[0] )
-                    / ( 2 * parameters_.meshsize->getDy(i, j))) 
-                + (( flowField.getVelocity().getVector( i + 1, j)[1]- flowField.getVelocity().getVector( i - 1, j)[1] )
-                    / ( 2 * parameters_.meshsize->getDx(i, j))) ) ;
+    // S12 = 0.5*( (( flowField.getVelocity().getVector( i, j + 1)[0]- flowField.getVelocity().getVector( i, j - 1)[0] )
+    //                 / ( 2 * parameters_.meshsize->getDy(i, j))) 
+    //             + (( flowField.getVelocity().getVector( i + 1, j)[1]- flowField.getVelocity().getVector( i - 1, j)[1] )
+    //                 / ( 2 * parameters_.meshsize->getDx(i, j))) ) ;
     
-    Sij_e2 = (S11 * S11 + S22 * S22) + 2 * ( S12 * S12);
+
+    S11 = (flowField.getVelocity().getVector(i , j)[0] - flowField.getVelocity().getVector(i - 1, j)[0])
+          / (parameters_.meshsize->getDx(i, j));
+
+    S22 = (flowField.getVelocity().getVector(i , j)[1] - flowField.getVelocity().getVector(i , j-1)[1])
+          / (parameters_.meshsize->getDy(i, j));
+
+
+    S12= 0.5*(
+         0.25*((flowField.getVelocity().getVector(i,j+1)[0] - flowField.getVelocity().getVector(i,j)[0] )/(parameters_.meshsize->getDy(i, j))+
+         (flowField.getVelocity().getVector(i,j)[0] - flowField.getVelocity().getVector(i,j-1)[0] )/(parameters_.meshsize->getDy(i, j))+
+         (flowField.getVelocity().getVector(i-1,j)[0] - flowField.getVelocity().getVector(i-1,j-1)[0] )/(parameters_.meshsize->getDy(i, j))+
+         (flowField.getVelocity().getVector(i-1,j+1)[0] - flowField.getVelocity().getVector(i-1,j)[0] )/(parameters_.meshsize->getDy(i, j)) ) 
+         +
+         0.25*((flowField.getVelocity().getVector(i+1,j)[1] - flowField.getVelocity().getVector(i,j)[1] )/(parameters_.meshsize->getDx(i, j))+
+         (flowField.getVelocity().getVector(i,j)[1] - flowField.getVelocity().getVector(i-1,j)[1] )/(parameters_.meshsize->getDx(i, j))+
+         (flowField.getVelocity().getVector(i+1,j-1)[1] - flowField.getVelocity().getVector(i,j-1)[1] )/(parameters_.meshsize->getDx(i, j))+
+         (flowField.getVelocity().getVector(i,j-1)[1] - flowField.getVelocity().getVector(i-1,j-1)[1] )/(parameters_.meshsize->getDx(i, j)) ) 
+         ) ;
+
+
+    Sij_e2 = ((S11 * S11) + (S22 * S22)) + (2 * ( S12 * S12));
   
     flowField.getTurbulentViscosity().getScalar( i, j) = mixing_length * mixing_length * sqrt( 2 * Sij_e2 );
   }
