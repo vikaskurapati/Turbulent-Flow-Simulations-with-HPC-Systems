@@ -5,7 +5,8 @@
 
 TurbulentSimulation::TurbulentSimulation(Parameters& parameters, FlowField& flowField):
     Simulation(parameters, flowField),
-    maxNuStencil_(parameters)
+    maxNuStencil_(parameters),
+    maxNuFieldIterator_(flowField_, parameters, maxNuStencil_)
     {}
 
 void TurbulentSimulation::initializeFlowField() {
@@ -67,6 +68,8 @@ void TurbulentSimulation::setTimeStep() {
                     + 1.0 / (parameters_.meshsize->getDyMin() * parameters_.meshsize->getDyMin());
   // Determine maximum velocity
   maxUStencil_.reset();
+  maxNuStencil_.reset_Nu();
+  maxNuFieldIterator_.iterate();
   maxUFieldIterator_.iterate();
   maxUBoundaryIterator_.iterate();
   if (parameters_.geometry.dim == 3) {
@@ -75,7 +78,7 @@ void TurbulentSimulation::setTimeStep() {
   } else {
     parameters_.timestep.dt = 1.0 / (maxUStencil_.getMaxValues()[0] + EPSILON);
   }
-
+  //std::cout<<"MAX Nu value is: "<<maxNuStencil_.getMaxNuValues()<<std::endl;
   // localMin = std::min(parameters_.timestep.dt, std::min(std::min(parameters_.flow.Re/(2 * factor), 1.0 /
   // maxUStencil_.getMaxValues()[0]), 1.0 / maxUStencil_.getMaxValues()[1]));
   localMin = std::min(

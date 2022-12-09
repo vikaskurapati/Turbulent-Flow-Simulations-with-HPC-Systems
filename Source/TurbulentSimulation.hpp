@@ -12,6 +12,7 @@ public:
 
 private:
   Stencils::MaxNuStencil maxNuStencil_;
+  FieldIterator<FlowField>          maxNuFieldIterator_;
   void                   setTimeStep() override;
 
   void initializeFlowField() override;
