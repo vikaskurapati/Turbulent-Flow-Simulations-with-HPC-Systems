@@ -27,25 +27,38 @@ void Stencils::TurbulentViscosityStencil::apply(FlowField& flowField, int i, int
     //                 / ( 2 * parameters_.meshsize->getDx(i, j))) ) ;
     
 
-    S11 = (flowField.getVelocity().getVector(i , j)[0] - flowField.getVelocity().getVector(i - 1, j)[0])
+    S11 = (flowField.getVelocity().getVector(i +1, j)[0] - flowField.getVelocity().getVector(i , j)[0])
           / (parameters_.meshsize->getDx(i, j));
 
-    S22 = (flowField.getVelocity().getVector(i , j)[1] - flowField.getVelocity().getVector(i , j-1)[1])
+    S22 = (flowField.getVelocity().getVector(i , j+1)[1] - flowField.getVelocity().getVector(i , j)[1])
           / (parameters_.meshsize->getDy(i, j));
 
+    // S12= 0.5*(
+    //      0.25*((flowField.getVelocity().getVector(i,j+1)[0] - flowField.getVelocity().getVector(i,j)[0] )/(parameters_.meshsize->getDy(i, j))+
+    //      (flowField.getVelocity().getVector(i,j)[0] - flowField.getVelocity().getVector(i,j-1)[0] )/(parameters_.meshsize->getDy(i, j))+
+    //      (flowField.getVelocity().getVector(i-1,j)[0] - flowField.getVelocity().getVector(i-1,j-1)[0] )/(parameters_.meshsize->getDy(i, j))+
+    //      (flowField.getVelocity().getVector(i-1,j+1)[0] - flowField.getVelocity().getVector(i-1,j)[0] )/(parameters_.meshsize->getDy(i, j)) ) 
+    //      +
+    //      0.25*((flowField.getVelocity().getVector(i+1,j)[1] - flowField.getVelocity().getVector(i,j)[1] )/(parameters_.meshsize->getDx(i, j))+
+    //      (flowField.getVelocity().getVector(i,j)[1] - flowField.getVelocity().getVector(i-1,j)[1] )/(parameters_.meshsize->getDx(i, j))+
+    //      (flowField.getVelocity().getVector(i+1,j-1)[1] - flowField.getVelocity().getVector(i,j-1)[1] )/(parameters_.meshsize->getDx(i, j))+
+    //      (flowField.getVelocity().getVector(i,j-1)[1] - flowField.getVelocity().getVector(i-1,j-1)[1] )/(parameters_.meshsize->getDx(i, j)) ) 
+    //      ) ;
+        RealType u_avg_jm1, u_avg_j, u_avg_jp1, dudy_avg;
+         u_avg_jm1 =  (flowField.getVelocity().getVector(i,j-1)[0] - flowField.getVelocity().getVector(i-1,j-1)[0] )/ 2;
+         u_avg_j =(flowField.getVelocity().getVector(i,j)[0] - flowField.getVelocity().getVector(i-1,j)[0] )/ 2;
+         u_avg_jp1 = (flowField.getVelocity().getVector(i,j+1)[0] - flowField.getVelocity().getVector(i-1,j+1)[0] )/ 2;
 
-    S12= 0.5*(
-         0.25*((flowField.getVelocity().getVector(i,j+1)[0] - flowField.getVelocity().getVector(i,j)[0] )/(parameters_.meshsize->getDy(i, j))+
-         (flowField.getVelocity().getVector(i,j)[0] - flowField.getVelocity().getVector(i,j-1)[0] )/(parameters_.meshsize->getDy(i, j))+
-         (flowField.getVelocity().getVector(i-1,j)[0] - flowField.getVelocity().getVector(i-1,j-1)[0] )/(parameters_.meshsize->getDy(i, j))+
-         (flowField.getVelocity().getVector(i-1,j+1)[0] - flowField.getVelocity().getVector(i-1,j)[0] )/(parameters_.meshsize->getDy(i, j)) ) 
-         +
-         0.25*((flowField.getVelocity().getVector(i+1,j)[1] - flowField.getVelocity().getVector(i,j)[1] )/(parameters_.meshsize->getDx(i, j))+
-         (flowField.getVelocity().getVector(i,j)[1] - flowField.getVelocity().getVector(i-1,j)[1] )/(parameters_.meshsize->getDx(i, j))+
-         (flowField.getVelocity().getVector(i+1,j-1)[1] - flowField.getVelocity().getVector(i,j-1)[1] )/(parameters_.meshsize->getDx(i, j))+
-         (flowField.getVelocity().getVector(i,j-1)[1] - flowField.getVelocity().getVector(i-1,j-1)[1] )/(parameters_.meshsize->getDx(i, j)) ) 
-         ) ;
+         dudy_avg =  0.5 * (((u_avg_jp1-u_avg_j)/parameters_.meshsize->getDy(i, j))+((u_avg_j - u_avg_jm1 )/parameters_.meshsize->getDy(i, j)));
 
+        RealType v_avg_im1, v_avg_i, v_avg_ip1, dvdx_avg;
+         v_avg_im1 = (flowField.getVelocity().getVector(i-1,j)[1] - flowField.getVelocity().getVector(i-1,j-1)[1] )/ 2 ; //At i-1
+         v_avg_i = (flowField.getVelocity().getVector(i,j)[1] - flowField.getVelocity().getVector(i,j-1)[1] )/ 2 ; 
+         v_avg_ip1 =(flowField.getVelocity().getVector(i+1,j)[1] - flowField.getVelocity().getVector(i+1,j-1)[1] )/ 2 ;
+
+         dvdx_avg =   0.5 * (((v_avg_ip1-v_avg_i)/parameters_.meshsize->getDx(i, j))+((v_avg_i - v_avg_im1 )/parameters_.meshsize->getDx(i, j)));
+
+         S12 = 0.5*(dudy_avg + dvdx_avg);
 
     Sij_e2 = ((S11 * S11) + (S22 * S22)) + (2 * ( S12 * S12));
   
