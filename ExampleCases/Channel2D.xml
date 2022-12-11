@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
-    <flow Re="100" />
+    <flow Re="5000" />
     <simulation finalTime="10.0" >
         <type>turbulence</type>
         <scenario>channel</scenario>
     </simulation>
     <turbulent kappa = "0.41">
-        <boundaryLayerType>laminar</boundaryLayerType>
+        <boundaryLayerType>turbulence</boundaryLayerType>
     </turbulent>
     <timestep dt="1" tau="0.5" />
     <solver gamma="0.5" />
     <geometry
       dim="2"
       lengthX="5.0" lengthY="1.0" lengthZ="1.0"
-      sizeX="30" sizeY="60" sizeZ="10"
-      stretchX="false" stretchY="false" stretchZ="true"
+      sizeX="100" sizeY="200" sizeZ="10"
+      stretchX="false" stretchY="false" stretchZ="false"
     >
       <mesh>uniform</mesh>
       <!--mesh>stretched</mesh-->

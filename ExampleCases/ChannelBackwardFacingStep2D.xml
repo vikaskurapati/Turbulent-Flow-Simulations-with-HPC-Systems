@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
-    <flow Re="100" />
+    <flow Re="5600" />
     <simulation finalTime="10.0" >
         <type>turbulence</type>
         <scenario>channel</scenario>
@@ -14,8 +14,8 @@
     <geometry
       dim="2"
       lengthX="5.0" lengthY="1.0" lengthZ="1.0"
-      sizeX="30" sizeY="60" sizeZ="10"
-      stretchX="false" stretchY="true" stretchZ="true"
+      sizeX="100" sizeY="200" sizeZ="10"
+      stretchX="false" stretchY="false" stretchZ="false"
     >
       <mesh>uniform</mesh>
       <!--mesh>stretched</mesh-->
@@ -43,5 +43,5 @@
     </walls>
     <vtk interval="0.1">ChannelBackwardFacingStep2D</vtk>
     <stdOut interval="0.0001" />
-    <parallel numProcessorsX="3" numProcessorsY="3" numProcessorsZ="1" />
+    <parallel numProcessorsX="1" numProcessorsY="1" numProcessorsZ="1" />
 </configuration>
