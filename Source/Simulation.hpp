@@ -42,7 +42,7 @@ protected:
   Stencils::RHSStencil     rhsStencil_;
   FieldIterator<FlowField> fghIterator_;
   FieldIterator<FlowField> rhsIterator_;
-  
+
   Stencils::VelocityStencil velocityStencil_;
   Stencils::ObstacleStencil obstacleStencil_;
   FieldIterator<FlowField>  velocityIterator_;

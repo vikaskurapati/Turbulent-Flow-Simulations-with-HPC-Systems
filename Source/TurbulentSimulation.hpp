@@ -22,4 +22,6 @@ private:
   void initializeFlowField() override;
 
   void solveTimestep() override;
+
+  void plotVTK(int timeStep, RealType simulationTime) override;
 };

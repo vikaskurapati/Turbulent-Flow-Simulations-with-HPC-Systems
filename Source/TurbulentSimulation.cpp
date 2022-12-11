@@ -5,6 +5,7 @@
 #include "TurbulentSimulation.hpp"
 
 #include "Stencils/MaxNuStencil.hpp"
+#include "Stencils/TurbulentVTKStencil.hpp"
 
 TurbulentSimulation::TurbulentSimulation(Parameters& parameters, TurbulentFlowField& flowField):
   Simulation(parameters, flowField),
@@ -107,4 +108,12 @@ void TurbulentSimulation::setTimeStep() {
 void TurbulentSimulation::solveTimestep(){
   turbulentViscosityIterator_.iterate();
   Simulation::solveTimestep();
+}
+
+void TurbulentSimulation::plotVTK(int timeStep, RealType simulationTime) {
+  Stencils::TurbulentVTKStencil     vtkStencil(parameters_);
+  FieldIterator<TurbulentFlowField> vtkIterator(turbulentFlowField_, parameters_, vtkStencil, 1, 0);
+
+  vtkIterator.iterate();
+  vtkStencil.write(turbulentFlowField_, timeStep, simulationTime);
 }

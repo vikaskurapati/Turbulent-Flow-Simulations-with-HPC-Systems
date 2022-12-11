@@ -9,6 +9,7 @@
 
 #include "Solvers/PetscSolver.hpp"
 #include "Solvers/SORSolver.hpp"
+#include "Stencils/TurbulentVTKStencil.hpp"
 
 Simulation::Simulation(Parameters& parameters, FlowField& flowField):
   parameters_(parameters),
