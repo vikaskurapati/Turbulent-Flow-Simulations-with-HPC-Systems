@@ -3,9 +3,9 @@
 #include "InitBoundaryLayerThickness.hpp"
 
 Stencils::InitBoundaryLayerThickness::InitBoundaryLayerThickness(const Parameters& parameters):
-  FieldStencil<FlowField>(parameters) {}
+  FieldStencil<TurbulentFlowField>(parameters) {}
 
-void Stencils::InitBoundaryLayerThickness::apply(FlowField& flowField, int i, int j) {
+void Stencils::InitBoundaryLayerThickness::apply(TurbulentFlowField& flowField, int i, int j) {
   RealType x    = parameters_.meshsize->getDx(i, j) * (parameters_.parallel.firstCorner[0] + i);
   RealType Re_x = parameters_.walls.vectorLeft[0] * x / parameters_.geometry.lengthX;
   if (parameters_.turbulence.boundaryLayerType == "inviscid") {
@@ -17,7 +17,7 @@ void Stencils::InitBoundaryLayerThickness::apply(FlowField& flowField, int i, in
   }
 }
 
-void Stencils::InitBoundaryLayerThickness::apply(FlowField& flowField, int i, int j, int k) {
+void Stencils::InitBoundaryLayerThickness::apply(TurbulentFlowField& flowField, int i, int j, int k) {
   RealType x    = parameters_.meshsize->getDx(i, j,k) * (parameters_.parallel.firstCorner[0] + i);
   RealType Re_x = parameters_.walls.vectorLeft[0] * x / parameters_.geometry.lengthX;
   if (parameters_.turbulence.boundaryLayerType == "inviscid") {

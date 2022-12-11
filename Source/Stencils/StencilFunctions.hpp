@@ -2,6 +2,7 @@
 #include <cmath>
 #include "Definitions.hpp"
 #include "Parameters.hpp"
+#include "TurbulentFlowField.hpp"
 
 namespace Stencils {
 
@@ -730,7 +731,7 @@ namespace Stencils {
 
   // Additional functions for turbulence simulation
 
-  inline RealType interpViscosity(FlowField& flowField, int i, int j, int ci, int cj, const Parameters& parameters)
+  inline RealType interpViscosity(TurbulentFlowField& flowField, int i, int j, int ci, int cj, const Parameters& parameters)
   {
     //   return (1/parameters.flow.Re)+(flowField.getTurbulentViscosity().getScalar(i+ci,j)*1/std::sqrt(pow(parameters.meshsize->getDx(i+ci,j)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j)/2,2))
     // +flowField.getTurbulentViscosity().getScalar(i+ci,j+cj)*1/std::sqrt(pow(parameters.meshsize->getDx(i+ci,j+cj)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j+cj)/2,2))
@@ -760,7 +761,7 @@ namespace Stencils {
     // return (1/parameters.flow.Re)+ inter;
   }
 
-  inline RealType interpViscosity(FlowField& flowField, int i, int j, int k, int ci, int cj, int ck, const Parameters& parameters)
+  inline RealType interpViscosity(TurbulentFlowField& flowField, int i, int j, int k, int ci, int cj, int ck, const Parameters& parameters)
   {
       return 1/parameters.flow.Re+(flowField.getTurbulentViscosity().getScalar(i+ci,j,k)*1/std::sqrt(pow(parameters.meshsize->getDx(i+ci,j,k)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j,k)/2,2)+std::pow(parameters.meshsize->getDz(i+ci,j,k)/2,2))
     +flowField.getTurbulentViscosity().getScalar(i+ci,j+cj,k)*1/std::sqrt(pow(parameters.meshsize->getDx(i+ci,j+cj,k)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j+cj,k)/2,2)+std::pow(parameters.meshsize->getDz(i+ci,j+cj,k)/2,2))
@@ -782,7 +783,7 @@ namespace Stencils {
 
 
 inline RealType computeF2D(
-    FlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j
+    TurbulentFlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j
   ) {
     RealType dx = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(1,0,0,0)])/2;
     RealType dy = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,1,0,1)])/2;
@@ -798,7 +799,7 @@ inline RealType computeF2D(
   }
 
   inline RealType computeG2D(
-    FlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j
+    TurbulentFlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j
   ) {
     RealType dx = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(1,0,0,0)])/2;
     RealType dy = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,1,0,1)])/2;
@@ -813,7 +814,7 @@ inline RealType computeF2D(
   }
 
   inline RealType computeF3D(
-    FlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j, int k
+    TurbulentFlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j, int k
   ) {
     RealType dx = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(1,0,0,0)])/2;
     RealType dy = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,1,0,1)])/2;
@@ -834,7 +835,7 @@ inline RealType computeF2D(
   }
 
   inline RealType computeG3D(
-    FlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j, int k
+    TurbulentFlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j, int k
   ) {
     RealType dx = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(1,0,0,0)])/2;
     RealType dy = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,1,0,1)])/2;
@@ -855,7 +856,7 @@ inline RealType computeF2D(
   }
 
   inline RealType computeH3D(
-    FlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j, int k
+    TurbulentFlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j, int k
   ) {
     RealType dx = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(1,0,0,0)])/2;
     RealType dy = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,1,0,1)])/2;

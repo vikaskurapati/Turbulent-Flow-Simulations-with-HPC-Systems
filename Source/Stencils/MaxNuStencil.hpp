@@ -4,10 +4,11 @@
 #include "FieldStencil.hpp"
 #include "FlowField.hpp"
 #include "Parameters.hpp"
+#include "TurbulentFlowField.hpp"
 
 namespace Stencils {
 
-  class MaxNuStencil: public FieldStencil<FlowField> {
+  class MaxNuStencil: public FieldStencil<TurbulentFlowField> {
   private:
     RealType maxNuValue_; //! Stores the maximum module of every component
 
@@ -18,7 +19,7 @@ namespace Stencils {
      * @param i Position in the X direction.
      * @param j Position in the Y direction.
      */
-    void cellMaxNuValue(FlowField& flowField, int i, int j);
+    void cellMaxNuValue(TurbulentFlowField& flowField, int i, int j);
 
     /** Sets the maximum value arrays to the value of the cell if it surpasses the current one.
      *
@@ -28,7 +29,7 @@ namespace Stencils {
      * @param j Position in the Y direction.
      * @param k Position in the Z direction.
      */
-    void cellMaxNuValue(FlowField& flowField, int i, int j, int k);
+    void cellMaxNuValue(TurbulentFlowField& flowField, int i, int j, int k);
 
     public:
     MaxNuStencil(const Parameters& parameters);
@@ -36,8 +37,8 @@ namespace Stencils {
 
     // *******************************APPLY BOUNDARY TO BE DONE ??
 
-    void apply(FlowField& flowField, int i, int j) override;
-    void apply(FlowField& flowField, int i, int j, int k) override;
+    void apply(TurbulentFlowField& flowField, int i, int j) override;
+    void apply(TurbulentFlowField& flowField, int i, int j, int k) override;
 
     /** Resets the maximum values to zero before computing the timestep.
      */
@@ -46,7 +47,7 @@ namespace Stencils {
     /** Returns the array with the maximum modules of the components of the velocity,
      *  divided by the respective local meshsize.
      */
-    const RealType getMaxNuValues() const;
+     RealType getMaxNuValues() const;
 
   }; //End of class
 

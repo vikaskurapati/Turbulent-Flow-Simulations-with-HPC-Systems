@@ -3,6 +3,7 @@
 #include "FieldStencil.hpp"
 #include "FlowField.hpp"
 #include "Parameters.hpp"
+#include "TurbulentFlowField.hpp"
 
 namespace Stencils {
 
@@ -19,6 +20,8 @@ namespace Stencils {
 
     void apply(FlowField& flowField, int i, int j) override;
     void apply(FlowField& flowField, int i, int j, int k) override;
+    void apply(TurbulentFlowField& flowField, int i, int j);
+    void apply(TurbulentFlowField& flowField, int i, int j, int k);
   };
 
 } // namespace Stencils

@@ -1,11 +1,12 @@
 #include "StdAfx.hpp"
 
 #include "TurbulentViscosityStencil.hpp"
+#include "TurbulentFlowField.hpp"
 
 Stencils::TurbulentViscosityStencil::TurbulentViscosityStencil(const Parameters& parameters):
-  FieldStencil<FlowField>(parameters) {}
+  FieldStencil<TurbulentFlowField>(parameters) {}
 
-void Stencils::TurbulentViscosityStencil::apply(FlowField& flowField, int i, int j) {
+void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, int i, int j) {
   const int obstacle = flowField.getFlags().getValue(i, j);
   // Do it for fluid cells only
   if ((obstacle && OBSTACLE_SELF) == 0) {
@@ -66,7 +67,7 @@ void Stencils::TurbulentViscosityStencil::apply(FlowField& flowField, int i, int
   }
 }
 
-void Stencils::TurbulentViscosityStencil::apply(FlowField& flowField, int i, int j, int k) {
+void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, int i, int j, int k) {
   const int obstacle = flowField.getFlags().getValue(i, j, k);
   // Do it for fluid cells only
   if ((obstacle && OBSTACLE_SELF) == 0) {

@@ -3,11 +3,11 @@
 #include "InitWallDistanceStencil.hpp"
 
 Stencils::InitWallDistanceStencil::InitWallDistanceStencil(const Parameters& parameters):
-  FieldStencil<FlowField>(parameters),
+  FieldStencil<TurbulentFlowField>(parameters),
   xObsCells(parameters.bfStep.xRatio * parameters.geometry.sizeX),
   yObsCells(parameters.bfStep.yRatio * parameters.geometry.sizeY) {}
 
-void Stencils::InitWallDistanceStencil::apply(FlowField& flowField, int i, int j) {
+void Stencils::InitWallDistanceStencil::apply(TurbulentFlowField& flowField, int i, int j) {
 
   const int obstacle = flowField.getFlags().getValue(i, j);
   
@@ -46,7 +46,7 @@ void Stencils::InitWallDistanceStencil::apply(FlowField& flowField, int i, int j
   }
 }
 
-void Stencils::InitWallDistanceStencil::apply(FlowField& flowField, int i, int j, int k) {
+void Stencils::InitWallDistanceStencil::apply(TurbulentFlowField& flowField, int i, int j, int k) {
 
   const int obstacle = flowField.getFlags().getValue(i, j, k);
 

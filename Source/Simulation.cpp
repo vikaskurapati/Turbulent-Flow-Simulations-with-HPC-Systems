@@ -23,8 +23,6 @@ Simulation::Simulation(Parameters& parameters, FlowField& flowField):
   rhsStencil_(parameters),
   fghIterator_(flowField_, parameters, fghStencil_),
   rhsIterator_(flowField_, parameters, rhsStencil_),
-  turbulentViscosityStencil_(parameters),
-  turbulentViscosityIterator_(flowField_, parameters, turbulentViscosityStencil_),
   velocityStencil_(parameters),
   obstacleStencil_(parameters),
   velocityIterator_(flowField_, parameters, velocityStencil_),
@@ -34,12 +32,11 @@ Simulation::Simulation(Parameters& parameters, FlowField& flowField):
 #else
   solver_(std::make_unique<Solvers::SORSolver>(flowField_, parameters)),
 #endif
-  //comm_(parameters, flowField),
+  // comm_(parameters, flowField),
   parallel_manager_(parameters, flowField)
-  //velocityParallelBoundaryIterator_(flowField, parameters, velocityStencil_, 1, 0)
-  // fghParallelBoundaryIterator_(flowField, parameters, fghStencil_, 1, -1)
+// velocityParallelBoundaryIterator_(flowField, parameters, velocityStencil_, 1, 0)
+//  fghParallelBoundaryIterator_(flowField, parameters, fghStencil_, 1, -1)
 {
-  
 }
 
 void Simulation::initializeFlowField() {
@@ -79,34 +76,17 @@ void Simulation::initializeFlowField() {
     FieldIterator<FlowField>    iterator(flowField_, parameters_, stencil, 0, 1);
     iterator.iterate();
   }
-  //////////////////////////////////REMOVE LATER ///////////////////////////////////////////////////
-  // Adding Nearest Wall distance for turbulence
-  if (parameters_.simulation.type == "turbulence") {
-    // This initialisation is only required to calculate Nearest Wall distance for turbulence.
-    Stencils::InitWallDistanceStencil wallDistancestencil(parameters_);
-    FieldIterator<FlowField>          wallDistanceiterator(flowField_, parameters_, wallDistancestencil);
-    wallDistanceiterator.iterate();
-
-    Stencils::InitBoundaryLayerThickness boundaryLayerThicknessstencil(parameters_);
-    FieldIterator<FlowField>          boundaryLayerThicknesssiterator(flowField_, parameters_, boundaryLayerThicknessstencil);
-    boundaryLayerThicknesssiterator.iterate();
-  }
-
   solver_->reInitMatrix();
 }
 
 void Simulation::solveTimestep() {
 
-  #ifndef NDEBUG
+#ifndef NDEBUG
 
   feclearexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
-  if(fetestexcept(FE_ALL_EXCEPT & ~FE_INEXACT))
+  if (fetestexcept(FE_ALL_EXCEPT & ~FE_INEXACT))
     raise(SIGFPE);
-  #endif
-
-  if (parameters_.simulation.scenario != "dns") {
-    turbulentViscosityIterator_.iterate();
-  }
+#endif
 
   // Determine and set max. timestep which is allowed in this simulation
   setTimeStep();

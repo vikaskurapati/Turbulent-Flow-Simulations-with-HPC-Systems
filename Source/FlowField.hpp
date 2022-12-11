@@ -17,9 +17,6 @@ private:
   const int cellsY_;
   const int cellsZ_;
 
-  ScalarField boundaryLayerThickness_;         //! Scalar field representing the Local boundary layer thickness
-  ScalarField wallDistance_;         //! Scalar field representing the nearest wall distance
-  ScalarField turbulentViscosity_;   //! Scalar field representing the turbulent viscosity
   ScalarField pressure_; //! Scalar field representing the pressure
   VectorField velocity_; //! Multicomponent field representing velocity
 
@@ -83,10 +80,6 @@ public:
   int getCellsY() const;
   int getCellsZ() const;
 
-  ScalarField& getBoundaryLayerThickness();
-  ScalarField& getWallDistance();
-  ScalarField& getTurbulentViscosity();
-
   ScalarField& getPressure();
   VectorField& getVelocity();
 
@@ -98,13 +91,4 @@ public:
 
   void getPressureAndVelocity(RealType& pressure, RealType* const velocity, int i, int j);
   void getPressureAndVelocity(RealType& pressure, RealType* const velocity, int i, int j, int k);
-  
-  void getViscosity(RealType& viscosity, int i, int j);
-  void getViscosity(RealType& viscosity, int i, int j, int k);
-
-  void getH(RealType& h, int i, int j);
-  void getH(RealType& h, int i, int j, int k);
-
-  void getDelta(RealType& delta, int i, int j);
-  void getDelta(RealType& delta , int i, int j, int k);
 };

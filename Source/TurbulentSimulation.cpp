@@ -1,13 +1,18 @@
-#include "TurbulentSimulation.hpp"
 #include "StdAfx.hpp"
+
+#include "Simulation.hpp"
+#include "TurbulentFlowField.hpp"
+#include "TurbulentSimulation.hpp"
+
 #include "Stencils/MaxNuStencil.hpp"
 
-
-TurbulentSimulation::TurbulentSimulation(Parameters& parameters, FlowField& flowField):
-    Simulation(parameters, flowField),
-    maxNuStencil_(parameters),
-    maxNuFieldIterator_(flowField_, parameters, maxNuStencil_)
-    {}
+TurbulentSimulation::TurbulentSimulation(Parameters& parameters, TurbulentFlowField& flowField):
+  Simulation(parameters, flowField),
+  turbulentFlowField_(flowField),
+  maxNuStencil_(parameters),
+  maxNuFieldIterator_(flowField, parameters, maxNuStencil_),
+  turbulentViscosityStencil_(parameters),
+  turbulentViscosityIterator_(flowField, parameters, turbulentViscosityStencil_) {}
 
 void TurbulentSimulation::initializeFlowField() {
 
@@ -46,16 +51,15 @@ void TurbulentSimulation::initializeFlowField() {
     FieldIterator<FlowField>    iterator(flowField_, parameters_, stencil, 0, 1);
     iterator.iterate();
   }
-
   // Adding Nearest Wall distance for turbulence
-    // This initialisation is only required to calculate Nearest Wall distance for turbulence.
-    Stencils::InitWallDistanceStencil wallDistancestencil(parameters_);
-    FieldIterator<FlowField>          wallDistanceiterator(flowField_, parameters_, wallDistancestencil);
-    wallDistanceiterator.iterate();
+  // This initialisation is only required to calculate Nearest Wall distance for turbulence.
+  Stencils::InitWallDistanceStencil wallDistancestencil(parameters_);
+  FieldIterator<TurbulentFlowField>          wallDistanceiterator(turbulentFlowField_, parameters_, wallDistancestencil);
+  wallDistanceiterator.iterate();
 
-    Stencils::InitBoundaryLayerThickness boundaryLayerThicknessstencil(parameters_);
-    FieldIterator<FlowField>          boundaryLayerThicknesssiterator(flowField_, parameters_, boundaryLayerThicknessstencil);
-    boundaryLayerThicknesssiterator.iterate();
+  Stencils::InitBoundaryLayerThickness boundaryLayerThicknessstencil(parameters_);
+  FieldIterator<TurbulentFlowField> boundaryLayerThicknesssiterator(turbulentFlowField_, parameters_, boundaryLayerThicknessstencil);
+  boundaryLayerThicknesssiterator.iterate();
 
   solver_->reInitMatrix();
 }
@@ -78,11 +82,11 @@ void TurbulentSimulation::setTimeStep() {
   } else {
     parameters_.timestep.dt = 1.0 / (maxUStencil_.getMaxValues()[0] + EPSILON);
   }
-  //std::cout<<"MAX Nu value is: "<<maxNuStencil_.getMaxNuValues()<<std::endl;
-  // localMin = std::min(parameters_.timestep.dt, std::min(std::min(parameters_.flow.Re/(2 * factor), 1.0 /
-  // maxUStencil_.getMaxValues()[0]), 1.0 / maxUStencil_.getMaxValues()[1]));
+  // std::cout<<"MAX Nu value is: "<<maxNuStencil_.getMaxNuValues()<<std::endl;
+  //  localMin = std::min(parameters_.timestep.dt, std::min(std::min(parameters_.flow.Re/(2 * factor), 1.0 /
+  //  maxUStencil_.getMaxValues()[0]), 1.0 / maxUStencil_.getMaxValues()[1]));
   localMin = std::min(
-    1/((1/parameters_.flow.Re)+maxNuStencil_.getMaxNuValues()) / (2 * factor),
+    1 / ((1 / parameters_.flow.Re) + maxNuStencil_.getMaxNuValues()) / (2 * factor),
     std::min(
       parameters_.timestep.dt,
       std::min(1 / (maxUStencil_.getMaxValues()[0] + EPSILON), 1 / (maxUStencil_.getMaxValues()[1] + EPSILON))
@@ -98,4 +102,9 @@ void TurbulentSimulation::setTimeStep() {
 
   parameters_.timestep.dt = globalMin;
   parameters_.timestep.dt *= parameters_.timestep.tau;
+}
+
+void TurbulentSimulation::solveTimestep(){
+  turbulentViscosityIterator_.iterate();
+  Simulation::solveTimestep();
 }
