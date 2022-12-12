@@ -147,10 +147,10 @@ int main(int argc, char* argv[]) {
   // Plot final solution
   simulation->plotVTK(timeSteps, time);
 
-  delete simulation;
+  free(simulation);
   simulation = NULL;
 
-  delete flowField;
+  free(flowField);
   flowField = NULL;
 
 #ifdef ENABLE_PETSC
