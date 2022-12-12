@@ -1,8 +1,10 @@
 #include "StdAfx.hpp"
 
+#include "TurbulentSimulation.hpp"
+
+#include "FlowField.hpp"
 #include "Simulation.hpp"
 #include "TurbulentFlowField.hpp"
-#include "TurbulentSimulation.hpp"
 
 #include "Stencils/MaxNuStencil.hpp"
 #include "Stencils/TurbulentVTKStencil.hpp"
@@ -13,18 +15,20 @@ TurbulentSimulation::TurbulentSimulation(Parameters& parameters, TurbulentFlowFi
   maxNuStencil_(parameters),
   maxNuFieldIterator_(flowField, parameters, maxNuStencil_),
   turbulentViscosityStencil_(parameters),
-  turbulentViscosityIterator_(flowField, parameters, turbulentViscosityStencil_) {}
+  turbulentViscosityIterator_(flowField, parameters, turbulentViscosityStencil_),
+  turbulentfghStencil_(parameters),
+  turbulentfghIterator_(turbulentFlowField_, parameters, turbulentfghStencil_) {}
 
 void TurbulentSimulation::initializeFlowField() {
 
   if (parameters_.simulation.scenario == "taylor-green") {
     // Currently, a particular initialisation is only required for the taylor-green vortex.
     Stencils::InitTaylorGreenFlowFieldStencil stencil(parameters_);
-    FieldIterator<FlowField>                  iterator(flowField_, parameters_, stencil);
+    FieldIterator<FlowField>                  iterator(turbulentFlowField_, parameters_, stencil);
     iterator.iterate();
   } else if (parameters_.simulation.scenario == "channel") {
     Stencils::BFStepInitStencil stencil(parameters_);
-    FieldIterator<FlowField>    iterator(flowField_, parameters_, stencil, 0, 1);
+    FieldIterator<FlowField>    iterator(turbulentFlowField_, parameters_, stencil, 0, 1);
     iterator.iterate();
     wallVelocityIterator_.iterate();
   } else if (parameters_.simulation.scenario == "pressure-channel") {
@@ -49,17 +53,19 @@ void TurbulentSimulation::initializeFlowField() {
 
     // Do same procedure for domain flagging as for regular channel
     Stencils::BFStepInitStencil stencil(parameters_);
-    FieldIterator<FlowField>    iterator(flowField_, parameters_, stencil, 0, 1);
+    FieldIterator<FlowField>    iterator(turbulentFlowField_, parameters_, stencil, 0, 1);
     iterator.iterate();
   }
   // Adding Nearest Wall distance for turbulence
   // This initialisation is only required to calculate Nearest Wall distance for turbulence.
   Stencils::InitWallDistanceStencil wallDistancestencil(parameters_);
-  FieldIterator<TurbulentFlowField>          wallDistanceiterator(turbulentFlowField_, parameters_, wallDistancestencil);
+  FieldIterator<TurbulentFlowField> wallDistanceiterator(turbulentFlowField_, parameters_, wallDistancestencil);
   wallDistanceiterator.iterate();
 
   Stencils::InitBoundaryLayerThickness boundaryLayerThicknessstencil(parameters_);
-  FieldIterator<TurbulentFlowField> boundaryLayerThicknesssiterator(turbulentFlowField_, parameters_, boundaryLayerThicknessstencil);
+  FieldIterator<TurbulentFlowField>    boundaryLayerThicknesssiterator(
+    turbulentFlowField_, parameters_, boundaryLayerThicknessstencil
+  );
   boundaryLayerThicknesssiterator.iterate();
 
   solver_->reInitMatrix();
@@ -105,9 +111,34 @@ void TurbulentSimulation::setTimeStep() {
   parameters_.timestep.dt *= parameters_.timestep.tau;
 }
 
-void TurbulentSimulation::solveTimestep(){
+void TurbulentSimulation::solveTimestep() {
   turbulentViscosityIterator_.iterate();
-  Simulation::solveTimestep();
+#ifndef NDEBUG
+
+  feclearexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
+  if (fetestexcept(FE_ALL_EXCEPT & ~FE_INEXACT))
+    raise(SIGFPE);
+#endif
+
+  // Determine and set max. timestep which is allowed in this simulation
+  setTimeStep();
+  // Compute FGH
+  turbulentfghIterator_.iterate();
+  // Set global boundary values
+  wallFGHIterator_.iterate();
+  // TODO WS1: compute the right hand side (RHS)
+  rhsIterator_.iterate();
+  // Solve for pressure
+  solver_->solve();
+  parallel_manager_.communicatePressure();
+  // TODO WS2: communicate pressure values
+  // Compute velocity
+  velocityIterator_.iterate();
+  obstacleIterator_.iterate();
+  parallel_manager_.communicateVelocity();
+  // TODO WS2: communicate velocity values
+  // Iterate for velocities on the boundary
+  wallVelocityIterator_.iterate();
 }
 
 void TurbulentSimulation::plotVTK(int timeStep, RealType simulationTime) {

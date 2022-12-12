@@ -58,8 +58,6 @@ int main(int argc, char* argv[]) {
   ParallelManagers::PetscParallelConfiguration parallelConfiguration(parameters);
   MeshsizeFactory::getInstance().initMeshsize(parameters);
   FlowField* flowField  = NULL;
-  // TurbulentFlowField* turbulentFlowField = NULL;
-
   Simulation* simulation = NULL;
 
   spdlog::debug(
@@ -154,9 +152,6 @@ int main(int argc, char* argv[]) {
 
   delete flowField;
   flowField = NULL;
-
-  // delete turbulentFlowField;
-  // turbulentFlowField = NULL;
 
 #ifdef ENABLE_PETSC
   PetscFinalize();

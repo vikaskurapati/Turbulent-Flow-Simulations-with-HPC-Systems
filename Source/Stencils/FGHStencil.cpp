@@ -3,16 +3,21 @@
 #include "FGHStencil.hpp"
 
 #include "Definitions.hpp"
+#include "Parameters.hpp"
 #include "StencilFunctions.hpp"
 #include "TurbulentFlowField.hpp"
 
 Stencils::FGHStencil::FGHStencil(const Parameters& parameters):
   FieldStencil<FlowField>(parameters) {}
 
+Stencils::TurbulentFGHStencil::TurbulentFGHStencil(const Parameters& parameters): FieldStencil<TurbulentFlowField>(parameters){}
+
 void Stencils::FGHStencil::apply(FlowField& flowField, int i, int j) {
   // Load local velocities into the center layer of the local array
   loadLocalVelocity2D(flowField, localVelocity_, i, j);
   loadLocalMeshsize2D(parameters_, localMeshsize_, i, j);
+
+  // std::cout << "Laminar Called" << std::endl;
 
   RealType* const values = flowField.getFGH().getVector(i, j);
 
@@ -21,9 +26,11 @@ void Stencils::FGHStencil::apply(FlowField& flowField, int i, int j) {
   values[1] = computeG2D(localVelocity_, localMeshsize_, parameters_, parameters_.timestep.dt);
 }
 
-void Stencils::FGHStencil::apply(TurbulentFlowField& flowField, int i, int j) {
+void Stencils::TurbulentFGHStencil::apply(TurbulentFlowField& flowField, int i, int j) {
   loadLocalVelocity2D(flowField, localVelocity_, i, j);
   loadLocalMeshsize2D(parameters_, localMeshsize_, i, j);
+
+  // std::cout << "Turbulent called" << std::endl;
 
   RealType* const values = flowField.getFGH().getVector(i, j);
   values[0] = computeF2D(flowField, localVelocity_, localMeshsize_, parameters_, parameters_.timestep.dt, i, j);
@@ -52,7 +59,7 @@ void Stencils::FGHStencil::apply(FlowField& flowField, int i, int j, int k) {
   }
 }
 
-void Stencils::FGHStencil::apply(TurbulentFlowField& flowField, int i, int j, int k) {
+void Stencils::TurbulentFGHStencil::apply(TurbulentFlowField& flowField, int i, int j, int k) {
   const int       obstacle = flowField.getFlags().getValue(i, j, k);
   RealType* const values   = flowField.getFGH().getVector(i, j, k);
   if ((obstacle & OBSTACLE_SELF) == 0) { // If the cell is fluid
