@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
   ParallelManagers::PetscParallelConfiguration parallelConfiguration(parameters);
   MeshsizeFactory::getInstance().initMeshsize(parameters);
   FlowField* flowField  = NULL;
-  TurbulentFlowField* turbulentFlowField = NULL;
+  // TurbulentFlowField* turbulentFlowField = NULL;
 
   Simulation* simulation = NULL;
 
@@ -88,11 +88,11 @@ int main(int argc, char* argv[]) {
     if (rank == 0) {
       spdlog::info("Start Turbulence simulation in {}D", parameters.geometry.dim);
     }
-    turbulentFlowField = new TurbulentFlowField(parameters);
-    if (turbulentFlowField == NULL) {
+    flowField = new TurbulentFlowField(parameters);
+    if (flowField == NULL) {
       throw std::runtime_error("flowField == NULL!");
     }
-    simulation = new TurbulentSimulation(parameters, *turbulentFlowField);
+    simulation = new TurbulentSimulation(parameters, *static_cast<TurbulentFlowField*>(flowField));
   } 
   
   else if (parameters.simulation.type == "dns") {
@@ -155,8 +155,8 @@ int main(int argc, char* argv[]) {
   delete flowField;
   flowField = NULL;
 
-  delete turbulentFlowField;
-  turbulentFlowField = NULL;
+  // delete turbulentFlowField;
+  // turbulentFlowField = NULL;
 
 #ifdef ENABLE_PETSC
   PetscFinalize();
