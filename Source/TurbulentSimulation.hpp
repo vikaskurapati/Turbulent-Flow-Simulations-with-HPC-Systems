@@ -9,7 +9,7 @@ class TurbulentSimulation: public Simulation {
 
 public:
   TurbulentSimulation(Parameters& parameters, TurbulentFlowField& turbulentFlowField);
-  ~TurbulentSimulation() = default;
+  virtual ~TurbulentSimulation() = default;
 
 private:
   TurbulentFlowField                  turbulentFlowField_;
@@ -27,4 +27,5 @@ private:
 
   void plotVTK(int timeStep, RealType simulationTime) override;
   void setTimeStep() override;
+  ParallelManagers::PetscTurbulentParallelManager parallel_manager_;
 };

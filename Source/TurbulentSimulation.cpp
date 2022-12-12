@@ -17,7 +17,8 @@ TurbulentSimulation::TurbulentSimulation(Parameters& parameters, TurbulentFlowFi
   turbulentViscosityStencil_(parameters),
   turbulentViscosityIterator_(flowField, parameters, turbulentViscosityStencil_),
   turbulentfghStencil_(parameters),
-  turbulentfghIterator_(turbulentFlowField_, parameters, turbulentfghStencil_) {}
+  turbulentfghIterator_(turbulentFlowField_, parameters, turbulentfghStencil_),
+  parallel_manager_(parameters, flowField) {}
 
 void TurbulentSimulation::initializeFlowField() {
 
@@ -121,6 +122,7 @@ void TurbulentSimulation::solveTimestep() {
 #endif
 
   // Determine and set max. timestep which is allowed in this simulation
+  parallel_manager_.communicateViscosity();
   setTimeStep();
   // Compute FGH
   turbulentfghIterator_.iterate();
