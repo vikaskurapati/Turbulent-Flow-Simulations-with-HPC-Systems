@@ -9,87 +9,59 @@ Stencils::InitWallDistanceStencil::InitWallDistanceStencil(const Parameters& par
 
 void Stencils::InitWallDistanceStencil::apply(TurbulentFlowField& flowField, int i, int j) {
 
-  const int obstacle = flowField.getFlags().getValue(i, j);
-  
-  RealType distance = 0;
+  // Location of center
+  RealType xPos = parameters_.meshsize->getPosX(i, j) + (0.5 * parameters_.meshsize->getDx(i, j));
+  RealType yPos = parameters_.meshsize->getPosY(i, j) + (0.5 * parameters_.meshsize->getDy(i, j));
 
-  RealType temp = 0;
-
-  if ((obstacle & OBSTACLE_SELF) == 0) {
-    distance = (parameters_.geometry.sizeY - (parameters_.parallel.firstCorner[1] + (j - 2 + 0.5)))
-                        * parameters_.meshsize->getDy(i, j);
-    temp = (parameters_.parallel.firstCorner[1] + (j - 2 + 0.5)) * parameters_.meshsize->getDy(i, j);
-    if (temp < distance) {
-      distance = temp;
+  // For Channel Flow
+  if (xObsCells == 0 && yObsCells == 0) {
+    flowField.getWallDistance().getScalar(i, j) = std::min(yPos, (parameters_.geometry.lengthY - yPos));
+  }
+  // For BFS
+  else {
+    if (xPos <= parameters_.bfStep.xRatio * parameters_.geometry.lengthX) {
+      flowField.getWallDistance().getScalar(i, j) = std::min(
+        yPos - (parameters_.bfStep.yRatio * parameters_.geometry.lengthY), (parameters_.geometry.lengthY - yPos)
+      );
+    } else if (yPos < parameters_.bfStep.yRatio * parameters_.geometry.lengthY) {
+      flowField.getWallDistance().getScalar(i, j) = std::min(
+        xPos - (parameters_.bfStep.xRatio * parameters_.geometry.lengthX),
+        (std::min(yPos, (parameters_.geometry.lengthY - yPos)))
+      );
+    } else {
+      flowField.getWallDistance().getScalar(i, j) = std::min(yPos, (parameters_.geometry.lengthY - yPos));
     }
-
-    //For BFS case:
-    if (xObsCells > 0 && yObsCells > 0) { 
-      // For cells above the step
-      if ((parameters_.parallel.firstCorner[1] + (j - 2 + 0.5)) > yObsCells && (parameters_.parallel.firstCorner[0] + (i - 2 + 0.5)) < xObsCells){              
-        temp = (parameters_.parallel.firstCorner[1] + (j - 2 + 0.5) - yObsCells) * parameters_.meshsize->getDy(i, j);
-        if (temp < distance) {
-          distance = temp;
-        }
-      }
-
-      // For cells on the rightside of the step
-      if ((parameters_.parallel.firstCorner[1] + (j - 2 + 0.5)) < yObsCells && (parameters_.parallel.firstCorner[0] + (i - 2 + 0.5)) > xObsCells){
-        temp = (parameters_.parallel.firstCorner[0] + (i - 2 + 0.5) - xObsCells) * parameters_.meshsize->getDx(i, j);
-        if (temp < distance) {
-          distance = temp;
-        }
-      }
-    }
-
-    flowField.getWallDistance().getScalar(i, j) = distance;
   }
 }
 
 void Stencils::InitWallDistanceStencil::apply(TurbulentFlowField& flowField, int i, int j, int k) {
 
-  const int obstacle = flowField.getFlags().getValue(i, j, k);
+  RealType xPos = parameters_.meshsize->getPosX(i, j, k) + 0.5 * parameters_.meshsize->getDx(i, j, k);
+  RealType yPos = parameters_.meshsize->getPosY(i, j, k) + 0.5 * parameters_.meshsize->getDy(i, j, k);
+  RealType zPos = parameters_.meshsize->getPosZ(i, j, k) + 0.5 * parameters_.meshsize->getDz(i, j, k);
 
-  RealType distance = 0;
-
-  RealType temp = 0;
-
-  if ((obstacle & OBSTACLE_SELF) == 0) {
-    distance = (parameters_.geometry.sizeY - (parameters_.parallel.firstCorner[1] + (j - 2 + 0.5)))
-                        * parameters_.meshsize->getDy(i, j, k);
-    temp = (parameters_.parallel.firstCorner[1] + (j - 2 + 0.5)) * parameters_.meshsize->getDy(i, j, k);
-    if (temp < distance) {
-      distance = temp;
+  if (parameters_.bfStep.xRatio < 0 || parameters_.bfStep.yRatio < 0) {
+    flowField.getWallDistance().getScalar(i, j, k) = std::min(
+      yPos, std::min((parameters_.geometry.lengthY - yPos), std::min(zPos, parameters_.geometry.lengthZ - zPos))
+    );
+    // *Remove x pos for cells near to inlet*
+  } else {
+    if (xPos <= parameters_.bfStep.xRatio * parameters_.geometry.lengthX) {
+      flowField.getWallDistance().getScalar(i, j, k) = std::min(
+        yPos - (parameters_.bfStep.yRatio * parameters_.geometry.lengthY),
+        std::min((parameters_.geometry.lengthY - yPos), std::min(zPos, (parameters_.geometry.lengthZ - zPos)))
+      );
+    } else if (yPos < parameters_.bfStep.yRatio * parameters_.geometry.lengthY) {
+      flowField.getWallDistance().getScalar(i, j, k) = std::min(
+        xPos - (parameters_.bfStep.xRatio * parameters_.geometry.lengthX),
+        std::min(
+          yPos, std::min((parameters_.geometry.lengthY - yPos), std::min(zPos, (parameters_.geometry.lengthZ - zPos)))
+        )
+      );
+    } else {
+      flowField.getWallDistance().getScalar(i, j, k) = std::min(
+        yPos, std::min((parameters_.geometry.lengthY - yPos), std::min(zPos, parameters_.geometry.lengthZ - zPos))
+      );
     }
-    temp = (parameters_.parallel.firstCorner[2] + (k - 2 + 0.5)) * parameters_.meshsize->getDz(i, j, k);
-    if (temp < distance) {
-      distance = temp;
-    }
-    temp = (parameters_.geometry.sizeZ - (parameters_.parallel.firstCorner[2] + (k - 2 + 0.5)))
-           * parameters_.meshsize->getDz(i, j, k);
-    if (temp < distance) {
-      distance = temp;
-    }
-
-    //For BFS case:
-    if (xObsCells > 0 && yObsCells > 0) {
-      // For cells above the step
-      if ((parameters_.parallel.firstCorner[1] + (j - 2 + 0.5)) > yObsCells && (parameters_.parallel.firstCorner[0] + (i - 2 + 0.5)) < xObsCells){              
-        temp = (parameters_.parallel.firstCorner[1] + (j - 2 + 0.5) - yObsCells) * parameters_.meshsize->getDy(i, j, k);
-        if (temp < distance) {
-          distance = temp;
-        }
-      }
-
-      // For cells on the rightside of the step
-      if ((parameters_.parallel.firstCorner[1] + (j - 2 + 0.5)) < yObsCells && (parameters_.parallel.firstCorner[0] + (i - 2 + 0.5)) > xObsCells){
-        temp = (parameters_.parallel.firstCorner[0] + (i - 2 + 0.5) - xObsCells) * parameters_.meshsize->getDx(i, j, k);
-        if (temp < distance) {
-          distance = temp;
-        }
-      }
-    }
-
-    flowField.getWallDistance().getScalar(i, j, k) = distance;
   }
 }
