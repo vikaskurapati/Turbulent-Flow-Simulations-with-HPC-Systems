@@ -795,7 +795,9 @@ inline RealType computeF2D(
         1/(dy)*(interpViscosity(flowField, i, j, 1, 1, parameters)*
         ((localVelocity[mapd(0,1,0,0)]-localVelocity[mapd(0,0,0,0)])/dy+(localVelocity[mapd(1,0,0,1)]-localVelocity[mapd(0,0,0,1)])/dx)-
         interpViscosity(flowField, i, j, 1, -1, parameters)*
-        ((localVelocity[mapd(0,0,0,0)]-localVelocity[mapd(0,-1,0,0)])/dy+(localVelocity[mapd(1,-1,0,1)]-localVelocity[mapd(0,-1,0,1)])/dx))+ parameters.environment.gx);
+        ((localVelocity[mapd(0,0,0,0)]-localVelocity[mapd(0,-1,0,0)])/dy+(localVelocity[mapd(1,-1,0,1)]-localVelocity[mapd(0,-1,0,1)])/dx))
+        - du2dx(localVelocity, parameters, localMeshsize) - duvdy(localVelocity, parameters, localMeshsize)
+        + parameters.environment.gx);
   }
 
   inline RealType computeG2D(
@@ -810,7 +812,8 @@ inline RealType computeF2D(
         1/(dx)*(interpViscosity(flowField, i, j, 1, 1, parameters)*
         ((localVelocity[mapd(1,0,0,1)]-localVelocity[mapd(0,0,0,1)])/dx+(localVelocity[mapd(0,1,0,0)]-localVelocity[mapd(0,0,0,0)])/dy)-
         interpViscosity(flowField, i, j, -1, 1, parameters)*
-        ((localVelocity[mapd(0,0,0,1)]-localVelocity[mapd(-1,0,0,1)])/dx+(localVelocity[mapd(-1,1,0,0)]-localVelocity[mapd(-1,0,0,0)])/dy))+ parameters.environment.gy);
+        ((localVelocity[mapd(0,0,0,1)]-localVelocity[mapd(-1,0,0,1)])/dx+(localVelocity[mapd(-1,1,0,0)]-localVelocity[mapd(-1,0,0,0)])/dy)) 
+        - duvdx(localVelocity, parameters, localMeshsize) - dv2dy(localVelocity, parameters, localMeshsize) +parameters.environment.gy);
   }
 
   inline RealType computeF3D(
@@ -830,7 +833,9 @@ inline RealType computeF2D(
         1/(dz)*(interpViscosity(flowField, i, j, k, 1, 0, 1, parameters)*
         ((localVelocity[mapd(0,0,1,0)]-localVelocity[mapd(0,0,0,0)])/dz+(localVelocity[mapd(1,0,0,2)]-localVelocity[mapd(0,0,0,2)])/dx)-
         interpViscosity(flowField, i, j, k, 1, 0, -1, parameters)*
-        ((localVelocity[mapd(0,0,0,0)]-localVelocity[mapd(0,0,-1,0)])/dz+(localVelocity[mapd(1,0,-1,2)]-localVelocity[mapd(0,0,-1,2)])/dx))+ 
+        ((localVelocity[mapd(0,0,0,0)]-localVelocity[mapd(0,0,-1,0)])/dz+(localVelocity[mapd(1,0,-1,2)]-localVelocity[mapd(0,0,-1,2)])/dx))
+        - du2dx(localVelocity, parameters, localMeshsize) - duvdy(localVelocity, parameters, localMeshsize)
+        - duwdz(localVelocity, parameters, localMeshsize)+ 
         parameters.environment.gx);
   }
 
@@ -852,7 +857,8 @@ inline RealType computeF2D(
         ((localVelocity[mapd(0,0,1,1)]-localVelocity[mapd(0,0,0,1)])/dz+(localVelocity[mapd(0,1,0,2)]-localVelocity[mapd(0,0,0,2)])/dy)-
         interpViscosity(flowField, i, j, k, 0, 1, -1, parameters)*
         ((localVelocity[mapd(0,0,0,1)]-localVelocity[mapd(0,0,-1,1)])/dz+(localVelocity[mapd(0,1,-1,2)]-localVelocity[mapd(0,0,-1,2)])/dy))
-        +parameters.environment.gy);
+        - dv2dy(localVelocity, parameters, localMeshsize) - duvdx(localVelocity, parameters, localMeshsize)
+        - dvwdz(localVelocity, parameters, localMeshsize)+parameters.environment.gy);
   }
 
   inline RealType computeH3D(
@@ -873,6 +879,8 @@ inline RealType computeF2D(
         ((localVelocity[mapd(0,1,0,2)]-localVelocity[mapd(0,0,0,2)])/dy+(localVelocity[mapd(0,0,1,1)]-localVelocity[mapd(0,0,0,1)])/dz)-
         interpViscosity(flowField, i, j, k, 0, -1, 1, parameters)*
         ((localVelocity[mapd(0,0,0,2)]-localVelocity[mapd(0,-1,0,2)])/dy+(localVelocity[mapd(0,-1,1,1)]-localVelocity[mapd(0,-1,0,1)])/dz))
+        - dw2dz(localVelocity, parameters, localMeshsize) - duwdx(localVelocity, parameters, localMeshsize)
+        - dvwdy(localVelocity, parameters, localMeshsize)
         +parameters.environment.gz);
   }
 } // namespace Stencils
