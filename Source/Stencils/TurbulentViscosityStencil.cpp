@@ -46,16 +46,16 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
     //      (flowField.getVelocity().getVector(i,j-1)[1] - flowField.getVelocity().getVector(i-1,j-1)[1] )/(parameters_.meshsize->getDx(i, j)) ) 
     //      ) ;
         RealType u_avg_jm1, u_avg_j, u_avg_jp1, dudy_avg;
-         u_avg_jm1 =  (flowField.getVelocity().getVector(i,j-1)[0] - flowField.getVelocity().getVector(i-1,j-1)[0] )/ 2;
-         u_avg_j =(flowField.getVelocity().getVector(i,j)[0] - flowField.getVelocity().getVector(i-1,j)[0] )/ 2;
-         u_avg_jp1 = (flowField.getVelocity().getVector(i,j+1)[0] - flowField.getVelocity().getVector(i-1,j+1)[0] )/ 2;
+         u_avg_jm1 =  (flowField.getVelocity().getVector(i,j-1)[0] + flowField.getVelocity().getVector(i-1,j-1)[0] )/ 2;
+         u_avg_j =(flowField.getVelocity().getVector(i,j)[0] + flowField.getVelocity().getVector(i-1,j)[0] )/ 2;
+         u_avg_jp1 = (flowField.getVelocity().getVector(i,j+1)[0] + flowField.getVelocity().getVector(i-1,j+1)[0] )/ 2;
 
          dudy_avg =  0.5 * (((u_avg_jp1-u_avg_j)/parameters_.meshsize->getDy(i, j))+((u_avg_j - u_avg_jm1 )/parameters_.meshsize->getDy(i, j)));
 
         RealType v_avg_im1, v_avg_i, v_avg_ip1, dvdx_avg;
-         v_avg_im1 = (flowField.getVelocity().getVector(i-1,j)[1] - flowField.getVelocity().getVector(i-1,j-1)[1] )/ 2 ; //At i-1
-         v_avg_i = (flowField.getVelocity().getVector(i,j)[1] - flowField.getVelocity().getVector(i,j-1)[1] )/ 2 ; 
-         v_avg_ip1 =(flowField.getVelocity().getVector(i+1,j)[1] - flowField.getVelocity().getVector(i+1,j-1)[1] )/ 2 ;
+         v_avg_im1 = (flowField.getVelocity().getVector(i-1,j)[1] + flowField.getVelocity().getVector(i-1,j-1)[1] )/ 2 ; //At i-1
+         v_avg_i = (flowField.getVelocity().getVector(i,j)[1] + flowField.getVelocity().getVector(i,j-1)[1] )/ 2 ; 
+         v_avg_ip1 =(flowField.getVelocity().getVector(i+1,j)[1] + flowField.getVelocity().getVector(i+1,j-1)[1] )/ 2 ;
 
          dvdx_avg =   0.5 * (((v_avg_ip1-v_avg_i)/parameters_.meshsize->getDx(i, j))+((v_avg_i - v_avg_im1 )/parameters_.meshsize->getDx(i, j)));
 
