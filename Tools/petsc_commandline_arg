@@ -1,5 +1,5 @@
 #### This shows the solver used
--ksp_view
+#-ksp_view
 -ksp_converged_reason
 #### Plotting the convergence of the solver
 #-ksp_monitor
