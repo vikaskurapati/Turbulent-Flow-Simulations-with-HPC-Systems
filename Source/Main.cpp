@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
   int rank  = -1; // This is the processor's identifier
   int nproc = 0;  // Number of processors in the group
 #ifdef ENABLE_PETSC
-  PetscInitialize(&argc, &argv, "petsc_commandline_arg", PETSC_NULL);
+  PetscInitialize(&argc, &argv, "../Tools/petsc_commandline_arg", PETSC_NULL);
 #else
   MPI_Init(&argc, &argv);
 #endif
