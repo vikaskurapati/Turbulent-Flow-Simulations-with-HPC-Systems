@@ -112,32 +112,33 @@ void Stencils::TurbulentVTKStencil::apply(TurbulentFlowField& flowField, int i, 
 #ifndef NDEBUG
   RealType h         = 0.0;
   RealType delta     = 0.0;
-  RealType viscosity = 0.0;
 #endif
 
   ASSERTION(FieldStencil<TurbulentFlowField>::parameters_.geometry.dim == 2);
 
   RealType pressure    = 0.0;
   RealType velocity[2] = {0.0, 0.0};
+  RealType viscosity = 0.0;
 
   if ((flowField.getFlags().getValue(i, j) & OBSTACLE_SELF) == 0) {
     flowField.getPressureAndVelocity(pressure, velocity, i, j);
 
     pressureStream_ << pressure << std::endl;
     velocityStream_ << velocity[0] << " " << velocity[1] << " 0" << std::endl;
-#ifndef NDEBUG
     flowField.getViscosity(viscosity, i, j);
+    viscosityStream_ << viscosity << std::endl;
+
+#ifndef NDEBUG
     flowField.getH(h, i, j);
     flowField.getDelta(delta, i, j);
-    viscosityStream_ << viscosity << std::endl;
     hStream << h << std::endl;
     deltaStream << delta << std::endl;
 #endif
   } else {
     pressureStream_ << "0.0" << std::endl;
     velocityStream_ << "0.0 0.0 0.0" << std::endl;
-#ifndef NDEBUG
     viscosityStream_ << "0.0" << std::endl;
+#ifndef NDEBUG
     hStream << "0.0" << std::endl;
     deltaStream << "0.0" << std::endl;
 #endif
@@ -149,9 +150,9 @@ void Stencils::TurbulentVTKStencil::apply(TurbulentFlowField& flowField, int i, 
 
   RealType pressure    = 0.0;
   RealType velocity[3] = {0.0, 0.0, 0.0};
+  RealType viscosity = 0.0;
 #ifndef NDEBUG
 
-  RealType viscosity = 0.0;
   RealType h         = 0.0;
   RealType delta     = 0.0;
 #endif
@@ -160,20 +161,20 @@ void Stencils::TurbulentVTKStencil::apply(TurbulentFlowField& flowField, int i, 
 
     pressureStream_ << pressure << std::endl;
     velocityStream_ << velocity[0] << " " << velocity[1] << " " << velocity[2] << std::endl;
+    flowField.getViscosity(viscosity, i, j, k);
+    viscosityStream_ << viscosity << std::endl;
 #ifndef NDEBUG
 
-    flowField.getViscosity(viscosity, i, j, k);
     flowField.getH(h, i, j, k);
     flowField.getDelta(delta, i, j, k);
-    viscosityStream_ << viscosity << std::endl;
     hStream << h << std::endl;
     deltaStream << delta << std::endl;
 #endif
   } else {
     pressureStream_ << "0.0" << std::endl;
     velocityStream_ << "0.0 0.0 0.0" << std::endl;
-#ifndef NDEBUG
     viscosityStream_ << "0.0" << std::endl;
+#ifndef NDEBUG
     hStream << "0.0" << std::endl;
     deltaStream << "0.0" << std::endl;
 #endif
@@ -196,12 +197,12 @@ void Stencils::TurbulentVTKStencil::write(TurbulentFlowField& flowField, int tim
     ofile_ << "VECTORS velocity float" << std::endl;
     ofile_ << velocityStream_.str() << std::endl;
     velocityStream_.str("");
-
-// Write viscosity, nearest wall thickness(h) and boundary layer thickness(delta)
-#ifndef NDEBUG
     ofile_ << "SCALARS viscosity float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
     ofile_ << viscosityStream_.str() << std::endl;
     viscosityStream_.str("");
+
+// Write viscosity, nearest wall thickness(h) and boundary layer thickness(delta)
+#ifndef NDEBUG
     ofile_ << "SCALARS h float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
     ofile_ << hStream.str() << std::endl;
     hStream.str("");
@@ -226,11 +227,11 @@ void Stencils::TurbulentVTKStencil::write(TurbulentFlowField& flowField, int tim
     velocityStream_.str("");
 
     // Write viscosity, nearest wall distance(h), boundary layer thickness(delta)
-#ifndef NDEBUG
-
     ofile_ << "SCALARS viscosity float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
     ofile_ << viscosityStream_.str() << std::endl;
     viscosityStream_.str("");
+#ifndef NDEBUG
+
     ofile_ << "SCALARS h float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
     ofile_ << hStream.str() << std::endl;
     hStream.str("");
