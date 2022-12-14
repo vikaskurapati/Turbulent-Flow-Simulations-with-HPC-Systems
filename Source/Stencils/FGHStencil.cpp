@@ -17,8 +17,6 @@ void Stencils::FGHStencil::apply(FlowField& flowField, int i, int j) {
   loadLocalVelocity2D(flowField, localVelocity_, i, j);
   loadLocalMeshsize2D(parameters_, localMeshsize_, i, j);
 
-  // std::cout << "Laminar Called" << std::endl;
-
   RealType* const values = flowField.getFGH().getVector(i, j);
 
   // Now the localVelocity array should contain lexicographically ordered elements around the given index
@@ -29,8 +27,6 @@ void Stencils::FGHStencil::apply(FlowField& flowField, int i, int j) {
 void Stencils::TurbulentFGHStencil::apply(TurbulentFlowField& flowField, int i, int j) {
   loadLocalVelocity2D(flowField, localVelocity_, i, j);
   loadLocalMeshsize2D(parameters_, localMeshsize_, i, j);
-
-  // std::cout << "Turbulent called" << std::endl;
 
   RealType* const values = flowField.getFGH().getVector(i, j);
   values[0] = computeF2D(flowField, localVelocity_, localMeshsize_, parameters_, parameters_.timestep.dt, i, j);

@@ -53,10 +53,6 @@ protected:
 
   virtual void setTimeStep();
 
-  //ParallelManagers::PetscParallelManager comm_;
-  //ParallelBoundaryIterator<FlowField> velocityParallelBoundaryIterator_;
-  // ParallelBoundaryIterator<FlowField> fghParallelBoundaryIterator_;
-
   int rank_;
 
 public:

@@ -42,7 +42,6 @@ void Stencils::ViscosityBufferReadStencil::applyLeftWall(TurbulentFlowField& flo
 void Stencils::ViscosityBufferReadStencil::applyRightWall(TurbulentFlowField& flowField, int i, int j) {
   if (parameters_.parallel.rightNb >= 0) {
     if (j >= 2 && j <= (localSize[1] + 1)) {
-      // Need to verify indices
       flowField.getTurbulentViscosity().getScalar(i, j) = *(rightViscosityReadBuffer.get() + (j - 2));
     }
   }

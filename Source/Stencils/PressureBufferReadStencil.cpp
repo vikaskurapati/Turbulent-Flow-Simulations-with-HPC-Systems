@@ -42,7 +42,6 @@ void Stencils::PressureBufferReadStencil::applyLeftWall(FlowField& flowField, in
 void Stencils::PressureBufferReadStencil::applyRightWall(FlowField& flowField, int i, int j) {
   if (parameters_.parallel.rightNb >= 0) {
     if (j >= 2 && j <= (localSize[1] + 1)) {
-      // Need to verify indices
       flowField.getPressure().getScalar(i, j) = *(rightPressureReadBuffer.get() + (j - 2));
     }
   }

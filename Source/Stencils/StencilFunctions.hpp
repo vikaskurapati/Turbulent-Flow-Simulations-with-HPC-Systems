@@ -558,11 +558,6 @@ namespace Stencils {
     // Central difference expression which is second-order accurate for uniform meshes. We interpolate u half-way
     // between neighboured u-component values and afterwards build the central difference for u*u.
 
-    /*const RealType secondOrder = (((dxLong1 - dxShort) / dxLong1 * u0 + dxShort / dxLong1 * u1) * ((dxLong1 - dxShort)
-       / dxLong1 * u0 + dxShort / dxLong1 * u1)
-        - ((dxLong0 - dxShort) / dxLong0 * u0 + dxShort / dxLong0 * uM1) * ((dxLong0 - dxShort) / dxLong0 * u0 + dxShort
-       / dxLong0 * uM1) ) / (2.0 * dxShort);*/
-
     const RealType secondOrder = ((u0 + u1) * (u0 + u1) - (u0 + uM1) * (u0 + uM1)) / (4 * dxLong1);
 
     // Donor-cell like derivative expression. We evaluate u half-way between neighboured u-components and use this as a
@@ -610,11 +605,6 @@ namespace Stencils {
     const RealType kr = (v0 + v1) / 2;
     const RealType kl = (v0 + vM1) / 2;
 
-    /*const RealType secondOrder = (((dyLong1 - dyShort) / dyLong1 * v0 + dyShort / dyLong1 * v1) * ((dyLong1 - dyShort)
-       / dyLong1 * v0 + dyShort / dyLong1 * v1)
-        - ((dyLong0 - dyShort) / dyLong0 * v0 + dyShort / dyLong0 * vM1) * ((dyLong0 - dyShort) / dyLong0 * v0 + dyShort
-       / dyLong0 * vM1) ) / (2.0 * dyShort);*/
-
     const RealType secondOrder = ((v0 + v1) * (v0 + v1) - (v0 + vM1) * (v0 + vM1)) / (4 * dyLong1);
 
     const RealType firstOrder = 1.0 / (4.0 * dyShort)
@@ -658,11 +648,6 @@ namespace Stencils {
     // const RealType kl = (dzLong0 - dzShort) / dzLong0 * w0 + dzShort / dzLong0 * wM1;
     const RealType kr = (w0 + w1) / 2;
     const RealType kl = (w0 + wM1) / 2;
-
-    /*const RealType secondOrder = (((dzLong1 - dzShort) / dzLong1 * w0 + dzShort / dzLong1 * w1) * ((dzLong1 - dzShort)
-       / dzLong1 * w0 + dzShort / dzLong1 * w1)
-        - ((dzLong0 - dzShort) / dzLong0 * w0 + dzShort / dzLong0 * wM1) * ((dzLong0 - dzShort) / dzLong0 * w0 + dzShort
-       / dzLong0 * wM1) ) / (2.0 * dzShort);*/
 
     const RealType secondOrder = ((w0 + w1) * (w0 + w1) - (w0 + wM1) * (w0 + wM1)) / (4 * dzLong1);
 

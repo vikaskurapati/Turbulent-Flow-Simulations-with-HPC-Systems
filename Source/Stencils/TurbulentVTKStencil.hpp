@@ -6,7 +6,6 @@
 #include "Parameters.hpp"
 #include "TurbulentFlowField.hpp"
 
-
 namespace Stencils {
 
   /** Stencil for writting VTK files
@@ -19,11 +18,11 @@ namespace Stencils {
     std::string   prefix_;  //! Prefix to be attached to the vtk files
     std::ofstream ofile_;   //! Output file stream
 
-    std::stringstream pressureStream_; //! Stream for the pressure data
-    std::stringstream velocityStream_; //! Stream for the velocity data
+    std::stringstream pressureStream_;  //! Stream for the pressure data
+    std::stringstream velocityStream_;  //! Stream for the velocity data
     std::stringstream viscosityStream_; //! Stream for the viscosity data
-    std::stringstream hStream; //! Stream for the nearest neighbour data
-    std::stringstream deltaStream; //! Stream for the boundary layer thickness
+    std::stringstream hStream;          //! Stream for the nearest neighbour data
+    std::stringstream deltaStream;      //! Stream for the boundary layer thickness
 
     void writeVTKHeader(std::ostream& file) const;
     void writePoints(std::ostream& file, RealType simulationTime) const;
@@ -43,11 +42,41 @@ namespace Stencils {
     void closeFile();
 
   public:
+    /**
+     * @brief Construct a new Turbulent V T K Stencil object
+     *
+     * @param parameters parameters of the flow simulation
+     */
     TurbulentVTKStencil(const Parameters& parameters);
+    /**
+     * @brief Destroy the Turbulent V T K Stencil object
+     *
+     */
     ~TurbulentVTKStencil() override = default;
-
+    /**
+     * @brief add the respective streams in 2D
+     *
+     * @param turbulentFlowField data structure holding the flow quantities
+     * @param i index in x
+     * @param j index in y
+     */
     void apply(TurbulentFlowField& turbulentFlowField, int i, int j) override;
+    /**
+     * @brief add the respective streams in 3D
+     *
+     * @param turbulentFlowField data structure holding the flow quantities
+     * @param i index in x
+     * @param j index in y
+     * @param k index in z
+     */
     void apply(TurbulentFlowField& turbulentFlowField, int i, int j, int k) override;
+    /**
+     * @brief function to write the vtk
+     *
+     * @param turbulentFlowField data structure holding the flow quantities
+     * @param timeStep timestep of the global domain
+     * @param simulationTime simulation time elapsed
+     */
     void write(TurbulentFlowField& turbulentFlowField, int timeStep, RealType simulationTime);
   };
 

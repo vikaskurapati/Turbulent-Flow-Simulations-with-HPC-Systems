@@ -7,7 +7,10 @@
 #include "TurbulentFlowField.hpp"
 
 namespace Stencils {
-
+/**
+ * @brief Stencil to calculate the maximum turbulent viscosity
+ * 
+ */
   class MaxNuStencil: public FieldStencil<TurbulentFlowField> {
   private:
     RealType maxNuValue_; //! Stores the maximum module of every component
@@ -32,12 +35,34 @@ namespace Stencils {
     void cellMaxNuValue(TurbulentFlowField& flowField, int i, int j, int k);
 
     public:
+    /**
+     * @brief Construct a new Max Nu Stencil object
+     * 
+     * @param parameters parameters of the flow simulation
+     */
     MaxNuStencil(const Parameters& parameters);
+    /**
+     * @brief Destroy the Max Nu Stencil object
+     * 
+     */
     ~MaxNuStencil() override = default;
-
-    // *******************************APPLY BOUNDARY TO BE DONE ??
-
+    /**
+     * @brief function which calculates the maximum turbulent viscosity in 2D
+     * 
+     * @param flowField datastructure holding all flow quantities
+     * @param i index in x
+     * @param j index in y
+     */
     void apply(TurbulentFlowField& flowField, int i, int j) override;
+
+    /**
+     * @brief function which calculates the maximum turbulent viscosity in 3D
+     * 
+     * @param flowField datastructure holding all flow quantities
+     * @param i index in x
+     * @param j index in y
+     * @param k index in z
+     */
     void apply(TurbulentFlowField& flowField, int i, int j, int k) override;
 
     /** Resets the maximum values to zero before computing the timestep.
