@@ -739,26 +739,6 @@ namespace Stencils {
     +flowField.getTurbulentViscosity().getScalar(i,j)*1/std::sqrt(pow(parameters.meshsize->getDx(i,j)/2,2)+std::pow(parameters.meshsize->getDy(i,j)/2,2)))
     /(1/std::sqrt(pow(parameters.meshsize->getDx(i+ci,j)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j)/2,2))+1/std::sqrt(pow(parameters.meshsize->getDx(i+ci,j+cj)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j+cj)/2,2))+
     1/std::sqrt(pow(parameters.meshsize->getDx(i,j+cj)/2,2)+std::pow(parameters.meshsize->getDy(i,j+cj)/2,2))+1/std::sqrt(pow(parameters.meshsize->getDx(i,j)/2,2)+std::pow(parameters.meshsize->getDy(i,j)/2,2)));
-    
-    //return 1/parameters.flow.Re;
-
-    // return (1/parameters.flow.Re)+(flowField.getTurbulentViscosity().getScalar(i+ci,j)*std::sqrt(pow(parameters.meshsize->getDx(i+ci,j)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j)/2,2))
-    // +flowField.getTurbulentViscosity().getScalar(i+ci,j+cj)*std::sqrt(pow(parameters.meshsize->getDx(i+ci,j+cj)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j+cj)/2,2))
-    // +flowField.getTurbulentViscosity().getScalar(i,j+cj)*std::sqrt(pow(parameters.meshsize->getDx(i,j+cj)/2,2)+std::pow(parameters.meshsize->getDy(i,j+cj)/2,2))
-    // +flowField.getTurbulentViscosity().getScalar(i,j)*std::sqrt(pow(parameters.meshsize->getDx(i,j)/2,2)+std::pow(parameters.meshsize->getDy(i,j)/2,2)))
-    // /(std::sqrt(pow(parameters.meshsize->getDx(i+ci,j)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j)/2,2))+std::sqrt(pow(parameters.meshsize->getDx(i+ci,j+cj)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j+cj)/2,2))+
-    // std::sqrt(pow(parameters.meshsize->getDx(i,j+cj)/2,2)+std::pow(parameters.meshsize->getDy(i,j+cj)/2,2))+std::sqrt(pow(parameters.meshsize->getDx(i,j)/2,2)+std::pow(parameters.meshsize->getDy(i,j)/2,2)));
-
-    
-    
-    // return (1/parameters.flow.Re) + (flowField.getTurbulentViscosity().getScalar(i+ci,j) + flowField.getTurbulentViscosity().getScalar(i+ci,j+cj) + flowField.getTurbulentViscosity().getScalar(i,j+cj) + flowField.getTurbulentViscosity().getScalar(i,j))*0.25;
-    
-    
-    // RealType x_inter1 = (flowField.getTurbulentViscosity().getScalar(i+ci,j) + flowField.getTurbulentViscosity().getScalar(i,j)) / 2.0;
-    // RealType x_inter2 = (flowField.getTurbulentViscosity().getScalar(i+ci,j+cj) + flowField.getTurbulentViscosity().getScalar(i,j+cj)) / 2.0;
-    // RealType inter = (x_inter1 + x_inter2) / 2.0;
-
-    // return (1/parameters.flow.Re)+ inter;
   }
 
   inline RealType interpViscosity(TurbulentFlowField& flowField, int i, int j, int k, int ci, int cj, int ck, const Parameters& parameters)
@@ -789,7 +769,6 @@ inline RealType computeF2D(
     RealType dyp1 = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,1,0,1)])/2;
     
     RealType dy=  localMeshsize[mapd(0,0,0,1)];
-    RealType dx = localMeshsize[mapd(0,0,0,0)];
         
     RealType dxm1 = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(-1,0,0,0)])/2;
     RealType dym1 = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,-1,0,1)])/2;
@@ -815,15 +794,11 @@ inline RealType computeF2D(
     RealType dxp1 = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(1,0,0,0)])/2;
     RealType dyp1 = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,1,0,1)])/2;
     
-    RealType dy=  localMeshsize[mapd(0,0,0,1)];
     RealType dx = localMeshsize[mapd(0,0,0,0)];
         
     RealType dxm1 = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(-1,0,0,0)])/2;
     RealType dym1 = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,-1,0,1)])/2;
-  
-    // RealType dx = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(1,0,0,0)])/2;
-    // RealType dy = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,1,0,1)])/2;
-    
+
     return localVelocity[mapd(0, 0, 0, 1)]
         + dt * ((2/std::pow(dyp1,2))*(interpViscosity(flowField, i, j+1, 0, 0, parameters)*(localVelocity[mapd(0,1,0,1)]-localVelocity[mapd(0,0,0,1)]))
         
