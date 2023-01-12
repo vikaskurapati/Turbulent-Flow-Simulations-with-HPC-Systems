@@ -18,32 +18,56 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
   if ((obstacle && OBSTACLE_SELF) == 0) {
 
     if (method_ == "turbulence-sa") {
-      RealType omega_12;
-      omega_12 = 0.5*(((flowField.getVelocity().getVector(i, j+1)[0] - flowField.getVelocity().getVector(i, j)[0])/(0.5*(parameters_.meshsize->getDy(i,j+1)+parameters_.meshsize->getDy(i,j)))) - ((flowField.getVelocity().getVector(i+1, j)[1] - flowField.getVelocity().getVector(i, j)[1])/(0.5*(parameters_.meshsize->getDy(i+1,j)+parameters_.meshsize->getDy(i,j)))));
 
-      RealType S = 2.0 * std::sqrt((omega_12 * omega_12));
+      RealType omega_12 = 0.5*(((flowField.getVelocity().getVector(i, j+1)[0] - flowField.getVelocity().getVector(i, j)[0])/(0.5*(parameters_.meshsize->getDy(i,j+1)+parameters_.meshsize->getDy(i,j)))) - ((flowField.getVelocity().getVector(i+1, j)[1] - flowField.getVelocity().getVector(i, j)[1])/(0.5*(parameters_.meshsize->getDx(i+1,j)+parameters_.meshsize->getDx(i,j)))));
 
       RealType chi = flowField.getTurbulentViscosityTransport().getScalar(i, j) * parameters_.flow.Re;
 
-      RealType ft2 = 1.1 * std::exp(-2.0 * chi * chi);
+      RealType f_t2 = 1.2 * std::exp(-0.5 * chi * chi);
 
-      RealType trip = flowField.getVelocity().getVector(i, j)[0] * flowField.getVelocity().getVector(i, j)[0]
-                      + flowField.getVelocity().getVector(i, j)[1] * flowField.getVelocity().getVector(i, j)[1];
+      RealType f_v1 = std::pow(chi, 3) / (std::pow(chi, 3) + std::pow(7.1, 3));
 
-      RealType omega_12_wall;
-      RealType omega_t, gt;
+      RealType f_v2 = 1 - (chi / (1 + chi * f_v1));
 
-      if (j < parameters_.geometry.sizeY / 2) // need to think of a better one for BFS
-      {
-        omega_12_wall = (((flowField.getVelocity().getVector(i, 1)[0] - flowField.getVelocity().getVector(i, 0)[0])/(0.5*(parameters_.meshsize->getDy(i,1)+parameters_.meshsize->getDy(i,0)))) - ((flowField.getVelocity().getVector(i+1, j)[1] - flowField.getVelocity().getVector(i, j)[1])/(0.5*(parameters_.meshsize->getDy(i+1,j)+parameters_.meshsize->getDy(i,j)))));
-        omega_t = omega_12_wall; // be careful for 3d, it is summation of three squares and a square root there
-      } else {
-        omega_12_wall = (((flowField.getVelocity().getVector(i, parameters_.geometry.sizeY-1)[0] - flowField.getVelocity().getVector(i, parameters_.geometry.sizeY-2)[0])/(0.5*(parameters_.meshsize->getDy(i,parameters_.geometry.sizeY-1)+parameters_.meshsize->getDy(i,parameters_.geometry.sizeY-2)))) - ((flowField.getVelocity().getVector(i+1, parameters_.geometry.sizeY-1)[1] - flowField.getVelocity().getVector(i, parameters_.geometry.sizeY-1)[1])/(0.5*(parameters_.meshsize->getDy(i+1,parameters_.geometry.sizeY-1)+parameters_.meshsize->getDy(i,parameters_.geometry.sizeY-1)))));
-        omega_t = omega_12_wall; // be careful for 3d, it is summation of three squares and a square root there
-      }
-      gt = std::min(0.1, std::min(flowField.getVelocity().getVector(i, j)[0] / (omega_t * parameters_.meshsize->getDx(i, 0)), flowField.getVelocity().getVector(i, j)[1]/(omega_t*parameters_.meshsize->getDy(i,0))));
+      RealType S_hat = 2.0 * std::sqrt((omega_12 * omega_12)) + (flowField.getTurbulentViscosityTransport().getScalar(i,j)*f_v2)/((parameters_.turbulence.kappa*parameters_.turbulence.kappa)*(flowField.getWallDistance().getScalar(i,j)*flowField.getWallDistance().getScalar(i,j)));
 
-    } else {
+      RealType r = std::min(10,(flowField.getTurbulentViscosityTransport().getScalar(i,j)*fv2)/(S_hat*(parameters_.turbulence.kappa*parameters_.turbulence.kappa)*(flowField.getWallDistance().getScalar(i,j)*flowField.getWallDistance().getScalar(i,j))));
+
+      RealType g = r + 0.3 * (std::pow(r, 6) - r);
+
+      RealType f_w = g * pow((1 + std::pow(2, 6)) / (std::pow(g, 6) + std::pow(2, 6)), 1 / 6);
+
+      
+
+      // RealType trip = flowField.getVelocity().getVector(i, j)[0] * flowField.getVelocity().getVector(i, j)[0]
+      //                 + flowField.getVelocity().getVector(i, j)[1] * flowField.getVelocity().getVector(i, j)[1];
+
+      // RealType omega_12_wall;
+      // RealType omega_t, gt;
+
+      // if (j < parameters_.geometry.sizeY / 2) // need to think of a better one for BFS
+      // {
+      //   omega_12_wall = (((flowField.getVelocity().getVector(i, 1)[0] - flowField.getVelocity().getVector(i,
+      //   0)[0])/(0.5*(parameters_.meshsize->getDy(i,1)+parameters_.meshsize->getDy(i,0)))) -
+      //   ((flowField.getVelocity().getVector(i+1, j)[1] - flowField.getVelocity().getVector(i,
+      //   j)[1])/(0.5*(parameters_.meshsize->getDy(i+1,j)+parameters_.meshsize->getDy(i,j))))); omega_t =
+      //   omega_12_wall; // be careful for 3d, it is summation of three squares and a square root there
+      // } else {
+      //   omega_12_wall = (((flowField.getVelocity().getVector(i, parameters_.geometry.sizeY-1)[0] -
+      //   flowField.getVelocity().getVector(i,
+      //   parameters_.geometry.sizeY-2)[0])/(0.5*(parameters_.meshsize->getDy(i,parameters_.geometry.sizeY-1)+parameters_.meshsize->getDy(i,parameters_.geometry.sizeY-2))))
+      //   - ((flowField.getVelocity().getVector(i+1, parameters_.geometry.sizeY-1)[1] -
+      //   flowField.getVelocity().getVector(i,
+      //   parameters_.geometry.sizeY-1)[1])/(0.5*(parameters_.meshsize->getDy(i+1,parameters_.geometry.sizeY-1)+parameters_.meshsize->getDy(i,parameters_.geometry.sizeY-1)))));
+      //   omega_t = omega_12_wall; // be careful for 3d, it is summation of three squares and a square root there
+      // }
+      // gt = std::min(0.1, std::min(flowField.getVelocity().getVector(i, j)[0] / (omega_t *
+      // parameters_.meshsize->getDx(i, 0)), flowField.getVelocity().getVector(i,
+      // j)[1]/(omega_t*parameters_.meshsize->getDy(i,0))));
+
+    }
+    // This is for the mixing length model (WS-2)
+    else {
       // calculating Mixing length
       RealType mixing_length = 0;
       mixing_length          = std::min(
@@ -92,12 +116,34 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
   if ((obstacle && OBSTACLE_SELF) == 0) {
     if (method_ == "turbulence-sa") {
       RealType omega_12, omega_13, omega_23;
-      omega_12 = 0.5*(((flowField.getVelocity().getVector(i, j+1,k)[0] - flowField.getVelocity().getVector(i, j,k)[0])/(0.5*(parameters_.meshsize->getDy(i,j+1,k)+parameters_.meshsize->getDy(i,j,k)))) - ((flowField.getVelocity().getVector(i+1, j,k)[1] - flowField.getVelocity().getVector(i, j,k)[1])/(0.5*(parameters_.meshsize->getDy(i+1,j,k)+parameters_.meshsize->getDy(i,j,k)))));
-      omega_13 = 0.5*(((flowField.getVelocity().getVector(i, j,k+1)[0] - flowField.getVelocity().getVector(i, j,k)[0])/(0.5*(parameters_.meshsize->getDy(i,j, k+1)+parameters_.meshsize->getDy(i,j,k)))) - ((flowField.getVelocity().getVector(i+1, j,k)[2] - flowField.getVelocity().getVector(i, j,k)[2])/(0.5*(parameters_.meshsize->getDy(i+1,j,k)+parameters_.meshsize->getDy(i,j,k)))));
-      omega_23 = 0.5*(((flowField.getVelocity().getVector(i, j,k+1)[1] - flowField.getVelocity().getVector(i, j,k)[1])/(0.5*(parameters_.meshsize->getDy(i,j, k+1)+parameters_.meshsize->getDy(i,j,k)))) - ((flowField.getVelocity().getVector(i, j+1,k)[2] - flowField.getVelocity().getVector(i, j,k)[2])/(0.5*(parameters_.meshsize->getDy(i,j+1,k)+parameters_.meshsize->getDy(i,j,k)))));
 
-      RealType S = 2.0 * std::sqrt((omega_12 * omega_12 + omega_13 * omega_13 + omega_23 * omega_23));
-    } else {
+      // CHECK THESE
+      omega_12 = 0.5*(((flowField.getVelocity().getVector(i, j+1,k)[0] - flowField.getVelocity().getVector(i, j,k)[0])/(0.5*(parameters_.meshsize->getDy(i,j+1,k)+parameters_.meshsize->getDy(i,j,k)))) - ((flowField.getVelocity().getVector(i+1, j,k)[1] - flowField.getVelocity().getVector(i, j,k)[1])/(0.5*(parameters_.meshsize->getDx(i+1,j,k)+parameters_.meshsize->getDx(i,j,k)))));
+      omega_13 = 0.5*(((flowField.getVelocity().getVector(i, j,k+1)[0] - flowField.getVelocity().getVector(i, j,k)[0])/(0.5*(parameters_.meshsize->getDz(i,j, k+1)+parameters_.meshsize->getDz(i,j,k)))) - ((flowField.getVelocity().getVector(i+1, j,k)[2] - flowField.getVelocity().getVector(i, j,k)[2])/(0.5*(parameters_.meshsize->getDx(i+1,j,k)+parameters_.meshsize->getDx(i,j,k)))));
+      omega_23 = 0.5*(((flowField.getVelocity().getVector(i, j,k+1)[1] - flowField.getVelocity().getVector(i, j,k)[1])/(0.5*(parameters_.meshsize->getDz(i,j, k+1)+parameters_.meshsize->getDz(i,j,k)))) - ((flowField.getVelocity().getVector(i, j+1,k)[2] - flowField.getVelocity().getVector(i, j,k)[2])/(0.5*(parameters_.meshsize->getDy(i,j+1,k)+parameters_.meshsize->getDy(i,j,k)))));
+
+      // RealType S = 2.0 * std::sqrt((omega_12 * omega_12 + omega_13 * omega_13 + omega_23 * omega_23));
+
+      RealType chi = flowField.getTurbulentViscosityTransport().getScalar(i, j, k) * parameters_.flow.Re;
+
+      RealType f_t2 = 1.2 * std::exp(-0.5 * chi * chi);
+
+      RealType f_v1 = std::pow(chi, 3) / (std::pow(chi, 3) + std::pow(7.1, 3));
+
+      RealType f_v2 = 1 - (chi / (1 + chi * f_v1));
+
+      RealType S_hat = 2.0 * std::sqrt((omega_12 * omega_12 + omega_13 * omega_13 + omega_23 * omega_23)) + (flowField.getTurbulentViscosityTransport().getScalar(i,j,k)*f_v2)/((parameters_.turbulence.kappa*parameters_.turbulence.kappa)*(flowField.getWallDistance().getScalar(i,j,k)*flowField.getWallDistance().getScalar(i,j,k)));
+
+      RealType r = std::min(10,(flowField.getTurbulentViscosityTransport().getScalar(i,j,k)*f_v2)/(S_hat*(parameters_.turbulence.kappa*parameters_.turbulence.kappa)*(flowField.getWallDistance().getScalar(i,j,k)*flowField.getWallDistance().getScalar(i,j,k))));
+
+      RealType g = r + 0.3 * (std::pow(r, 6) - r);
+
+      RealType f_w = g * pow((1 + std::pow(2, 6)) / (std::pow(g, 6) + std::pow(2, 6)), 1 / 6);
+
+    }
+
+    // This is for the mixing length model (WS-2)
+    else {
       // calculating Mixing length
       RealType mixing_length = 0;
       mixing_length          = std::min(
