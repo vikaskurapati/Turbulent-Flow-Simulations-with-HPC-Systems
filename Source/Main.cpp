@@ -1,13 +1,13 @@
 #include "StdAfx.hpp"
 
+#include <cfenv>
+
 #include "Clock.hpp"
 #include "Configuration.hpp"
 #include "MeshsizeFactory.hpp"
 #include "Simulation.hpp"
 #include "TurbulentFlowField.hpp"
 #include "TurbulentSimulation.hpp"
-
-#include <cfenv>
 
 #include "ParallelManagers/PetscParallelConfiguration.hpp"
 
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
 
 #ifndef NDEBUG
   spdlog::warn("Running in Debug mode; make sure to switch to Release mode for production/benchmark runs.");
-  
+
   feenableexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
 #else
   spdlog::info("Running in Release mode");
@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
   configuration.loadParameters(parameters);
   ParallelManagers::PetscParallelConfiguration parallelConfiguration(parameters);
   MeshsizeFactory::getInstance().initMeshsize(parameters);
-  FlowField* flowField  = NULL;
+  FlowField*  flowField  = NULL;
   Simulation* simulation = NULL;
 
   spdlog::debug(
@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
   );
 
   // Initialise simulation
-  if (parameters.simulation.type == "turbulence") {
+  if (parameters.simulation.type == "turbulence" || parameters.simulation.type == "turbulence-sa") {
     // TODO WS2: initialise turbulent flow field and turbulent simulation object
     if (rank == 0) {
       spdlog::info("Start Turbulence simulation in {}D", parameters.geometry.dim);
@@ -91,8 +91,8 @@ int main(int argc, char* argv[]) {
       throw std::runtime_error("flowField == NULL!");
     }
     simulation = new TurbulentSimulation(parameters, *static_cast<TurbulentFlowField*>(flowField));
-  } 
-  
+  }
+
   else if (parameters.simulation.type == "dns") {
     if (rank == 0) {
       spdlog::info("Start DNS simulation in {}D", parameters.geometry.dim);
@@ -102,8 +102,8 @@ int main(int argc, char* argv[]) {
       throw std::runtime_error("flowField == NULL!");
     }
     simulation = new Simulation(parameters, *flowField);
-  } 
-  
+  }
+
   else {
     throw std::runtime_error("Unknown simulation type! Currently supported: dns, turbulence");
   }

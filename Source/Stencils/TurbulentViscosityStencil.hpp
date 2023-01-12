@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include "FieldStencil.hpp"
 #include "FlowField.hpp"
 #include "Parameters.hpp"
@@ -12,6 +13,9 @@ namespace Stencils {
    */
 
   class TurbulentViscosityStencil: public FieldStencil<TurbulentFlowField> {
+    private:
+     std::string method_; //! Method for turbulence - turbulence or turbulence-sa
+
   public:
     /**
      * @brief Construct a new Turbulent Viscosity Stencil object

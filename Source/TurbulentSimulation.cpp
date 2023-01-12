@@ -18,7 +18,7 @@ TurbulentSimulation::TurbulentSimulation(Parameters& parameters, TurbulentFlowFi
   turbulentViscosityIterator_(flowField, parameters, turbulentViscosityStencil_),
   turbulentfghStencil_(parameters),
   turbulentfghIterator_(turbulentFlowField_, parameters, turbulentfghStencil_),
-  parallel_manager_(parameters, flowField) {}
+  parallel_manager_(parameters, flowField), method_(parameters.simulation.type) {}
 
 void TurbulentSimulation::initializeFlowField() {
 

@@ -1,4 +1,5 @@
 #include "StdAfx.hpp"
+#include <string>
 
 #include "Simulation.hpp"
 #include "TurbulentFlowField.hpp"
@@ -88,4 +89,6 @@ private:
    * 
    */
   ParallelManagers::PetscTurbulentParallelManager parallel_manager_;
+
+  std::string method_;
 };
