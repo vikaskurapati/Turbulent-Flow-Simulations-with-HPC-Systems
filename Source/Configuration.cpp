@@ -396,7 +396,7 @@ void Configuration::loadParameters(Parameters& parameters, const MPI_Comm& commu
     //------------------------------------------------------
     // TODO WS2: Turbulence
     //------------------------------------------------------
-    if (parameters.simulation.type == "turbulence") {
+    if (parameters.simulation.type == "turbulence" || parameters.simulation.type == "turbulence-sa" ) {
       node = confFile.FirstChildElement()->FirstChildElement("turbulent");
 
       if (node == NULL) {
