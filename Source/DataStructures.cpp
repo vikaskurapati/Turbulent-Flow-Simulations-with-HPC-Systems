@@ -2,16 +2,16 @@
 
 #include "DataStructures.hpp"
 
-ScalarField::ScalarField(int Nx, int Ny):
+ScalarField::ScalarField(int Nx, int Ny, RealType default_value):
   Field<RealType>(Nx, Ny, 1, 1) {
 
-  initialize();
+  initialize(default_value);
 }
 
-ScalarField::ScalarField(int Nx, int Ny, int Nz):
+ScalarField::ScalarField(int Nx, int Ny, int Nz, RealType default_value):
   Field<RealType>(Nx, Ny, Nz, 1) {
 
-  initialize();
+  initialize(default_value);
 }
 
 RealType& ScalarField::getScalar(int i, int j, int k) { return data_[index2array(i, j, k)]; }
@@ -29,9 +29,9 @@ void ScalarField::show(const std::string title) {
   }
 }
 
-void ScalarField::initialize() {
+void ScalarField::initialize(RealType default_value) {
   for (int i = 0; i < size_; i++) {
-    data_[i] = 0.0;
+    data_[i] = default_value;
   }
 }
 

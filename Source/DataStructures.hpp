@@ -94,7 +94,7 @@ public:
  */
 class ScalarField: public Field<RealType> {
 private:
-  void initialize();
+  void initialize(RealType default_value=0.0);
 
 public:
   /** 2D scalar field constructor.
@@ -104,7 +104,7 @@ public:
    * @param Nx Number of cells in direction x
    * @param Ny Number of cells in direction y
    */
-  ScalarField(int Nx, int Ny);
+  ScalarField(int Nx, int Ny, RealType default_value=0.0);
 
   /** 3D scalar field constructor.
    *
@@ -114,7 +114,7 @@ public:
    * @param Ny Number of cells in direction y
    * @param Nz Number of cells in direction z
    */
-  ScalarField(int Nx, int Ny, int Nz);
+  ScalarField(int Nx, int Ny, int Nz, RealType default_value=0.0);
 
   /** Acces to element in scalar field
    *
