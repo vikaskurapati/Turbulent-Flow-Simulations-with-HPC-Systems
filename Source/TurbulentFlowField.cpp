@@ -12,7 +12,8 @@ TurbulentFlowField::TurbulentFlowField(int Nx, int Ny):
   FlowField(Nx, Ny),
   boundaryLayerThickness_(ScalarField(Nx + 3, Ny + 3)),
   wallDistance_(ScalarField(Nx + 3, Ny + 3)),
-  turbulentViscosity_(ScalarField(Nx + 3, Ny + 3)) {
+  turbulentViscosity_(ScalarField(Nx + 3, Ny + 3)),
+  turbulentViscosityTransport_(ScalarField(Nx + 3, Ny + 3)) {
   ASSERTION(Nx > 0);
   ASSERTION(Ny > 0);
 }
@@ -21,7 +22,8 @@ TurbulentFlowField::TurbulentFlowField(int Nx, int Ny, int Nz):
   FlowField(Nx, Ny, Nz),
   boundaryLayerThickness_(ScalarField(Nx + 3, Ny + 3, Nz + 3)),
   wallDistance_(ScalarField(Nx + 3, Ny + 3, Nz + 3)),
-  turbulentViscosity_(ScalarField(Nx + 3, Ny + 3, Nz + 3)) {
+  turbulentViscosity_(ScalarField(Nx + 3, Ny + 3, Nz + 3)),
+  turbulentViscosityTransport_(ScalarField(Nx + 3, Ny + 3, Nz + 3)) {
   ASSERTION(Nx > 0);
   ASSERTION(Ny > 0);
   ASSERTION(Nz > 0);
@@ -43,6 +45,11 @@ TurbulentFlowField::TurbulentFlowField(const Parameters& parameters):
     parameters.geometry.dim == 2
       ? ScalarField(getNx() + 3, getNy() + 3)
       : ScalarField(getNx() + 3, getNy() + 3, getNz() + 3)
+  ),
+  turbulentViscosityTransport_(
+    parameters.geometry.dim == 2
+      ? ScalarField(getNx() + 3, getNy() + 3, 1/parameters.flow.Re)
+      : ScalarField(getNx() + 3, getNy() + 3, getNz() + 3, 1/parameters.flow.Re)
   ),
   method_(parameters.simulation.type) {}
 
@@ -66,8 +73,8 @@ void TurbulentFlowField::getViscosityTransport(RealType& viscosity, int i, int j
   viscosity = getTurbulentViscosityTransport().getScalar(i, j);
 }
 
-void TurbulentFlowField::getViscosityTransport(RealType& viscosity, int i, int j, int k){
-  viscosity = getTurbulentViscosityTransport().getScalar(i, j,k);
+void TurbulentFlowField::getViscosityTransport(RealType& viscosity, int i, int j, int k) {
+  viscosity = getTurbulentViscosityTransport().getScalar(i, j, k);
 }
 
 void TurbulentFlowField::getH(RealType& h, int i, int j) { h = getWallDistance().getScalar(i, j); }
