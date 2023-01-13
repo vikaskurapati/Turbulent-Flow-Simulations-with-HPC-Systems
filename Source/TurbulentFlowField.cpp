@@ -48,10 +48,30 @@ TurbulentFlowField::TurbulentFlowField(const Parameters& parameters):
   ),
   turbulentViscosityTransport_(
     parameters.geometry.dim == 2
-      ? ScalarField(getNx() + 3, getNy() + 3, 1/parameters.flow.Re)
-      : ScalarField(getNx() + 3, getNy() + 3, getNz() + 3, 1/parameters.flow.Re)
+      ? ScalarField(getNx() + 3, getNy() + 3, 1000/parameters.flow.Re)
+      : ScalarField(getNx() + 3, getNy() + 3, getNz() + 3, 1000/parameters.flow.Re)
   ),
-  method_(parameters.simulation.type) {}
+  method_(parameters.simulation.type) {
+
+
+    if(parameters.geometry.dim == 2){
+
+      for (int i =0; i<getNx()+3; i++)
+      {
+        getTurbulentViscosityTransport().getScalar(i,0)=0.0;
+        getTurbulentViscosityTransport().getScalar(i,getNy()+2)=0.0;
+      }
+
+
+      for (int j =0; j<getNy()+3; j++)
+      {
+        getTurbulentViscosityTransport().getScalar(0,j)=0.0;
+        getTurbulentViscosityTransport().getScalar(getNx()+2,j)=0.0;
+      }
+    }
+
+
+  }
 
 ScalarField& TurbulentFlowField::getBoundaryLayerThickness() { return boundaryLayerThickness_; }
 
