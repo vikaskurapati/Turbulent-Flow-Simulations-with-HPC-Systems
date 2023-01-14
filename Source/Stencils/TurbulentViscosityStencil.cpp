@@ -147,9 +147,24 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
       flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j) = flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j) +  parameters_.timestep.dt * (term2 - term3 + term4 - term1);
 
       //BOundary conditions for additional ghost layer on bottom and left
-      // if(i==1 || j==1){
-      //   flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j) = 0.0;
-      // }
+      if(i==1 || j==1){
+        flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j) = 0.0;
+      }
+
+      if(parameters_.geometry.dim == 2){
+
+      if (i==0 || i==parameters_.geometry.sizeX-1)
+      {
+        flowField.getCurrentTurbulentViscosityTransport().getScalar(i,0)=0.0;
+        flowField.getCurrentTurbulentViscosityTransport().getScalar(i,parameters_.geometry.sizeY+2)=0.0;
+      }
+      
+      if(j==0 || j==parameters_.geometry.sizeY-1)
+      {
+        flowField.getCurrentTurbulentViscosityTransport().getScalar(0,j)=0.0;
+        flowField.getCurrentTurbulentViscosityTransport().getScalar(parameters_.geometry.sizeX+2,j)=0.0;
+      }
+    }
 
       flowField.getTurbulentViscosity().getScalar(i, j) = f_v1 * flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
 
