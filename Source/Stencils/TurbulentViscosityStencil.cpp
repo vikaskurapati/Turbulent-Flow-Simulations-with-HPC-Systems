@@ -157,7 +157,7 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
       // //std::cout << "Here:   " <<term1<<"   "<<term2<<"   "<<term3<<"    "<<term4 <<std::endl;
       // }//BOUNDARY CONDITION 
       
-      std::cout << "Here:   " <<i<<"   "<<j<<"    "<<term1<<"   "<<term2<<"   "<<term3<<"    "<<term4 <<"   "<<flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j)<<std::endl;
+      // std::cout << "Here:   " <<i<<"   "<<j<<"    "<<term1<<"   "<<term2<<"   "<<term3<<"    "<<term4 <<"   "<<flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j)<<std::endl;
       
     }
     // This is for the mixing length model (WS-2)
@@ -203,7 +203,6 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
     }
   }
 }
-
 
 //***************************************************************
 //  FOR 3D

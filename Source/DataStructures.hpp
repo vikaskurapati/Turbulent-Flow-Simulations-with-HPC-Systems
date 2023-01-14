@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include "Assertion.hpp"
 #include "Definitions.hpp"
 
@@ -97,6 +98,17 @@ private:
   void initialize(RealType default_value=0.0);
 
 public:
+
+  ScalarField& operator=(const ScalarField& other){
+    assert(sizeX_ == other.sizeX_);
+    assert(sizeY_ == other.sizeY_);
+    assert(sizeZ_ == other.sizeZ_);
+    assert(components_ == other.components_);
+    assert(size_ == other.size_);
+    data_ = other.data_;
+    return *this;
+  }
+
   /** 2D scalar field constructor.
    *
    * Sets the size of the data array and allocates data for the 2D field

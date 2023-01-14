@@ -129,7 +129,7 @@ int main(int argc, char* argv[]) {
   while (time < parameters.simulation.finalTime) {
     simulation->solveTimestep();
 
-    exit(0);
+    // exit(0);
 
     timeSteps++;
     time += parameters.timestep.dt;

@@ -1,4 +1,5 @@
 #include "StdAfx.hpp"
+#include <algorithm>
 
 #include "TurbulentFlowField.hpp"
 
@@ -62,23 +63,20 @@ TurbulentFlowField::TurbulentFlowField(const Parameters& parameters):
 
     //BOUNDARY CONDITIONS FOR nu_tilda
 
-    // if(parameters.geometry.dim == 2){
+    if(parameters.geometry.dim == 2){
 
-    //   for (int i =0; i<getNx()+3; i++)
-    //   {
-    //     getTurbulentViscosityTransport().getScalar(i,0)=0.0;
-    //     getTurbulentViscosityTransport().getScalar(i,getNy()+2)=0.0;
-    //   }
+      for (int i =0; i<getNx()+3; i++)
+      {
+        getCurrentTurbulentViscosityTransport().getScalar(i,0)=0.0;
+        getCurrentTurbulentViscosityTransport().getScalar(i,getNy()+2)=0.0;
+      }
 
-
-    //   for (int j =0; j<getNy()+3; j++)
-    //   {
-    //     getTurbulentViscosityTransport().getScalar(0,j)=0.0;
-    //     getTurbulentViscosityTransport().getScalar(getNx()+2,j)=0.0;
-    //   }
-    // }
-
-
+      for (int j =0; j<getNy()+3; j++)
+      {
+        getCurrentTurbulentViscosityTransport().getScalar(0,j)=0.0;
+        getCurrentTurbulentViscosityTransport().getScalar(getNx()+2,j)=0.0;
+      }
+    }
   }
 
 ScalarField& TurbulentFlowField::getBoundaryLayerThickness() { return boundaryLayerThickness_; }
@@ -119,7 +117,6 @@ void TurbulentFlowField::getPreviousViscosityTransport(RealType& viscosity, int 
 void TurbulentFlowField::setPreviousViscosityTransport(ScalarField& current_visc_field ){
   //make the previous field equal to the current field
   previousTurbulentViscosityTransport_ = current_visc_field;
-
 }
 
 void TurbulentFlowField::getH(RealType& h, int i, int j) { h = getWallDistance().getScalar(i, j); }
