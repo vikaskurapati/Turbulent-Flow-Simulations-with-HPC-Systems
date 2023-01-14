@@ -18,8 +18,10 @@ private:
   ScalarField boundaryLayerThickness_;      //! Scalar field representing the Local boundary layer thickness
   ScalarField wallDistance_;                //! Scalar field representing the nearest wall distance
   ScalarField turbulentViscosity_;          //! Scalar field representing the turbulent viscosity
-  ScalarField turbulentViscosityTransport_; //! Scalar field representing the variable which is being solved with the
-                                            //! viscosity transport equation
+  ScalarField currentTurbulentViscosityTransport_; //! Scalar field representing the variable which is being solved with the
+                                            //! viscosity transport equation in the current timestep
+  ScalarField previousTurbulentViscosityTransport_; //! Scalar field representing the variable which is being solved with the
+                                            //! viscosity transport equation in the previous timestep
   std::string method_;                      //! Method for Turbulence
 
 public:
@@ -78,11 +80,18 @@ public:
   ScalarField& getTurbulentViscosity();
 
   /**
-   * @brief Get the Turbulent Viscosity Transport object
+   * @brief Get the current Turbulent Viscosity Transport object
    *
    * @return ScalarField& reference of the Scalar Field
    */
-  ScalarField& getTurbulentViscosityTransport();
+  ScalarField& getCurrentTurbulentViscosityTransport();
+
+    /**
+   * @brief Get the previous timestep's Turbulent Viscosity Transport object
+   *
+   * @return ScalarField& reference of the Scalar Field
+   */
+  ScalarField& getPreviousTurbulentViscosityTransport();
 
   /**
    * @brief Get the Viscosity object in 2D
@@ -102,28 +111,51 @@ public:
    */
   void getViscosity(RealType& viscosity, int i, int j, int k);
   /**
-   * @brief Get the Turbulent Viscosity Transport object in 2D
+   * @brief Get the Current timestep Turbulent Viscosity Transport object in 2D
    * 
    * @param viscosity reference of transport viscosity to store transport viscosity of the flow field
    * @param i index in x
    * @param j index in y
    */
-  void getViscosityTransport(RealType& viscosity, int i, int j);
+
+  void getCurrentViscosityTransport(RealType& viscosity, int i, int j);
   /**
-   * @brief Get the Turbulent Viscosity Transport object in 3D
+   * @brief Get the Current timestep Turbulent Viscosity Transport object in 3D
    * 
    * @param viscosity reference of transport viscosity to store transport viscosity of the flow field
    * @param i index in x
    * @param j index in y
    * @param k index in z
    */
-  void getViscosityTransport(RealType& viscosity, int i, int j, int k);
+  void getCurrentViscosityTransport(RealType& viscosity, int i, int j, int k);
+
+    /**
+   * @brief Get the Previous timestep Turbulent Viscosity Transport object in 2D
+   * 
+   * @param viscosity reference of transport viscosity to store transport viscosity of the flow field
+   * @param i index in x
+   * @param j index in y
+   */
+  void getPreviousViscosityTransport(RealType& viscosity, int i, int j);
+  /**
+   * @brief Get the Previous timestep Turbulent Viscosity Transport object in 3D
+   * 
+   * @param viscosity reference of transport viscosity to store transport viscosity of the flow field
+   * @param i index in x
+   * @param j index in y
+   * @param k index in z
+   */
+  void getPreviousViscosityTransport(RealType& viscosity, int i, int j, int k);
+
+  void setPreviousViscosityTransport(ScalarField& current_visc);
+
+
   /**
    * @brief get Wall Distance in 2D
    *
    * @param h reference to store the wall distance
    * @param i index in x
-   * @param j index in y
+   * @param j index in ycurrent
    */
   void getH(RealType& h, int i, int j);
   /**
