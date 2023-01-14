@@ -111,6 +111,16 @@ void TurbulentSimulation::setTimeStep() {
 
 void TurbulentSimulation::solveTimestep() {
   turbulentViscosityIterator_.iterate();
+  
+  int N__x=parameters_.geometry.sizeX;
+  int N__y=parameters_.geometry.sizeY;
+
+  ScalarField current_visc_field(N__x + 3, N__y + 3, 0.0);
+  //uodated nu_tilda field
+  current_visc_field=TurbulentFlowField::getCurrentTurbulentViscosityTransport() ;
+  
+  TurbulentFlowField::setPreviousTurbulentViscosityTransport(current_visc_field); // Need to reset the CurrentTurbulentViscosityTransport field to zero?
+
 #ifndef NDEBUG
 
   feclearexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
