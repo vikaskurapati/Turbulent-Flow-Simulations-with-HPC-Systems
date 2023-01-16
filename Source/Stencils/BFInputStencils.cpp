@@ -34,8 +34,8 @@ RealType computeVelocity2D(int i, int j, RealType stepSize, const Parameters& pa
     const RealType y = posY + 0.5 * dy - stepSize;
 
     // For turbulence, please use: 
-    return parameters.walls.vectorLeft[0];
-    //return 6.0 * parameters.walls.vectorLeft[0] / (inletYSize * inletYSize) * y * (inletYSize - y);
+    // return parameters.walls.vectorLeft[0];
+    return 6.0 * parameters.walls.vectorLeft[0] / (inletYSize * inletYSize) * y * (inletYSize - y);
   } else {
     return 0.0;
   }

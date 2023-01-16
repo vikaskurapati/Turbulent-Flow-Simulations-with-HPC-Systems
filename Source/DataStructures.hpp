@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+
 #include "Assertion.hpp"
 #include "Definitions.hpp"
 
@@ -95,17 +96,19 @@ public:
  */
 class ScalarField: public Field<RealType> {
 private:
-  void initialize(RealType default_value=0.0);
+  void initialize(RealType default_value = 0.0);
 
 public:
-
-  ScalarField& operator=(const ScalarField& other){
+  ScalarField& operator=(const ScalarField& other) {
     assert(sizeX_ == other.sizeX_);
     assert(sizeY_ == other.sizeY_);
     assert(sizeZ_ == other.sizeZ_);
     assert(components_ == other.components_);
     assert(size_ == other.size_);
-    data_ = other.data_;
+
+    for (int i = 0; i < size_; i++) {
+      data_[i] = other.data_[i];
+    }
     return *this;
   }
 
@@ -116,7 +119,7 @@ public:
    * @param Nx Number of cells in direction x
    * @param Ny Number of cells in direction y
    */
-  ScalarField(int Nx, int Ny, RealType default_value=0.0);
+  ScalarField(int Nx, int Ny, RealType default_value = 0.0);
 
   /** 3D scalar field constructor.
    *
@@ -126,7 +129,7 @@ public:
    * @param Ny Number of cells in direction y
    * @param Nz Number of cells in direction z
    */
-  ScalarField(int Nx, int Ny, int Nz, RealType default_value=0.0);
+  ScalarField(int Nx, int Ny, int Nz, RealType default_value = 0.0);
 
   /** Acces to element in scalar field
    *

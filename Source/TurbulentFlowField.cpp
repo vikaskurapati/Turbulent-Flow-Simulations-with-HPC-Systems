@@ -56,8 +56,8 @@ TurbulentFlowField::TurbulentFlowField(const Parameters& parameters):
   ),
   previousTurbulentViscosityTransport_(
     parameters.geometry.dim == 2
-      ? ScalarField(getNx() + 3, getNy() + 3, (1/parameters.flow.Re)*5)
-      : ScalarField(getNx() + 3, getNy() + 3, getNz() + 3, (1/parameters.flow.Re)*5)
+      ? ScalarField(getNx() + 3, getNy() + 3, (1/parameters.flow.Re)*3)
+      : ScalarField(getNx() + 3, getNy() + 3, getNz() + 3, (1/parameters.flow.Re)*3)
   ),
   method_(parameters.simulation.type) {
 

@@ -37,7 +37,6 @@ void ScalarField::initialize(RealType default_value) {
 
 VectorField::VectorField(int Nx, int Ny):
   Field<RealType>(Nx, Ny, 1, 2) {
-
   initialize();
 }
 

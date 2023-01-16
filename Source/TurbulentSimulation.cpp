@@ -2,6 +2,8 @@
 
 #include "TurbulentSimulation.hpp"
 
+#include <cstdlib>
+
 #include "FlowField.hpp"
 #include "Simulation.hpp"
 #include "TurbulentFlowField.hpp"
@@ -18,7 +20,8 @@ TurbulentSimulation::TurbulentSimulation(Parameters& parameters, TurbulentFlowFi
   turbulentViscosityIterator_(flowField, parameters, turbulentViscosityStencil_),
   turbulentfghStencil_(parameters),
   turbulentfghIterator_(turbulentFlowField_, parameters, turbulentfghStencil_),
-  parallel_manager_(parameters, flowField), method_(parameters.simulation.type) {}
+  parallel_manager_(parameters, flowField),
+  method_(parameters.simulation.type) {}
 
 void TurbulentSimulation::initializeFlowField() {
 
@@ -32,6 +35,22 @@ void TurbulentSimulation::initializeFlowField() {
     FieldIterator<FlowField>    iterator(turbulentFlowField_, parameters_, stencil, 0, 1);
     iterator.iterate();
     wallVelocityIterator_.iterate();
+    int N__x = parameters_.geometry.sizeX;
+    int N__y = parameters_.geometry.sizeY;
+
+    for (int i = 0; i < N__x + 2; i++) {
+      for (int j = 0; j < N__y + 2; j++) {
+        // 6.0 * parameters.walls.vectorLeft[0] / (inletYSize * inletYSize) * y * (inletYSize - y)
+
+        // turbulentFlowField_.getVelocity().getVector(i, j)[0] = parameters_.walls.vectorLeft[0];
+        turbulentFlowField_.getVelocity().getVector(i, j)[0]
+        = 6.0 * parameters_.walls.vectorLeft[0] / (parameters_.geometry.lengthY * parameters_.geometry.lengthY)
+          * (parameters_.meshsize->getPosY(i, j) + 0.5 * parameters_.meshsize->getDy(i, j))
+          * (parameters_.geometry.lengthY - (parameters_.meshsize->getPosY(i, j) + 0.5 *
+          parameters_.meshsize->getDy(i, j)));
+      }
+    }
+
   } else if (parameters_.simulation.scenario == "pressure-channel") {
     // Set pressure boundaries here for left wall
     const RealType value = parameters_.walls.scalarLeft;
@@ -110,19 +129,31 @@ void TurbulentSimulation::setTimeStep() {
 }
 
 void TurbulentSimulation::solveTimestep() {
+
+  int N__x = parameters_.geometry.sizeX;
+  int N__y = parameters_.geometry.sizeY;
+
   turbulentViscosityIterator_.iterate();
-  
-  int N__x=parameters_.geometry.sizeX;
-  int N__y=parameters_.geometry.sizeY;
 
   ScalarField current_visc_field(N__x + 3, N__y + 3, 0.0);
-  //uodated nu_tilda field
-  // current_visc_field=TurbulentFlowField::getCurrentTurbulentViscosityTransport() ;
+  // uodated nu_tilda field
+  //  current_visc_field=TurbulentFlowField::getCurrentTurbulentViscosityTransport() ;
   current_visc_field = turbulentFlowField_.getCurrentTurbulentViscosityTransport();
+
+  // turbulentFlowField_.getPreviousTurbulentViscosityTransport().show("previous Turbulent Viscosity before exchange");
+
+  // turbulentFlowField_.getCurrentTurbulentViscosityTransport().show("current Turbulent Viscosity before exchange");
 
   turbulentFlowField_.setPreviousViscosityTransport(current_visc_field);
 
-  // TurbulentFlowField::setPreviousTurbulentViscosityTransport(current_visc_field); // Need to reset the CurrentTurbulentViscosityTransport field to zero?
+  // exit(0);
+
+  // turbulentFlowField_.getPreviousTurbulentViscosityTransport().show("previous Turbulent Viscosity after exchange");
+
+  // turbulentFlowField_.getCurrentTurbulentViscosityTransport().show("current Turbulent Viscosity after exchange");
+
+  // TurbulentFlowField::setPreviousTurbulentViscosityTransport(current_visc_field); // Need to reset the
+  // CurrentTurbulentViscosityTransport field to zero?
 
 #ifndef NDEBUG
 

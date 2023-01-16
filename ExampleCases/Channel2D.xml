@@ -13,7 +13,7 @@
     <geometry
       dim="2"
       lengthX="5.0" lengthY="1.0" lengthZ="1.0"
-      sizeX="80" sizeY="20" sizeZ="10"
+      sizeX="20" sizeY="10" sizeZ="10"
       stretchX="false" stretchY="false" stretchZ="false"
     >
       <mesh>uniform</mesh>
