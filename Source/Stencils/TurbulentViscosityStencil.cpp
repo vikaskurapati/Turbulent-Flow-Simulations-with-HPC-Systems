@@ -243,33 +243,57 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
       ) = flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j)
           + parameters_.timestep.dt * (term2 - term3 + term4 - term1);
 
-      if (i == 0 || j == 0) {
-        flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j) = 0.0;
+      // if (i == 0 || j == 0) {
+      //   flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j) = 0.0;
+      // }
+
+      if (j == 2 && i > 1) {
+        flowField.getCurrentTurbulentViscosityTransport().getScalar(
+          i, j - 1
+        ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
       }
 
-      if (j == 1 && i > 1 && i < parameters_.geometry.sizeX + 2) {
+      if (j == parameters_.geometry.sizeY + 1 && i > 1) {
         flowField.getCurrentTurbulentViscosityTransport().getScalar(
-          i, j
-        ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j + 1);
+          i, j + 1
+        ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
       }
 
-      if (j == parameters_.geometry.sizeY + 2 && i > 1 && i < parameters_.geometry.sizeX + 2) {
+      // if (i == 2 && j > 1) {
+      //   flowField.getCurrentTurbulentViscosityTransport().getScalar(
+      //     i - 1, j
+      //   ) = flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
+      // }
+
+      if (i == parameters_.geometry.sizeX + 1 && j > 1) {
         flowField.getCurrentTurbulentViscosityTransport().getScalar(
-          i, j
-        ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j - 1);
+          i + 1, j
+        ) = flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
       }
 
-      if (i == 1 && j > 1 && j < parameters_.geometry.sizeY + 2) {
-        flowField.getCurrentTurbulentViscosityTransport().getScalar(
-          i, j
-        ) = flowField.getCurrentTurbulentViscosityTransport().getScalar(i + 1, j);
-      }
+      // if (j == 1 && i > 1 && i < parameters_.geometry.sizeX + 2) {
+      //   flowField.getCurrentTurbulentViscosityTransport().getScalar(
+      //     i, j
+      //   ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j + 1);
+      // }
 
-      if (i == parameters_.geometry.sizeX + 2 && j > 1 && j < parameters_.geometry.sizeY + 2) {
-        flowField.getCurrentTurbulentViscosityTransport().getScalar(
-          i, j
-        ) = flowField.getCurrentTurbulentViscosityTransport().getScalar(i - 1, j);
-      }
+      // if (j == parameters_.geometry.sizeY + 2 && i > 1 && i < parameters_.geometry.sizeX + 2) {
+      //   flowField.getCurrentTurbulentViscosityTransport().getScalar(
+      //     i, j
+      //   ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j - 1);
+      // }
+
+      // if (i == 1 && j > 1 && j < parameters_.geometry.sizeY + 2) {
+      //   flowField.getCurrentTurbulentViscosityTransport().getScalar(
+      //     i, j
+      //   ) = flowField.getCurrentTurbulentViscosityTransport().getScalar(i + 1, j);
+      // }
+
+      // if (i == parameters_.geometry.sizeX + 2 && j > 1 && j < parameters_.geometry.sizeY + 2) {
+      //   flowField.getCurrentTurbulentViscosityTransport().getScalar(
+      //     i, j
+      //   ) = flowField.getCurrentTurbulentViscosityTransport().getScalar(i - 1, j);
+      // }
 
       // BOundary conditions for additional ghost layer on bottom and left
       // if (i == 1 || j == 1) {
