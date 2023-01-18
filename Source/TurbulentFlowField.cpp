@@ -114,9 +114,9 @@ void TurbulentFlowField::getPreviousViscosityTransport(RealType& viscosity, int 
   viscosity = getPreviousTurbulentViscosityTransport().getScalar(i, j, k);
 }
 
-void TurbulentFlowField::setPreviousViscosityTransport(ScalarField& current_visc_field ){
+void TurbulentFlowField::setPreviousViscosityTransport(){
   //make the previous field equal to the current field
-  previousTurbulentViscosityTransport_ = current_visc_field;
+  previousTurbulentViscosityTransport_ = currentTurbulentViscosityTransport_;
 }
 
 void TurbulentFlowField::getH(RealType& h, int i, int j) { h = getWallDistance().getScalar(i, j); }

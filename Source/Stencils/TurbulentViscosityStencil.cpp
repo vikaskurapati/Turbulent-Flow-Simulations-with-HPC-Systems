@@ -75,21 +75,23 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
       // Three options for S_hat
       // RealType S_hat = std::max(0.0, S + S_bar);
 
-      RealType S_hat = std::max(0.3*S, S + S_bar);
+      RealType S_hat = std::max(0.3 * S, S + S_bar);
+
+      // RealType S_hat;
 
       // if (S_bar >= -c_v2 * S) {
       //   // std::cout << "first term: " << S << " second term: " << S_bar << std::endl;
       //   S_hat = S + S_bar;
       // } else {
-      //   // std::cout << "first term: " << S << " second term: " << (S*(c_v2*c_v2*S + c_v3*S_bar))/((c_v3
-      //   - 2.0*c_v2)*S -
+      //   // std::cout << "first term: " << S << " second term: " << (S*(c_v2*c_v2*S + c_v3*S_bar))/((c_v3- 2.0*c_v2)*S
+      //   -
       //   // S_bar) << std::endl;
       //   S_hat = S + (S * (c_v2 * c_v2 * S + c_v3 * S_bar)) / ((c_v3 - 2.0 * c_v2) * S - S_bar);
       // }
 
       // std::cout << i << "   " << j << "   " << S_hat << "   " << std::endl;
 
-      RealType r = std::min(10.0, temp3 / S_hat);
+      RealType r = std::min(10.0, temp3 / (S_hat + 1e-6));
       // std::cout << i << "   " << j << "   " << r << "   " << std::endl;
 
       RealType g = r + 0.3 * (std::pow(r, 6.0) - r);
@@ -238,9 +240,12 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
       // std::cout << "Here:   " <<viscosity_laplacian <<"   "<<viscgradsquare <<std::endl;
       // term4 = term4 + (1 + 0.622) * viscgradsquare;
       // term4 = term4 / (2.0 / 3.0);
-      std::cout
-        << "i " << i << " j " << j << " term1: " << term1 << " term 2: " << term2 << " term 3: " << term3
-        << " term 4: " << term4 << " f_w: " << f_w << " g: " << g << " r: " << r << " S_hat: " << S_hat << std::endl;
+      if ((i == 2 && j == 17) || (i==2 && j ==16)) {
+        std::cout
+          << "i " << i << " j " << j << " term1: " << term1 << " term 2: " << term2 << " term 3: " << term3
+          << " term 4: " << term4 << " f_w: " << f_w << " g: " << g << " r: " << r << " S_hat: " << S_hat << " temp3: "
+          << temp3 << " nu: " << flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j) << std::endl;
+      }
 
       flowField.getCurrentTurbulentViscosityTransport().getScalar(
         i, j
@@ -263,6 +268,12 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
         flowField.getCurrentTurbulentViscosityTransport().getScalar(
           i, j + 1
         ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
+      // if (i == 2 && j == 17) {
+      //   std::cout
+      //     << "i " << i << " j " << j << " term1: " << term1 << " term 2: " << term2 << " term 3: " << term3
+      //     << " term 4: " << term4 << " f_w: " << f_w << " g: " << g << " r: " << r << " S_hat: " << S_hat << " temp3: "
+      //     << temp3 << " nu: " << flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j) << std::endl;
+      // }
       }
 
       // at the inlet of the channel

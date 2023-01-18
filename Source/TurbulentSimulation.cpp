@@ -135,16 +135,14 @@ void TurbulentSimulation::solveTimestep() {
 
   turbulentViscosityIterator_.iterate();
 
-  ScalarField current_visc_field(N__x + 3, N__y + 3, 0.0);
   // uodated nu_tilda field
   //  current_visc_field=TurbulentFlowField::getCurrentTurbulentViscosityTransport() ;
-  current_visc_field = turbulentFlowField_.getCurrentTurbulentViscosityTransport();
 
   // turbulentFlowField_.getPreviousTurbulentViscosityTransport().show("previous Turbulent Viscosity before exchange");
 
   // turbulentFlowField_.getCurrentTurbulentViscosityTransport().show("current Turbulent Viscosity before exchange");
 
-  turbulentFlowField_.setPreviousViscosityTransport(current_visc_field);
+  turbulentFlowField_.setPreviousViscosityTransport();
 
   // exit(0);
 

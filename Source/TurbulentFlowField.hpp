@@ -147,7 +147,7 @@ public:
    */
   void getPreviousViscosityTransport(RealType& viscosity, int i, int j, int k);
 
-  void setPreviousViscosityTransport(ScalarField& current_visc);
+  void setPreviousViscosityTransport();
 
 
   /**
