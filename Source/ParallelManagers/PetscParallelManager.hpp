@@ -4,14 +4,14 @@
 #include "Parameters.hpp"
 #include "TurbulentFlowField.hpp"
 
-#include "../FlowField.hpp"
-#include "../Iterators.hpp"
-#include "../Stencils/PressureBufferFillStencil.hpp"
-#include "../Stencils/PressureBufferReadStencil.hpp"
-#include "../Stencils/VelocityBufferFillStencil.hpp"
-#include "../Stencils/VelocityBufferReadStencil.hpp"
-#include "../Stencils/ViscosityBufferFillStencil.hpp"
-#include "../Stencils/ViscosityBufferReadStencil.hpp"
+#include "FlowField.hpp"
+#include "Iterators.hpp"
+#include "Stencils/PressureBufferFillStencil.hpp"
+#include "Stencils/PressureBufferReadStencil.hpp"
+#include "Stencils/VelocityBufferFillStencil.hpp"
+#include "Stencils/VelocityBufferReadStencil.hpp"
+#include "Stencils/ViscosityBufferFillStencil.hpp"
+#include "Stencils/ViscosityBufferReadStencil.hpp"
 
 namespace ParallelManagers {
   class PetscParallelManager {
