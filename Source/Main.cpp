@@ -127,16 +127,16 @@ int main(int argc, char* argv[]) {
   Clock clock;
   // Time loop
 
-  // int n = 0;
+  int n = 0;
 
   while (time < parameters.simulation.finalTime) {
     simulation->solveTimestep();
 
-    // n += 1;
+    n += 1;
 
-    // if (n == 2) {
-    //   exit(0);
-    // }
+    if (n == 3) {
+      exit(0);
+    }
 
     timeSteps++;
     time += parameters.timestep.dt;
