@@ -240,17 +240,21 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
       // std::cout << "Here:   " <<viscosity_laplacian <<"   "<<viscgradsquare <<std::endl;
       // term4 = term4 + (1 + 0.622) * viscgradsquare;
       // term4 = term4 / (2.0 / 3.0);
-      if ((i == 2 && j == 17) || (i==2 && j ==16)) {
-        std::cout
-          << "i " << i << " j " << j << " term1: " << term1 << " term 2: " << term2 << " term 3: " << term3
-          << " term 4: " << term4 << " f_w: " << f_w << " g: " << g << " r: " << r << " S_hat: " << S_hat << " temp3: "
-          << temp3 << " nu: " << flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j) << std::endl;
-      }
+      // if ((i == 2 && j == 17) || (i==2 && j ==16)) {
+      //   std::cout
+      //     << "i " << i << " j " << j << " term1: " << term1 << " term 2: " << term2 << " term 3: " << term3
+      //     << " term 4: " << term4 << " f_w: " << f_w << " g: " << g << " r: " << r << " S_hat: " << S_hat << " temp3: "
+      //     << temp3 << " nu: " << flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j) << std::endl;
+      // }
 
       flowField.getCurrentTurbulentViscosityTransport().getScalar(
         i, j
       ) = flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j)
           + parameters_.timestep.dt * (term2 - term3 + term4 - term1);
+
+      if (flowField.getCurrentTurbulentViscosityTransport().getScalar(i,j) < 0.0) {
+          flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j) = 0.0;
+      }
 
       //***********************************************
       // Boundary Conditions for nu_transport:

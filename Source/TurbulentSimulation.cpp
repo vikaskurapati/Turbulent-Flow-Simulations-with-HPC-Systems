@@ -130,10 +130,8 @@ void TurbulentSimulation::setTimeStep() {
 
 void TurbulentSimulation::solveTimestep() {
 
-  int N__x = parameters_.geometry.sizeX;
-  int N__y = parameters_.geometry.sizeY;
-
-  turbulentViscosityIterator_.iterate();
+  // int N__x = parameters_.geometry.sizeX;
+  // int N__y = parameters_.geometry.sizeY;
 
   // uodated nu_tilda field
   //  current_visc_field=TurbulentFlowField::getCurrentTurbulentViscosityTransport() ;
@@ -141,9 +139,6 @@ void TurbulentSimulation::solveTimestep() {
   // turbulentFlowField_.getPreviousTurbulentViscosityTransport().show("previous Turbulent Viscosity before exchange");
 
   // turbulentFlowField_.getCurrentTurbulentViscosityTransport().show("current Turbulent Viscosity before exchange");
-
-  turbulentFlowField_.setPreviousViscosityTransport();
-
   // exit(0);
 
   // turbulentFlowField_.getPreviousTurbulentViscosityTransport().show("previous Turbulent Viscosity after exchange");
@@ -180,6 +175,8 @@ void TurbulentSimulation::solveTimestep() {
   // TODO WS2: communicate velocity values
   // Iterate for velocities on the boundary
   wallVelocityIterator_.iterate();
+  turbulentViscosityIterator_.iterate();
+  turbulentFlowField_.setPreviousViscosityTransport();
 }
 
 void TurbulentSimulation::plotVTK(int timeStep, RealType simulationTime) {
