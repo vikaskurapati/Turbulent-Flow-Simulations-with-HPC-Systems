@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>
 #ifndef ENABLE_PETSC
 #define PETSC_COMM_WORLD MPI_COMM_WORLD
 #endif
@@ -15,6 +16,7 @@ using RealType = double;
 
 static constexpr RealType MY_FLOAT_MAX = std::numeric_limits<RealType>::max();
 static constexpr RealType MY_FLOAT_MIN = std::numeric_limits<RealType>::min();
+static constexpr RealType EPSILON = std::numeric_limits<RealType>::epsilon();
 
 #define LIKELY(x) __builtin_expect(bool(x), 1)
 #define UNLIKELY(x) __builtin_expect(bool(x), 0)

@@ -8,10 +8,9 @@ FlowField::FlowField(int Nx, int Ny):
   sizeZ_(1),
   cellsX_(Nx + 3),
   cellsY_(Ny + 3),
-  cellsZ_(1)
+  cellsZ_(1),
   // Pressure field doesn't need to have an extra layer, but this allows to address the same
   // positions with the same iterator for both pressures and velocities.
-  ,
   pressure_(ScalarField(Nx + 3, Ny + 3)),
   velocity_(VectorField(Nx + 3, Ny + 3)),
   flags_(IntScalarField(Nx + 3, Ny + 3)),

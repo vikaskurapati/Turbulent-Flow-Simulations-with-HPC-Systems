@@ -1,7 +1,8 @@
 #pragma once
-
+#include <cmath>
 #include "Definitions.hpp"
 #include "Parameters.hpp"
+#include "TurbulentFlowField.hpp"
 
 namespace Stencils {
 
@@ -557,11 +558,6 @@ namespace Stencils {
     // Central difference expression which is second-order accurate for uniform meshes. We interpolate u half-way
     // between neighboured u-component values and afterwards build the central difference for u*u.
 
-    /*const RealType secondOrder = (((dxLong1 - dxShort) / dxLong1 * u0 + dxShort / dxLong1 * u1) * ((dxLong1 - dxShort)
-       / dxLong1 * u0 + dxShort / dxLong1 * u1)
-        - ((dxLong0 - dxShort) / dxLong0 * u0 + dxShort / dxLong0 * uM1) * ((dxLong0 - dxShort) / dxLong0 * u0 + dxShort
-       / dxLong0 * uM1) ) / (2.0 * dxShort);*/
-
     const RealType secondOrder = ((u0 + u1) * (u0 + u1) - (u0 + uM1) * (u0 + uM1)) / (4 * dxLong1);
 
     // Donor-cell like derivative expression. We evaluate u half-way between neighboured u-components and use this as a
@@ -609,11 +605,6 @@ namespace Stencils {
     const RealType kr = (v0 + v1) / 2;
     const RealType kl = (v0 + vM1) / 2;
 
-    /*const RealType secondOrder = (((dyLong1 - dyShort) / dyLong1 * v0 + dyShort / dyLong1 * v1) * ((dyLong1 - dyShort)
-       / dyLong1 * v0 + dyShort / dyLong1 * v1)
-        - ((dyLong0 - dyShort) / dyLong0 * v0 + dyShort / dyLong0 * vM1) * ((dyLong0 - dyShort) / dyLong0 * v0 + dyShort
-       / dyLong0 * vM1) ) / (2.0 * dyShort);*/
-
     const RealType secondOrder = ((v0 + v1) * (v0 + v1) - (v0 + vM1) * (v0 + vM1)) / (4 * dyLong1);
 
     const RealType firstOrder = 1.0 / (4.0 * dyShort)
@@ -657,11 +648,6 @@ namespace Stencils {
     // const RealType kl = (dzLong0 - dzShort) / dzLong0 * w0 + dzShort / dzLong0 * wM1;
     const RealType kr = (w0 + w1) / 2;
     const RealType kl = (w0 + wM1) / 2;
-
-    /*const RealType secondOrder = (((dzLong1 - dzShort) / dzLong1 * w0 + dzShort / dzLong1 * w1) * ((dzLong1 - dzShort)
-       / dzLong1 * w0 + dzShort / dzLong1 * w1)
-        - ((dzLong0 - dzShort) / dzLong0 * w0 + dzShort / dzLong0 * wM1) * ((dzLong0 - dzShort) / dzLong0 * w0 + dzShort
-       / dzLong0 * wM1) ) / (2.0 * dzShort);*/
 
     const RealType secondOrder = ((w0 + w1) * (w0 + w1) - (w0 + wM1) * (w0 + wM1)) / (4 * dzLong1);
 
@@ -728,4 +714,156 @@ namespace Stencils {
             - dvwdy(localVelocity, parameters, localMeshsize) + parameters.environment.gz);
   }
 
+  // Additional functions for turbulence simulation
+
+  inline RealType interpViscosity(TurbulentFlowField& flowField, int i, int j, int ci, int cj, const Parameters& parameters)
+  {
+      return (1/parameters.flow.Re)+(flowField.getTurbulentViscosity().getScalar(i+ci,j)*1/std::sqrt(pow(parameters.meshsize->getDx(i+ci,j)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j)/2,2))
+    +flowField.getTurbulentViscosity().getScalar(i+ci,j+cj)*1/std::sqrt(pow(parameters.meshsize->getDx(i+ci,j+cj)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j+cj)/2,2))
+    +flowField.getTurbulentViscosity().getScalar(i,j+cj)*1/std::sqrt(pow(parameters.meshsize->getDx(i,j+cj)/2,2)+std::pow(parameters.meshsize->getDy(i,j+cj)/2,2))
+    +flowField.getTurbulentViscosity().getScalar(i,j)*1/std::sqrt(pow(parameters.meshsize->getDx(i,j)/2,2)+std::pow(parameters.meshsize->getDy(i,j)/2,2)))
+    /(1/std::sqrt(pow(parameters.meshsize->getDx(i+ci,j)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j)/2,2))+1/std::sqrt(pow(parameters.meshsize->getDx(i+ci,j+cj)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j+cj)/2,2))+
+    1/std::sqrt(pow(parameters.meshsize->getDx(i,j+cj)/2,2)+std::pow(parameters.meshsize->getDy(i,j+cj)/2,2))+1/std::sqrt(pow(parameters.meshsize->getDx(i,j)/2,2)+std::pow(parameters.meshsize->getDy(i,j)/2,2)));
+  }
+
+  inline RealType interpViscosity(TurbulentFlowField& flowField, int i, int j, int k, int ci, int cj, int ck, const Parameters& parameters)
+  {
+      return (1/parameters.flow.Re)+(flowField.getTurbulentViscosity().getScalar(i+ci,j,k)*1/std::sqrt(pow(parameters.meshsize->getDx(i+ci,j,k)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j,k)/2,2)+std::pow(parameters.meshsize->getDz(i+ci,j,k)/2,2))
+    +flowField.getTurbulentViscosity().getScalar(i+ci,j+cj,k)*1/std::sqrt(pow(parameters.meshsize->getDx(i+ci,j+cj,k)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j+cj,k)/2,2)+std::pow(parameters.meshsize->getDz(i+ci,j+cj,k)/2,2))
+    +flowField.getTurbulentViscosity().getScalar(i+ci,j,k+ck)*1/std::sqrt(pow(parameters.meshsize->getDx(i+ci,j,k+ck)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j,k+ck)/2,2)+std::pow(parameters.meshsize->getDz(i+ci,j,k+ck)/2,2))
+    +flowField.getTurbulentViscosity().getScalar(i+ci,j+cj,k+ck)*1/std::sqrt(pow(parameters.meshsize->getDx(i+ci,j+cj,k+ck)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j+cj,k+ck/2),2)+std::pow(parameters.meshsize->getDz(i+ci,j+cj,k+ck)/2,2))
+    +flowField.getTurbulentViscosity().getScalar(i,j,k)*1/std::sqrt(pow(parameters.meshsize->getDx(i,j,k)/2,2)+std::pow(parameters.meshsize->getDy(i,j,k)/2,2)+std::pow(parameters.meshsize->getDz(i,j,k)/2,2))
+    +flowField.getTurbulentViscosity().getScalar(i,j+cj,k)*1/std::sqrt(pow(parameters.meshsize->getDx(i,j+cj,k)/2,2)+std::pow(parameters.meshsize->getDy(i,j+cj,k)/2,2)+std::pow(parameters.meshsize->getDz(i,j+cj,k)/2,2))
+    +flowField.getTurbulentViscosity().getScalar(i,j,k+ck)*1/std::sqrt(pow(parameters.meshsize->getDx(i,j,k+ck)/2,2)+std::pow(parameters.meshsize->getDy(i,j,k+ck)/2,2)+std::pow(parameters.meshsize->getDz(i,j,k+ck)/2,2))
+    +flowField.getTurbulentViscosity().getScalar(i,j+cj,k+ck)*1/std::sqrt(pow(parameters.meshsize->getDx(i,j+cj,k+ck)/2,2)+std::pow(parameters.meshsize->getDy(i,j+cj,k+ck)/2,2)+std::pow(parameters.meshsize->getDz(i,j+cj,k+ck)/2,2)))
+    /(1/std::sqrt(pow(parameters.meshsize->getDx(i+ci,j,k)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j,k)/2,2)+std::pow(parameters.meshsize->getDz(i+ci,j,k)/2,2))
+    +1/std::sqrt(pow(parameters.meshsize->getDx(i+ci,j+cj,k)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j+cj,k)/2,2)+std::pow(parameters.meshsize->getDz(i+ci,j+cj,k)/2,2))
+    +1/std::sqrt(pow(parameters.meshsize->getDx(i+ci,j,k+ck)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j,k+ck)/2,2)+std::pow(parameters.meshsize->getDz(i+ci,j,k+ck)/2,2))
+    +1/std::sqrt(pow(parameters.meshsize->getDx(i+ci,j+cj,k+ck)/2,2)+std::pow(parameters.meshsize->getDy(i+ci,j+cj,k+ck)/2,2)+std::pow(parameters.meshsize->getDz(i+ci,j+cj,k+ck)/2,2))
+    +1/std::sqrt(pow(parameters.meshsize->getDx(i,j,k)/2,2)+std::pow(parameters.meshsize->getDy(i,j,k)/2,2)+std::pow(parameters.meshsize->getDz(i,j,k)/2,2))
+    +1/std::sqrt(pow(parameters.meshsize->getDx(i,j+cj,k)/2,2)+std::pow(parameters.meshsize->getDy(i,j+cj,k)/2,2)+std::pow(parameters.meshsize->getDz(i,j+cj,k)/2,2))
+    +1/std::sqrt(pow(parameters.meshsize->getDx(i,j,k+ck)/2,2)+std::pow(parameters.meshsize->getDy(i,j,k+ck)/2,2)+std::pow(parameters.meshsize->getDz(i,j,k+ck)/2,2))
+    +1/std::sqrt(pow(parameters.meshsize->getDx(i,j+cj,k+ck)/2,2)+std::pow(parameters.meshsize->getDy(i,j+cj,k+ck)/2,2)+std::pow(parameters.meshsize->getDz(i,j+cj,k+ck)/2,2)));
+  }
+
+
+inline RealType computeF2D(
+    TurbulentFlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j
+  ) {
+    RealType dxp1 = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(1,0,0,0)])/2;
+    RealType dyp1 = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,1,0,1)])/2;
+    
+    RealType dy=  localMeshsize[mapd(0,0,0,1)];
+        
+    RealType dxm1 = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(-1,0,0,0)])/2;
+    RealType dym1 = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,-1,0,1)])/2;
+    return localVelocity[mapd(0, 0, 0, 0)]
+        + dt * ((2/std::pow(dxp1,2))*(interpViscosity(flowField, i+1, j, 0, 0, parameters)*(localVelocity[mapd(1,0,0,0)]-localVelocity[mapd(0,0,0,0)]))
+        - (2/std::pow(dxm1,2))*(interpViscosity(flowField, i, j, 0, 0, parameters)*(localVelocity[mapd(0,0,0,0)]-localVelocity[mapd(-1,0,0,0)]))
+        
+        +
+        
+        (1/dy)*(interpViscosity(flowField, i, j, 1, 1, parameters)*
+        ((localVelocity[mapd(0,1,0,0)]-localVelocity[mapd(0,0,0,0)])/dyp1+(localVelocity[mapd(1,0,0,1)]-localVelocity[mapd(0,0,0,1)])/dxp1)-
+        interpViscosity(flowField, i, j, 1, -1, parameters)*
+        ((localVelocity[mapd(0,0,0,0)]-localVelocity[mapd(0,-1,0,0)])/dym1+(localVelocity[mapd(1,-1,0,1)]-localVelocity[mapd(0,-1,0,1)])/dxp1))
+        
+        - du2dx(localVelocity, parameters, localMeshsize) - duvdy(localVelocity, parameters, localMeshsize)
+        + parameters.environment.gx);
+  }
+
+  inline RealType computeG2D(
+    TurbulentFlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j
+  ) {
+    
+    RealType dxp1 = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(1,0,0,0)])/2;
+    RealType dyp1 = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,1,0,1)])/2;
+    
+    RealType dx = localMeshsize[mapd(0,0,0,0)];
+        
+    RealType dxm1 = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(-1,0,0,0)])/2;
+    RealType dym1 = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,-1,0,1)])/2;
+
+    return localVelocity[mapd(0, 0, 0, 1)]
+        + dt * ((2/std::pow(dyp1,2))*(interpViscosity(flowField, i, j+1, 0, 0, parameters)*(localVelocity[mapd(0,1,0,1)]-localVelocity[mapd(0,0,0,1)]))
+        
+        -(2/std::pow(dym1,2))*(interpViscosity(flowField, i, j, 0, 0, parameters)*(localVelocity[mapd(0,0,0,1)]-localVelocity[mapd(0,-1,0,1)]))
+        
+        +
+        
+        (1/dx)*(interpViscosity(flowField, i, j, 1, 1, parameters)*
+        ((localVelocity[mapd(1,0,0,1)]-localVelocity[mapd(0,0,0,1)])/dxp1+(localVelocity[mapd(0,1,0,0)]-localVelocity[mapd(0,0,0,0)])/dyp1)-
+        interpViscosity(flowField, i, j, -1, 1, parameters)*
+        ((localVelocity[mapd(0,0,0,1)]-localVelocity[mapd(-1,0,0,1)])/dxm1+(localVelocity[mapd(-1,1,0,0)]-localVelocity[mapd(-1,0,0,0)])/dyp1))
+
+        - duvdx(localVelocity, parameters, localMeshsize) - dv2dy(localVelocity, parameters, localMeshsize) +parameters.environment.gy);
+  }
+
+  inline RealType computeF3D(
+    TurbulentFlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j, int k
+  ) {
+    RealType dx = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(1,0,0,0)])/2;
+    RealType dy = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,1,0,1)])/2;
+    RealType dz = (localMeshsize[mapd(0,0,0,2)]+localMeshsize[mapd(0,0,1,2)])/2;
+    return localVelocity[mapd(0, 0, 0, 0)]
+        + dt * (2/std::pow(dx,2)*(interpViscosity(flowField, i+1, j, k, 0, 0, 0, parameters)*
+        (localVelocity[mapd(1,0,0,0)]-localVelocity[mapd(0,0,0,0)])-interpViscosity(flowField, i, j, k, 0, 0, 0, parameters)*
+        (localVelocity[mapd(0,0,0,0)]-localVelocity[mapd(-1,0,0,0)]))+
+        1/(dy)*(interpViscosity(flowField, i, j, k, 1, 1, 0, parameters)*
+        ((localVelocity[mapd(0,1,0,0)]-localVelocity[mapd(0,0,0,0)])/dy+(localVelocity[mapd(1,0,0,1)]-localVelocity[mapd(0,0,0,1)])/dx)-
+        interpViscosity(flowField, i, j, k, 1, -1, 0, parameters)*
+        ((localVelocity[mapd(0,0,0,0)]-localVelocity[mapd(0,-1,0,0)])/dy+(localVelocity[mapd(1,-1,0,1)]-localVelocity[mapd(0,-1,0,1)])/dx))+ 
+        1/(dz)*(interpViscosity(flowField, i, j, k, 1, 0, 1, parameters)*
+        ((localVelocity[mapd(0,0,1,0)]-localVelocity[mapd(0,0,0,0)])/dz+(localVelocity[mapd(1,0,0,2)]-localVelocity[mapd(0,0,0,2)])/dx)-
+        interpViscosity(flowField, i, j, k, 1, 0, -1, parameters)*
+        ((localVelocity[mapd(0,0,0,0)]-localVelocity[mapd(0,0,-1,0)])/dz+(localVelocity[mapd(1,0,-1,2)]-localVelocity[mapd(0,0,-1,2)])/dx))
+        - du2dx(localVelocity, parameters, localMeshsize) - duvdy(localVelocity, parameters, localMeshsize)
+        - duwdz(localVelocity, parameters, localMeshsize)+ 
+        parameters.environment.gx);
+  }
+
+  inline RealType computeG3D(
+    TurbulentFlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j, int k
+  ) {
+    RealType dx = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(1,0,0,0)])/2;
+    RealType dy = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,1,0,1)])/2;
+    RealType dz = (localMeshsize[mapd(0,0,0,2)]+localMeshsize[mapd(0,0,1,2)])/2;
+    return localVelocity[mapd(0, 0, 0, 1)]
+        + dt * (2/std::pow(dy,2)*(interpViscosity(flowField, i, j+1,k, 0, 0,0, parameters)*
+        (localVelocity[mapd(0,1,0,1)]-localVelocity[mapd(0,0,0,1)])-interpViscosity(flowField, i, j, k, 0, 0, 0, parameters)*
+        (localVelocity[mapd(0,0,0,1)]-localVelocity[mapd(0,-1,0,1)]))+
+        1/(dx)*(interpViscosity(flowField, i, j, k, 1, 1, 0, parameters)*
+        ((localVelocity[mapd(1,0,0,1)]-localVelocity[mapd(0,0,0,1)])/dx+(localVelocity[mapd(0,1,0,0)]-localVelocity[mapd(0,0,0,0)])/dy)-
+        interpViscosity(flowField, i, j, k, -1, 1, 0, parameters)*
+        ((localVelocity[mapd(0,0,0,1)]-localVelocity[mapd(-1,0,0,1)])/dx+(localVelocity[mapd(-1,1,0,0)]-localVelocity[mapd(-1,0,0,0)])/dy))+ 
+        1/(dz)*(interpViscosity(flowField, i, j, k, 0, 1, 1, parameters)*
+        ((localVelocity[mapd(0,0,1,1)]-localVelocity[mapd(0,0,0,1)])/dz+(localVelocity[mapd(0,1,0,2)]-localVelocity[mapd(0,0,0,2)])/dy)-
+        interpViscosity(flowField, i, j, k, 0, 1, -1, parameters)*
+        ((localVelocity[mapd(0,0,0,1)]-localVelocity[mapd(0,0,-1,1)])/dz+(localVelocity[mapd(0,1,-1,2)]-localVelocity[mapd(0,0,-1,2)])/dy))
+        - dv2dy(localVelocity, parameters, localMeshsize) - duvdx(localVelocity, parameters, localMeshsize)
+        - dvwdz(localVelocity, parameters, localMeshsize)+parameters.environment.gy);
+  }
+
+  inline RealType computeH3D(
+    TurbulentFlowField& flowField, const RealType* const localVelocity, const RealType* const localMeshsize, const Parameters& parameters, RealType dt, int i, int j, int k
+  ) {
+    RealType dx = (localMeshsize[mapd(0,0,0,0)]+localMeshsize[mapd(1,0,0,0)])/2;
+    RealType dy = (localMeshsize[mapd(0,0,0,1)]+localMeshsize[mapd(0,1,0,1)])/2;
+    RealType dz = (localMeshsize[mapd(0,0,0,2)]+localMeshsize[mapd(0,0,1,2)])/2;
+    return localVelocity[mapd(0, 0, 0, 2)]
+        + dt * (2/std::pow(dz,2)*(interpViscosity(flowField, i, j,k+1, 0, 0,0, parameters)*
+        (localVelocity[mapd(0,0,1,2)]-localVelocity[mapd(0,0,0,2)])-interpViscosity(flowField, i, j, k, 0, 0, 0, parameters)*
+        (localVelocity[mapd(0,0,0,2)]-localVelocity[mapd(0,0,-1,2)]))+
+        1/(dx)*(interpViscosity(flowField, i, j, k, 1, 0, 1, parameters)*
+        ((localVelocity[mapd(1,0,0,2)]-localVelocity[mapd(0,0,0,2)])/dx+(localVelocity[mapd(0,0,1,0)]-localVelocity[mapd(0,0,0,0)])/dz)-
+        interpViscosity(flowField, i, j, k, -1, 0, 1, parameters)*
+        ((localVelocity[mapd(0,0,0,2)]-localVelocity[mapd(-1,0,0,2)])/dx+(localVelocity[mapd(-1,0,1,0)]-localVelocity[mapd(-1,0,0,0)])/dz))+ 
+        1/(dy)*(interpViscosity(flowField, i, j, k, 0, 1, 1, parameters)*
+        ((localVelocity[mapd(0,1,0,2)]-localVelocity[mapd(0,0,0,2)])/dy+(localVelocity[mapd(0,0,1,1)]-localVelocity[mapd(0,0,0,1)])/dz)-
+        interpViscosity(flowField, i, j, k, 0, -1, 1, parameters)*
+        ((localVelocity[mapd(0,0,0,2)]-localVelocity[mapd(0,-1,0,2)])/dy+(localVelocity[mapd(0,-1,1,1)]-localVelocity[mapd(0,-1,0,1)])/dz))
+        - dw2dz(localVelocity, parameters, localMeshsize) - duwdx(localVelocity, parameters, localMeshsize)
+        - dvwdy(localVelocity, parameters, localMeshsize)
+        +parameters.environment.gz);
+  }
 } // namespace Stencils

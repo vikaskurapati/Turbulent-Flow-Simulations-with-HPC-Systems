@@ -11,6 +11,8 @@
 #include "Stencils/FGHStencil.hpp"
 #include "Stencils/RHSStencil.hpp"
 #include "Stencils/InitTaylorGreenFlowFieldStencil.hpp"
+#include "Stencils/InitWallDistanceStencil.hpp"
+#include "Stencils/InitBoundaryLayerThickness.hpp"
 #include "Stencils/MaxUStencil.hpp"
 #include "Stencils/MovingWallStencils.hpp"
 #include "Stencils/NeumannBoundaryStencils.hpp"
@@ -18,11 +20,12 @@
 #include "Stencils/PeriodicBoundaryStencils.hpp"
 #include "Stencils/VelocityStencil.hpp"
 #include "Stencils/VTKStencil.hpp"
+#include "./ParallelManagers/PetscParallelManager.hpp"
+#include "Stencils/TurbulentViscosityStencil.hpp"
 
 class Simulation {
 protected:
   Parameters& parameters_;
-
   FlowField& flowField_;
 
   Stencils::MaxUStencil             maxUStencil_;
@@ -35,9 +38,9 @@ protected:
   GlobalBoundaryIterator<FlowField> wallFGHIterator_;
   
   Stencils::FGHStencil     fghStencil_;
-  Stencils::RHSStencil rhsStencil_;
   FieldIterator<FlowField> fghIterator_;
   FieldIterator<FlowField> rhsIterator_;
+  Stencils::RHSStencil     rhsStencil_;
 
   Stencils::VelocityStencil velocityStencil_;
   Stencils::ObstacleStencil obstacleStencil_;
@@ -46,7 +49,11 @@ protected:
 
   std::unique_ptr<Solvers::LinearSolver> solver_;
 
+  ParallelManagers::PetscParallelManager parallel_manager_;
+
   virtual void setTimeStep();
+
+  int rank_;
 
 public:
   Simulation(Parameters& parameters, FlowField& flowField);

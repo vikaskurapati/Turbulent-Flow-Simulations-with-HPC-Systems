@@ -1,5 +1,7 @@
 #pragma once
 
+#include <math.h>
+#include <stdexcept>
 #include "Definitions.hpp"
 
 // Forward declaration of Parameters

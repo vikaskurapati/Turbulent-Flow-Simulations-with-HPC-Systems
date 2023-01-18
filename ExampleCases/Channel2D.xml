@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
-    <flow Re="100" />
+    <flow Re="10000" />
     <simulation finalTime="10.0" >
-        <type>dns</type>
+        <type>turbulence</type>
         <scenario>channel</scenario>
     </simulation>
+    <turbulent kappa = "0.41">
+        <boundaryLayerType>turbulence</boundaryLayerType>
+    </turbulent>
     <timestep dt="1" tau="0.5" />
     <solver gamma="0.5" />
     <geometry
       dim="2"
-      lengthX="5.0" lengthY="1.0" lengthZ="1.0"
-      sizeX="10" sizeY="20" sizeZ="10"
-      stretchX="false" stretchY="true" stretchZ="true"
+      lengthX="25.0" lengthY="1.0" lengthZ="1.0"
+      sizeX="100" sizeY="80" sizeZ="10"
+      stretchX="true" stretchY="false" stretchZ="false"
     >
-      <mesh>uniform</mesh>
-      <!--mesh>stretched</mesh-->
+      <!--mesh>uniform</mesh-->
+      <mesh>stretched</mesh>
     </geometry>
     <environment gx="0" gy="0" gz="0" />
     <walls>

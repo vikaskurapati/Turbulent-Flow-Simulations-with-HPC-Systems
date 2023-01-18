@@ -5,6 +5,7 @@
 #include "FlowField.hpp"
 #include "Parameters.hpp"
 
+
 namespace Stencils {
 
   /** Stencil for writting VTK files

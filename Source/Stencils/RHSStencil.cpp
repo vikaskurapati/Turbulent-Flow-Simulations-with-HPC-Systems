@@ -10,8 +10,8 @@ void Stencils::RHSStencil::apply(FlowField& flowField, int i, int j)
     RealType& value = flowField.getRHS().getScalar(i, j);
 
     // value = //calculation for RHS
-    auto dx = parameters_.meshsize->getDx(i,j);
-    auto dy = parameters_.meshsize->getDy(i,j);
+    auto dx = 0.5*(parameters_.meshsize->getDx(i,j)+parameters_.meshsize->getDx(i-1,j));
+    auto dy = 0.5*(parameters_.meshsize->getDy(i,j)+parameters_.meshsize->getDy(i,j-1));
     auto dt = parameters_.timestep.dt;
 
     const RealType* fgh = flowField.getFGH().getVector(i, j);
@@ -26,9 +26,9 @@ void Stencils::RHSStencil::apply(FlowField& flowField, int i, int j, int k)
 {
     RealType& value = flowField.getRHS().getScalar(i, j, k);
 
-    auto dx = parameters_.meshsize->getDx(i, j, k);
-    auto dy = parameters_.meshsize->getDy(i, j, k);
-    auto dz = parameters_.meshsize->getDz(i, j, k);
+    auto dx = 0.5*(parameters_.meshsize->getDx(i, j, k)+parameters_.meshsize->getDx(i-1, j, k));
+    auto dy = 0.5*(parameters_.meshsize->getDy(i, j, k)+parameters_.meshsize->getDy(i, j-1, k));
+    auto dz = 0.5*(parameters_.meshsize->getDz(i, j, k)+parameters_.meshsize->getDx(i, j, k-1));
     auto dt = parameters_.timestep.dt;
 
     const RealType* fgh = flowField.getFGH().getVector(i,j,k);

@@ -396,6 +396,22 @@ void Configuration::loadParameters(Parameters& parameters, const MPI_Comm& commu
     //------------------------------------------------------
     // TODO WS2: Turbulence
     //------------------------------------------------------
+    if (parameters.simulation.type == "turbulence") {
+      node = confFile.FirstChildElement()->FirstChildElement("turbulent");
+
+      if (node == NULL) {
+        throw std::runtime_error("Error loading turbulence parameters");
+      }
+
+      readFloatMandatory(parameters.turbulence.kappa, node, "kappa");
+
+      subNode = node->FirstChildElement("boundaryLayerType");
+      if (subNode != NULL) {
+        readStringMandatory(parameters.turbulence.boundaryLayerType, subNode);
+      } else {
+        throw std::runtime_error("Missing boundary layer type in the turbulence parameters");
+      }
+    }
   }
 
   // Broadcasting of the values
@@ -454,4 +470,6 @@ void Configuration::loadParameters(Parameters& parameters, const MPI_Comm& commu
   MPI_Bcast(parameters.walls.vectorBack, 3, MY_MPI_FLOAT, 0, communicator);
 
   // TODO WS2: broadcast turbulence parameters
+  MPI_Bcast(&(parameters.turbulence.kappa), 1, MY_MPI_FLOAT, 0, communicator);
+  broadcastString(parameters.turbulence.boundaryLayerType, communicator);
 }

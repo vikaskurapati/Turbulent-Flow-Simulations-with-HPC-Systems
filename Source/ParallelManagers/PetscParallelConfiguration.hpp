@@ -37,7 +37,16 @@ namespace ParallelManagers {
     void freeSizes();
 
   public:
+  /**
+   * @brief Construct a new Petsc Parallel Configuration object
+   * 
+   * @param parameters 
+   */
     PetscParallelConfiguration(Parameters& parameters);
+    /**
+     * @brief Destroy the Petsc Parallel Configuration object
+     * 
+     */
     ~PetscParallelConfiguration();
   };
 

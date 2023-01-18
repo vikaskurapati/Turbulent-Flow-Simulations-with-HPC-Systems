@@ -1,9 +1,11 @@
 #include "StdAfx.hpp"
 
-#include "VTKStencil.hpp"
+#include "TurbulentVTKStencil.hpp"
 
-Stencils::VTKStencil::VTKStencil(const Parameters& parameters):
-  FieldStencil<FlowField>(parameters),
+#include "TurbulentFlowField.hpp"
+
+Stencils::TurbulentVTKStencil::TurbulentVTKStencil(const Parameters& parameters):
+  FieldStencil<TurbulentFlowField>(parameters),
   written_(false),
   prefix_(parameters.vtk.prefix) {
 
@@ -35,11 +37,11 @@ Stencils::VTKStencil::VTKStencil(const Parameters& parameters):
   gitignore.close();
 }
 
-void Stencils::VTKStencil::writeVTKHeader(std::ostream& file) const {
+void Stencils::TurbulentVTKStencil::writeVTKHeader(std::ostream& file) const {
   file << "# vtk DataFile Version 2.0" << std::endl << "NS-EOF" << std::endl << "ASCII" << std::endl << std::endl;
 }
 
-void Stencils::VTKStencil::writePoints(std::ostream& file, RealType simulationTime) const {
+void Stencils::TurbulentVTKStencil::writePoints(std::ostream& file, RealType simulationTime) const {
   // Number of points in every direction
   int px = parameters_.parallel.localSize[0] + 1;
   int py = parameters_.parallel.localSize[1] + 1;
@@ -90,42 +92,7 @@ void Stencils::VTKStencil::writePoints(std::ostream& file, RealType simulationTi
   file << grid;
 }
 
-void Stencils::VTKStencil::apply(FlowField& flowField, int i, int j) {
-  ASSERTION(FieldStencil<FlowField>::parameters_.geometry.dim == 2);
-
-  RealType pressure    = 0.0;
-  RealType velocity[2] = {0.0, 0.0};
-
-  if ((flowField.getFlags().getValue(i, j) & OBSTACLE_SELF) == 0) {
-    flowField.getPressureAndVelocity(pressure, velocity, i, j);
-
-    pressureStream_ << pressure << std::endl;
-    velocityStream_ << velocity[0] << " " << velocity[1] << " 0" << std::endl;
-  } else {
-    pressureStream_ << "0.0" << std::endl;
-    velocityStream_ << "0.0 0.0 0.0" << std::endl;
-  }
-}
-
-
-void Stencils::VTKStencil::apply(FlowField& flowField, int i, int j, int k) {
-  ASSERTION(FieldStencil<FlowField>::parameters_.geometry.dim == 3);
-
-  RealType pressure    = 0.0;
-  RealType velocity[3] = {0.0, 0.0, 0.0};
-
-  if ((flowField.getFlags().getValue(i, j, k) & OBSTACLE_SELF) == 0) {
-    flowField.getPressureAndVelocity(pressure, velocity, i, j, k);
-
-    pressureStream_ << pressure << std::endl;
-    velocityStream_ << velocity[0] << " " << velocity[1] << " " << velocity[2] << std::endl;
-  } else {
-    pressureStream_ << "0.0" << std::endl;
-    velocityStream_ << "0.0 0.0 0.0" << std::endl;
-  }
-}
-
-void Stencils::VTKStencil::openFile(int timeStep, RealType simulationTime) {
+void Stencils::TurbulentVTKStencil::openFile(int timeStep, RealType simulationTime) {
   written_ = false;
   std::stringstream namestream;
   std::string       name;
@@ -141,10 +108,83 @@ void Stencils::VTKStencil::openFile(int timeStep, RealType simulationTime) {
   writePoints(ofile_, simulationTime);
 }
 
-void Stencils::VTKStencil::write(FlowField& flowField, int timeStep, RealType simulationTime) {
+void Stencils::TurbulentVTKStencil::apply(TurbulentFlowField& flowField, int i, int j) {
+#ifndef NDEBUG
+  RealType h         = 0.0;
+  RealType delta     = 0.0;
+#endif
+
+  ASSERTION(FieldStencil<TurbulentFlowField>::parameters_.geometry.dim == 2);
+
+  RealType pressure    = 0.0;
+  RealType velocity[2] = {0.0, 0.0};
+  RealType viscosity = 0.0;
+
+  if ((flowField.getFlags().getValue(i, j) & OBSTACLE_SELF) == 0) {
+    flowField.getPressureAndVelocity(pressure, velocity, i, j);
+
+    pressureStream_ << pressure << std::endl;
+    velocityStream_ << velocity[0] << " " << velocity[1] << " 0" << std::endl;
+    flowField.getViscosity(viscosity, i, j);
+    viscosityStream_ << viscosity << std::endl;
+
+#ifndef NDEBUG
+    flowField.getH(h, i, j);
+    flowField.getDelta(delta, i, j);
+    hStream << h << std::endl;
+    deltaStream << delta << std::endl;
+#endif
+  } else {
+    pressureStream_ << "0.0" << std::endl;
+    velocityStream_ << "0.0 0.0 0.0" << std::endl;
+    viscosityStream_ << "0.0" << std::endl;
+#ifndef NDEBUG
+    hStream << "0.0" << std::endl;
+    deltaStream << "0.0" << std::endl;
+#endif
+  }
+}
+
+void Stencils::TurbulentVTKStencil::apply(TurbulentFlowField& flowField, int i, int j, int k) {
+  ASSERTION(FieldStencil<TurbulentFlowField>::parameters_.geometry.dim == 3);
+
+  RealType pressure    = 0.0;
+  RealType velocity[3] = {0.0, 0.0, 0.0};
+  RealType viscosity = 0.0;
+#ifndef NDEBUG
+
+  RealType h         = 0.0;
+  RealType delta     = 0.0;
+#endif
+  if ((flowField.getFlags().getValue(i, j, k) & OBSTACLE_SELF) == 0) {
+    flowField.getPressureAndVelocity(pressure, velocity, i, j, k);
+
+    pressureStream_ << pressure << std::endl;
+    velocityStream_ << velocity[0] << " " << velocity[1] << " " << velocity[2] << std::endl;
+    flowField.getViscosity(viscosity, i, j, k);
+    viscosityStream_ << viscosity << std::endl;
+#ifndef NDEBUG
+
+    flowField.getH(h, i, j, k);
+    flowField.getDelta(delta, i, j, k);
+    hStream << h << std::endl;
+    deltaStream << delta << std::endl;
+#endif
+  } else {
+    pressureStream_ << "0.0" << std::endl;
+    velocityStream_ << "0.0 0.0 0.0" << std::endl;
+    viscosityStream_ << "0.0" << std::endl;
+#ifndef NDEBUG
+    hStream << "0.0" << std::endl;
+    deltaStream << "0.0" << std::endl;
+#endif
+  }
+}
+
+void Stencils::TurbulentVTKStencil::write(TurbulentFlowField& flowField, int timeStep, RealType simulationTime) {
   openFile(timeStep, simulationTime);
 
-  if (FieldStencil<FlowField>::parameters_.geometry.dim == 2) {
+  if (FieldStencil<TurbulentFlowField>::parameters_.geometry.dim == 2) {
     // Write pressure
     ofile_
       << "CELL_DATA " << flowField.getNx() * flowField.getNy() << std::endl
@@ -157,9 +197,22 @@ void Stencils::VTKStencil::write(FlowField& flowField, int timeStep, RealType si
     ofile_ << "VECTORS velocity float" << std::endl;
     ofile_ << velocityStream_.str() << std::endl;
     velocityStream_.str("");
+    ofile_ << "SCALARS viscosity float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
+    ofile_ << viscosityStream_.str() << std::endl;
+    viscosityStream_.str("");
+
+// Write viscosity, nearest wall thickness(h) and boundary layer thickness(delta)
+#ifndef NDEBUG
+    ofile_ << "SCALARS h float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
+    ofile_ << hStream.str() << std::endl;
+    hStream.str("");
+    ofile_ << "SCALARS delta float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
+    ofile_ << deltaStream.str() << std::endl;
+    deltaStream.str("");
+#endif
   }
 
-  if (FieldStencil<FlowField>::parameters_.geometry.dim == 3) {
+  if (FieldStencil<TurbulentFlowField>::parameters_.geometry.dim == 3) {
     // Write pressure
     ofile_
       << "CELL_DATA " << flowField.getNx() * flowField.getNy() * flowField.getNz() << std::endl
@@ -172,10 +225,24 @@ void Stencils::VTKStencil::write(FlowField& flowField, int timeStep, RealType si
     ofile_ << "VECTORS velocity float" << std::endl;
     ofile_ << velocityStream_.str() << std::endl;
     velocityStream_.str("");
+
+    // Write viscosity, nearest wall distance(h), boundary layer thickness(delta)
+    ofile_ << "SCALARS viscosity float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
+    ofile_ << viscosityStream_.str() << std::endl;
+    viscosityStream_.str("");
+#ifndef NDEBUG
+
+    ofile_ << "SCALARS h float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
+    ofile_ << hStream.str() << std::endl;
+    hStream.str("");
+    ofile_ << "SCALARS delta float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
+    ofile_ << deltaStream.str() << std::endl;
+    deltaStream.str("");
+#endif
   }
 
   written_ = true;
   closeFile();
 }
 
-void Stencils::VTKStencil::closeFile() { ofile_.close(); }
+void Stencils::TurbulentVTKStencil::closeFile() { ofile_.close(); }
