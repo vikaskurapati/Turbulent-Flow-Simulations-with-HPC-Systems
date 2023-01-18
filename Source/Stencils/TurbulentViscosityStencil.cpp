@@ -2,7 +2,6 @@
 
 #include "TurbulentViscosityStencil.hpp"
 
-#include "TurbulentFlowField.hpp"
 
 Stencils::TurbulentViscosityStencil::TurbulentViscosityStencil(const Parameters& parameters):
   FieldStencil<TurbulentFlowField>(parameters) {}
