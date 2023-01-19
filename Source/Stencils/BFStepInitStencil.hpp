@@ -10,8 +10,8 @@ namespace Stencils {
    */
   class BFStepInitStencil: public FieldStencil<FlowField> {
   private:
-    const RealType xLimit_; //! Size of step in x-direction
-    const RealType yLimit_; //! Same as for x
+    const RealType xLimit_{0.0}; //! Size of step in x-direction
+    const RealType yLimit_{0.0}; //! Size of step in y-direction
 
   public:
     BFStepInitStencil(const Parameters& parameters);

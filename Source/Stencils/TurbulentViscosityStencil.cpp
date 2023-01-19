@@ -7,6 +7,7 @@
 #include <iterator>
 #include <limits>
 
+#include "BoundaryType.hpp"
 #include "Definitions.hpp"
 #include "TurbulentFlowField.hpp"
 
@@ -23,25 +24,10 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
   // if ((obstacle && OBSTACLE_SELF) == 0) {
 
   // Strictly iterating only in Fluid cells
+
   if (i >= 2 && j >= 2 && i < parameters_.geometry.sizeX + 2 && j < parameters_.geometry.sizeY + 2) {
 
-    // std::cout
-    //   << i << "    " << j << "     " << flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j) << "// "
-    //   << flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j) << std::endl;
-
     if (method_ == "turbulence-sa") {
-
-      // std::cout<<flowField.getTurbulentViscosityTransport().getScalar(i, j)<<std::endl;
-      // RealType W_12 = 0.5*(((flowField.getVelocity().getVector(i, j+1)[0] - flowField.getVelocity().getVector(i,
-      // j)[0])/(0.5*(parameters_.meshsize->getDy(i,j+1)+parameters_.meshsize->getDy(i,j)))) -
-      // ((flowField.getVelocity().getVector(i+1, j)[1] - flowField.getVelocity().getVector(i,
-      // j)[1])/(0.5*(parameters_.meshsize->getDx(i+1,j)+parameters_.meshsize->getDx(i,j)))));
-
-      // at the inlet of the channel
-      //  if (i == 2 && j > 1) {
-      //    flowField.getCurrentTurbulentViscosityTransport().getScalar(i - 1, j) =
-      //    flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
-      //  }
 
       RealType dudy = (flowField.getVelocity().getVector(i, j + 1)[0] - flowField.getVelocity().getVector(i, j - 1)[0])
                       / (0.5*parameters_.meshsize->getDy(i, j-1) + parameters_.meshsize->getDy(i,j) + 0.5*parameters_.meshsize->getDy(i,j+1));
@@ -52,8 +38,6 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
       RealType W_12 = 0.5 * (dudy - dvdx);
 
       RealType chi = flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j) / (1 / parameters_.flow.Re);
-
-      // chi = std::min(chi, 1e5);
 
       RealType c_v2 = 0.7;
       RealType c_v3 = 0.9;
@@ -90,26 +74,19 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
       //   S_hat = S + (S * (c_v2 * c_v2 * S + c_v3 * S_bar)) / ((c_v3 - 2.0 * c_v2) * S - S_bar);
       // }
 
-      // std::cout << i << "   " << j << "   " << S_hat << "   " << std::endl;
-
       RealType r = std::min(10.0, temp3 / (S_hat + 1e-6));
-      // std::cout << i << "   " << j << "   " << r << "   " << std::endl;
 
       RealType g = r + 0.3 * (std::pow(r, 6.0) - r);
 
       RealType cw3_pow6 = 64.0;
 
       RealType f_w = g * std::pow(((1 + cw3_pow6) / (std::pow(g, 6.0) + cw3_pow6)), 1.0 / 6.0);
-      // std::cout << "Here:   " <<r<<"
-      // "<<(flowField.getPreviousTurbulentViscosityTransport().getScalar(i,j))/(S_hat*(parameters_.turbulence.kappa*parameters_.turbulence.kappa)*(flowField.getWallDistance().getScalar(i,j)*flowField.getWallDistance().getScalar(i,j)))<<std::endl;
 
       // ********************************************************************************
       // Term 1 (ADVECTION)
       // *********************************************************************************
 
-      // RealType dx1 = 0.5 * (parameters_.meshsize->getDx(i, j) + parameters_.meshsize->getDx(i + 1, j));
       RealType dx1 = parameters_.meshsize->getDx(i, j);
-      // RealType dx0 = 0.5 * (parameters_.meshsize->getDx(i - 1, j) + parameters_.meshsize->getDx(i, j));
       RealType dx0 = parameters_.meshsize->getDx(i, j);
 
       RealType term1
@@ -128,9 +105,6 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
                  flowField.getPreviousTurbulentViscosityTransport().getScalar(i - 1, j)
                  - flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j)
                ));
-
-      // RealType dy1 = 0.5 * (parameters_.meshsize->getDy(i, j) + parameters_.meshsize->getDy(i, j + 1));
-      // RealType dy0 = 0.5 * (parameters_.meshsize->getDy(i, j - 1) + parameters_.meshsize->getDy(i, j));
 
       RealType dy1 = parameters_.meshsize->getDy(i, j);
       RealType dy0 = parameters_.meshsize->getDy(i, j);
@@ -159,8 +133,6 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
       //**********************************************************************
       // Term 3 (Wall DESTRUCTION Source Term)
       //*************************************************************************
-      // RealType C_w1 = (0.1355) / (parameters_.turbulence.kappa * parameters_.turbulence.kappa)
-      //                 + ((1 + 0.622) / (2.0 / 3.0));
       RealType C_w1 = 3.239067817;
 
       RealType temp4
@@ -172,25 +144,8 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
       // Term 4 (DIFFUSION Term)
       //************************************************************
 
-      // dx1 = parameters_.meshsize->getDx(i + 1, j);
-      // dx0 = parameters_.meshsize->getDx(i, j);
-      // dy1 = parameters_.meshsize->getDy(i, j + 1);
-      // dy0 = parameters_.meshsize->getDy(i, j);
-
       RealType dx = parameters_.meshsize->getDx(i, j);
       RealType dy = parameters_.meshsize->getDy(i, j);
-
-      // RealType viscosity_laplacian = flowField.getPreviousTurbulentViscosityTransport().getScalar(i + 1, j)
-      //                                / (dx1 * (dx1 + dx0));
-      // viscosity_laplacian -= flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j) / (dx1 * dx0);
-      // viscosity_laplacian += flowField.getPreviousTurbulentViscosityTransport().getScalar(i - 1, j)
-      //                        / (dx0 * (dx1 + dx0));
-      // viscosity_laplacian += flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j + 1)
-      //                        / (dy1 * (dy1 + dy0));
-      // viscosity_laplacian -= flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j) / (dy1 * dy0);
-      // viscosity_laplacian += flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j - 1)
-      //                        / (dy0 * (dy1 + dy0));
-      // viscosity_laplacian = 2.0 * viscosity_laplacian;
 
       RealType nu_ij       = flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j);
       RealType nu_iplus1j  = flowField.getPreviousTurbulentViscosityTransport().getScalar(i + 1, j);
@@ -211,10 +166,6 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
 
       RealType viscosity_laplacian = viscosity_laplacian_x + viscosity_laplacian_y;
 
-      // RealType term4 = ((1 / parameters_.flow.Re) + flowField.getPreviousTurbulentViscosityTransport().getScalar(i,
-      // j))
-      //                  * viscosity_laplacian;
-
       RealType dnudx = 0.5 * (nu_iplus1j - nu_iminus1j) / dx;
       RealType dnudy = 0.5 * (nu_ijplus1 - nu_ijminus1) / dy;
 
@@ -222,41 +173,10 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
 
       RealType term4 = (1.5) * (viscosity_laplacian + advec_term);
 
-      // CHECK THE indices i,j in the DIVISION BY dx
-      // RealType viscgradsquare = ((flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j)
-      //                            - flowField.getPreviousTurbulentViscosityTransport().getScalar(i - 1, j))
-      //                           / (parameters_.meshsize->getDx(i, j)))
-      //                           *
-      //                           ((flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j)
-      //                            - flowField.getPreviousTurbulentViscosityTransport().getScalar(i - 1, j))
-      //                           / (parameters_.meshsize->getDx(i, j)));
-      // viscgradsquare += ((flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j)
-      //                            - flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j-1))
-      //                           / (parameters_.meshsize->getDy(i, j)))
-      //                           *
-      //                           ((flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j)
-      //                            - flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j-1))
-      //                           / (parameters_.meshsize->getDy(i, j)));
-
-      // std::cout << "Here:   " <<viscosity_laplacian <<"   "<<viscgradsquare <<std::endl;
-      // term4 = term4 + (1 + 0.622) * viscgradsquare;
-      // term4 = term4 / (2.0 / 3.0);
-      // if ((i == 2 && j == 17) || (i==2 && j ==16)) {
-      //   std::cout
-      //     << "i " << i << " j " << j << " term1: " << term1 << " term 2: " << term2 << " term 3: " << term3
-      //     << " term 4: " << term4 << " f_w: " << f_w << " g: " << g << " r: " << r << " S_hat: " << S_hat << " temp3:
-      //     "
-      //     << temp3 << " nu: " << flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j) << std::endl;
-      // }
-
       flowField.getCurrentTurbulentViscosityTransport().getScalar(
         i, j
       ) = flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j)
           + parameters_.timestep.dt * (term2 - term3 + term4 - term1);
-
-      // if (flowField.getCurrentTurbulentViscosityTransport().getScalar(i,j) < 0.0) {
-      //     flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j) = 0.0;
-      // }
 
       flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j) = std::max(
         std::numeric_limits<RealType>::min(), flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j)
@@ -265,88 +185,83 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
       //***********************************************
       // Boundary Conditions for nu_transport:
       //***********************************************
+      // std::cout << parameters_.bfStep.xRatio << ":   " << parameters_.bfStep.yRatio << std::endl;
 
-      // at the lower wall of the channel (no slip)
-      if (j == 2 && i > 1) {
-        flowField.getCurrentTurbulentViscosityTransport().getScalar(
-          i, j - 1
-        ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
+      if (parameters_.bfStep.xRatio * parameters_.geometry.sizeX <= 0 && parameters_.bfStep.xRatio * parameters_.geometry.sizeX <= 0) {
+
+        // at the lower wall of the channel (no slip)
+        if (j == 2 && i > 1) {
+          flowField.getCurrentTurbulentViscosityTransport().getScalar(
+            i, j - 1
+          ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
+        }
+
+        // at the top wall of the channel (no slip)
+        if (j == parameters_.geometry.sizeY + 1 && i > 1) {
+          flowField.getCurrentTurbulentViscosityTransport().getScalar(
+            i, j + 1
+          ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
+        }
+
+        // at the inlet of the channel
+        if (i == 2 && j > 1) {
+          flowField.getCurrentTurbulentViscosityTransport().getScalar(i - 1, j) = 3.0 / parameters_.flow.Re;
+        }
+
+        // //at the outlet of the channel
+        if (i == parameters_.geometry.sizeX + 1 && j > 1) {
+          flowField.getCurrentTurbulentViscosityTransport().getScalar(
+            i + 1, j
+          ) = flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
+        }
+
       }
 
-      // at the top wall of the channel (no slip)
-      if (j == parameters_.geometry.sizeY + 1 && i > 1) {
-        flowField.getCurrentTurbulentViscosityTransport().getScalar(
-          i, j + 1
-        ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
-        // if (i == 2 && j == 17) {
-        //   std::cout
-        //     << "i " << i << " j " << j << " term1: " << term1 << " term 2: " << term2 << " term 3: " << term3
-        //     << " term 4: " << term4 << " f_w: " << f_w << " g: " << g << " r: " << r << " S_hat: " << S_hat << "
-        //     temp3: "
-        //     << temp3 << " nu: " << flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j) << std::endl;
-        // }
-      }
+      else {
+        // Check if current cell is obstacle cell
+        if ((obstacle & OBSTACLE_SELF) == 1) {
+          // If top cell is fluid, then the no-slip boundary has to be enforced
+          if ((obstacle & OBSTACLE_TOP) == 0) {
+            flowField.getCurrentTurbulentViscosityTransport().getScalar(
+              i, j
+            ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j + 1);
+          }
+          // Same for bottom
+          if ((obstacle & OBSTACLE_BOTTOM) == 0) {
+                  flowField.getCurrentTurbulentViscosityTransport().getScalar(
+              i, j
+            ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j - 1);
+          }
+          // If right cell is fluid, then the no-slip boundary has to be enforced
+          if ((obstacle & OBSTACLE_RIGHT) == 0) {
+                  flowField.getCurrentTurbulentViscosityTransport().getScalar(
+              i, j
+            ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i+1, j );
+          }
+          // Same for left
+          if ((obstacle & OBSTACLE_LEFT) == 0) {
+            flowField.getCurrentTurbulentViscosityTransport().getScalar(
+              i, j
+            ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i-1, j );
+          }
 
-      // at the inlet of the channel
-      if (i == 2 && j > 1) {
-        flowField.getCurrentTurbulentViscosityTransport().getScalar(i - 1, j) = 3.0 / parameters_.flow.Re;
-      }
+          // // Set normal velocity to zero if right neighbour is not obstacle
+          // if ((obstacle & OBSTACLE_RIGHT) == 0) {
+          //   velocity.getVector(i, j)[0] = 0.0;
+          // }
 
-      // //at the outlet of the channel
-      if (i == parameters_.geometry.sizeX + 1 && j > 1) {
-        flowField.getCurrentTurbulentViscosityTransport().getScalar(
-          i + 1, j
-        ) = flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
+          // // Set normal velocity to zero if top neighbour is not obstacle
+          // if ((obstacle & OBSTACLE_TOP) == 0) {
+          //   velocity.getVector(i, j)[1] = 0.0;
+          // }
+        }
       }
-
-      // if (j == 1 && i > 1 && i < parameters_.geometry.sizeX + 2) {
-      //   flowField.getCurrentTurbulentViscosityTransport().getScalar(
-      //     i, j
-      //   ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j + 1);
-      // }
-      // if (j == parameters_.geometry.sizeY + 2 && i > 1 && i < parameters_.geometry.sizeX + 2) {
-      //   flowField.getCurrentTurbulentViscosityTransport().getScalar(
-      //     i, j
-      //   ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j - 1);
-      // }
-      // if (i == 1 && j > 1 && j < parameters_.geometry.sizeY + 2) {
-      //   flowField.getCurrentTurbulentViscosityTransport().getScalar(
-      //     i, j
-      //   ) = flowField.getCurrentTurbulentViscosityTransport().getScalar(i + 1, j);
-      // }
-      // if (i == parameters_.geometry.sizeX + 2 && j > 1 && j < parameters_.geometry.sizeY + 2) {
-      //   flowField.getCurrentTurbulentViscosityTransport().getScalar(
-      //     i, j
-      //   ) = flowField.getCurrentTurbulentViscosityTransport().getScalar(i - 1, j);
-      // }
-      // BOundary conditions for additional ghost layer on bottom and left
-      // if (i == 1 || j == 1) {
-      //   flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j) = 0.0;
-      // }
-      // if (parameters_.geometry.dim == 2) {
-      //   if (i == 0 || i == parameters_.geometry.sizeX - 1) {
-      //     flowField.getCurrentTurbulentViscosityTransport().getScalar(i, 0)                              = 0.0;
-      //     flowField.getCurrentTurbulentViscosityTransport().getScalar(i, parameters_.geometry.sizeY + 2) = 0.0;
-      //   }
-      //   if (j == 0 || j == parameters_.geometry.sizeY - 1) {
-      //     flowField.getCurrentTurbulentViscosityTransport().getScalar(0, j)                              = 0.0;
-      //     flowField.getCurrentTurbulentViscosityTransport().getScalar(parameters_.geometry.sizeX + 2, j) = 0.0;
-      //   }
-      // }
 
       chi  = flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j) * parameters_.flow.Re;
       f_v1 = std::pow(chi, 3.0) / (std::pow(chi, 3.0) + std::pow(7.1, 3.0));
       flowField.getTurbulentViscosity().getScalar(
         i, j
       ) = f_v1 * flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
-
-      // if(i==2 && j==10){
-      // //std::cout << "Here:   " <<term1<<"   "<<term2<<"   "<<term3<<"    "<<term4 <<std::endl;
-      // }//BOUNDARY CONDITION
-
-      // std::cout << "Here:   " <<i<<"   "<<j<<"    "<<term1<<"   "<<term2<<"   "<<term3<<"    "<<term4 <<"
-      // "<<flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j)<<std::endl;
-
     }
 
     //****************************************************************
