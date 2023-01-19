@@ -25,7 +25,7 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
 
   // Strictly iterating only in Fluid cells
 
-  if (i >= 2 && j >= 2 && i < parameters_.geometry.sizeX + 2 && j < parameters_.geometry.sizeY + 2) {
+  if ((i >= 2) && (j >= 2) && i < (parameters_.geometry.sizeX + 2) && j < (parameters_.geometry.sizeY + 2)) {
 
     if (method_ == "turbulence-sa") {
 
@@ -179,7 +179,7 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
           + parameters_.timestep.dt * (term2 - term3 + term4 - term1);
 
       flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j) = std::max(
-        std::numeric_limits<RealType>::min(), flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j)
+        0.0, flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j)
       );
 
       //***********************************************
@@ -218,7 +218,7 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
       }
 
       else {
-        // Check if current cell is obstacle cell
+
         if ((obstacle & OBSTACLE_SELF) == 1) {
           // If top cell is fluid, then the no-slip boundary has to be enforced
           if ((obstacle & OBSTACLE_TOP) == 0) {
@@ -228,33 +228,57 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
           }
           // Same for bottom
           if ((obstacle & OBSTACLE_BOTTOM) == 0) {
-                  flowField.getCurrentTurbulentViscosityTransport().getScalar(
+            flowField.getCurrentTurbulentViscosityTransport().getScalar(
               i, j
             ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j - 1);
           }
           // If right cell is fluid, then the no-slip boundary has to be enforced
           if ((obstacle & OBSTACLE_RIGHT) == 0) {
-                  flowField.getCurrentTurbulentViscosityTransport().getScalar(
+
+            if((obstacle & OBSTACLE_TOP) == 0) {
+                          flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j) = -0.5*(flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j+1) + flowField.getCurrentTurbulentViscosityTransport().getScalar(i+1, j) );
+            }
+
+            else{
+            flowField.getCurrentTurbulentViscosityTransport().getScalar(
               i, j
-            ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i+1, j );
+            ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i + 1, j);
+            }
           }
-          // Same for left
+        // Same for left
           if ((obstacle & OBSTACLE_LEFT) == 0) {
             flowField.getCurrentTurbulentViscosityTransport().getScalar(
               i, j
-            ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i-1, j );
+            ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i - 1, j);
           }
-
-          // // Set normal velocity to zero if right neighbour is not obstacle
-          // if ((obstacle & OBSTACLE_RIGHT) == 0) {
-          //   velocity.getVector(i, j)[0] = 0.0;
-          // }
-
-          // // Set normal velocity to zero if top neighbour is not obstacle
-          // if ((obstacle & OBSTACLE_TOP) == 0) {
-          //   velocity.getVector(i, j)[1] = 0.0;
-          // }
         }
+
+        // at the inlet of the channel
+        if ((i == 2 && j > 1) && ((obstacle & OBSTACLE_SELF) == 0)) {
+          flowField.getCurrentTurbulentViscosityTransport().getScalar(i - 1, j) = 3.0 / parameters_.flow.Re;
+        }
+
+        // Check if current cell is obstacle cell
+        if ((i == parameters_.geometry.sizeX + 1 && j > 1)) {
+
+          flowField.getCurrentTurbulentViscosityTransport().getScalar(i + 1, j) = flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
+        }
+
+
+        
+        //std::cout << "here " << i << "  :  " << j << " : " << parameters_.geometry.sizeX << std::endl;
+
+        // at  the outlet of the channel
+
+        // // Set normal velocity to zero if right neighbour is not obstacle
+        // if ((obstacle & OBSTACLE_RIGHT) == 0) {
+        //   velocity.getVector(i, j)[0] = 0.0;
+        // }
+
+        // // Set normal velocity to zero if top neighbour is not obstacle
+        // if ((obstacle & OBSTACLE_TOP) == 0) {
+        //   velocity.getVector(i, j)[1] = 0.0;
+        // }
       }
 
       chi  = flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j) * parameters_.flow.Re;

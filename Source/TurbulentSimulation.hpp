@@ -43,15 +43,26 @@ private:
    */
   FieldIterator<TurbulentFlowField>   maxNuFieldIterator_;
   /**
-   * @brief Stencil for turbulent viscosity calculations
+   * @brief Stencil for turbulent eddy viscosity calculations
    * 
    */
   Stencils::TurbulentViscosityStencil turbulentViscosityStencil_;
   /**
-   * @brief Iterator to operate on turbulentViscosityStencil_
+   * @brief Iterator to operate on eddy turbulentViscosityStencil_
    * 
    */
   FieldIterator<TurbulentFlowField>   turbulentViscosityIterator_;
+
+    /**
+   * @brief Stencil for turbulent transport viscosity calculations
+   * 
+   */
+  Stencils::TurbulentViscosityStencil turbulentTransportViscosityStencil_;
+  /**
+   * @brief Iterator to operate on turbulentTransportViscosityStencil_
+   * 
+   */
+  FieldIterator<TurbulentFlowField>   turbulentTransportViscosityIterator_;
 /**
  * @brief Function to initialise the flow field
  * 

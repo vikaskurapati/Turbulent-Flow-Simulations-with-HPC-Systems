@@ -18,6 +18,8 @@ TurbulentSimulation::TurbulentSimulation(Parameters& parameters, TurbulentFlowFi
   maxNuFieldIterator_(flowField, parameters, maxNuStencil_),
   turbulentViscosityStencil_(parameters),
   turbulentViscosityIterator_(flowField, parameters, turbulentViscosityStencil_),
+  turbulentTransportViscosityStencil_(parameters),
+  turbulentTransportViscosityIterator_(flowField, parameters, turbulentTransportViscosityStencil_),
   turbulentfghStencil_(parameters),
   turbulentfghIterator_(turbulentFlowField_, parameters, turbulentfghStencil_),
   parallel_manager_(parameters, flowField),
@@ -175,6 +177,9 @@ void TurbulentSimulation::solveTimestep() {
   // TODO WS2: communicate velocity values
   // Iterate for velocities on the boundary
   wallVelocityIterator_.iterate();
+
+
+  turbulentTransportViscosityIterator_.iterate();  
   turbulentViscosityIterator_.iterate();
   turbulentFlowField_.setPreviousViscosityTransport();
 }
