@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iterator>
+#include <limits>
 
 #include "Definitions.hpp"
 #include "TurbulentFlowField.hpp"
@@ -243,7 +244,8 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
       // if ((i == 2 && j == 17) || (i==2 && j ==16)) {
       //   std::cout
       //     << "i " << i << " j " << j << " term1: " << term1 << " term 2: " << term2 << " term 3: " << term3
-      //     << " term 4: " << term4 << " f_w: " << f_w << " g: " << g << " r: " << r << " S_hat: " << S_hat << " temp3: "
+      //     << " term 4: " << term4 << " f_w: " << f_w << " g: " << g << " r: " << r << " S_hat: " << S_hat << " temp3:
+      //     "
       //     << temp3 << " nu: " << flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j) << std::endl;
       // }
 
@@ -252,9 +254,13 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
       ) = flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j)
           + parameters_.timestep.dt * (term2 - term3 + term4 - term1);
 
-      if (flowField.getCurrentTurbulentViscosityTransport().getScalar(i,j) < 0.0) {
-          flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j) = 0.0;
-      }
+      // if (flowField.getCurrentTurbulentViscosityTransport().getScalar(i,j) < 0.0) {
+      //     flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j) = 0.0;
+      // }
+
+      flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j) = std::max(
+        std::numeric_limits<RealType>::min(), flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j)
+      );
 
       //***********************************************
       // Boundary Conditions for nu_transport:
@@ -272,12 +278,13 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
         flowField.getCurrentTurbulentViscosityTransport().getScalar(
           i, j + 1
         ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
-      // if (i == 2 && j == 17) {
-      //   std::cout
-      //     << "i " << i << " j " << j << " term1: " << term1 << " term 2: " << term2 << " term 3: " << term3
-      //     << " term 4: " << term4 << " f_w: " << f_w << " g: " << g << " r: " << r << " S_hat: " << S_hat << " temp3: "
-      //     << temp3 << " nu: " << flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j) << std::endl;
-      // }
+        // if (i == 2 && j == 17) {
+        //   std::cout
+        //     << "i " << i << " j " << j << " term1: " << term1 << " term 2: " << term2 << " term 3: " << term3
+        //     << " term 4: " << term4 << " f_w: " << f_w << " g: " << g << " r: " << r << " S_hat: " << S_hat << "
+        //     temp3: "
+        //     << temp3 << " nu: " << flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j) << std::endl;
+        // }
       }
 
       // at the inlet of the channel
