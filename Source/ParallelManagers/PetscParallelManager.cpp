@@ -1,3 +1,4 @@
+#pragma once
 #include "PetscParallelManager.hpp"
 
 #include <mpi.h>
@@ -7,6 +8,7 @@
 #include "Parameters.hpp"
 
 #include "Stencils/ViscosityBufferFillStencil.hpp"
+#include "Stencils/TransportViscosityBufferFillStencil.hpp"
 
 ParallelManagers::PetscParallelManager::PetscParallelManager(Parameters& parameters, FlowField& flowfield):
   parameters_(parameters),
@@ -27,8 +29,13 @@ ParallelManagers::PetscTurbulentParallelManager::PetscTurbulentParallelManager(
   flowfield_(flowfield),
   fillViscosityStencil(parameters),
   readViscosityStencil(parameters),
+  fillTransportViscosityStencil(parameters),
+  readTransportViscosityStencil(parameters),
   viscosityfillIterator(flowfield, parameters, fillViscosityStencil, 0, 0),
-  viscosityreadIterator(flowfield, parameters, readViscosityStencil, 0, 0) {}
+  viscosityreadIterator(flowfield, parameters, readViscosityStencil, 0, 0),
+  transportViscosityfillIterator(flowfield, parameters, fillTransportViscosityStencil, 0, 0),
+  transportViscosityreadIterator(flowfield, parameters, readTransportViscosityStencil, 0, 0)
+  {}
 
 void ParallelManagers::PetscParallelManager::communicatePressure() {
   pressurefillIterator.iterate();
@@ -251,14 +258,24 @@ void ParallelManagers::PetscParallelManager::communicatePressure() {
 
 void ParallelManagers::PetscTurbulentParallelManager::communicateViscosity() {
   viscosityfillIterator.iterate();
-
+  transportViscosityfillIterator.iterate();
+//****************************************
+// For 3D 
+//***************************************
   if (parameters_.geometry.dim == 3) {
+    
+    // for eddy visc
     MPI_Request request[12];
     MPI_Status  status[12];
-    const int*  localSize = fillViscosityStencil.localSize;
 
+    // for transport visc
+    MPI_Request transport_request[12];
+    MPI_Status  transport_status[12];
+
+    const int*  localSize = fillViscosityStencil.localSize; // localSize same for transport visc
+
+    // left to right eddy visc
     MPI_Isend(
-      // left to right
       fillViscosityStencil.leftViscosityFillBuffer.get(),
       localSize[1] * localSize[2],
       MY_MPI_FLOAT,
@@ -277,8 +294,30 @@ void ParallelManagers::PetscTurbulentParallelManager::communicateViscosity() {
       &request[1]
     );
 
+    //left to right transport visc (IF CONDITION REQ FOR SA)
     MPI_Isend(
-      // right to left
+      fillTransportViscosityStencil.leftTransportViscosityFillBuffer.get(),
+      localSize[1] * localSize[2],
+      MY_MPI_FLOAT,
+      parameters_.parallel.leftNb,
+      3001,
+      PETSC_COMM_WORLD,
+      &transport_request[0]
+    );
+    MPI_Irecv(
+      readTransportViscosityStencil.rightTransportViscosityReadBuffer.get(),
+      localSize[1] * localSize[2],
+      MY_MPI_FLOAT,
+      parameters_.parallel.rightNb,
+      3001,
+      PETSC_COMM_WORLD,
+      &transport_request[1]
+    );
+
+
+
+    // right to left eddy visc
+    MPI_Isend(
       fillViscosityStencil.rightViscosityFillBuffer.get(),
       localSize[1] * localSize[2],
       MY_MPI_FLOAT,
@@ -296,8 +335,31 @@ void ParallelManagers::PetscTurbulentParallelManager::communicateViscosity() {
       PETSC_COMM_WORLD,
       &request[3]
     );
+
+    // right to left transport visc
     MPI_Isend(
-      // top to bottom
+      fillTransportViscosityStencil.rightTransportViscosityFillBuffer.get(),
+      localSize[1] * localSize[2],
+      MY_MPI_FLOAT,
+      parameters_.parallel.rightNb,
+      3002,
+      PETSC_COMM_WORLD,
+      &transport_request[2]
+    );
+    MPI_Irecv(
+      readTransportViscosityStencil.leftTransportViscosityReadBuffer.get(),
+      localSize[1] * localSize[2],
+      MY_MPI_FLOAT,
+      parameters_.parallel.leftNb,
+      3002,
+      PETSC_COMM_WORLD,
+      &transport_request[3]
+    );
+
+
+
+    // top to bottom eddy visc
+    MPI_Isend(
       fillViscosityStencil.topViscosityFillBuffer.get(),
       localSize[0] * localSize[2],
       MY_MPI_FLOAT,
@@ -315,8 +377,28 @@ void ParallelManagers::PetscTurbulentParallelManager::communicateViscosity() {
       PETSC_COMM_WORLD,
       &request[5]
     );
+    //top to bottom transport visc
     MPI_Isend(
-      // bottom to top
+      fillTransportViscosityStencil.topTransportViscosityFillBuffer.get(),
+      localSize[0] * localSize[2],
+      MY_MPI_FLOAT,
+      parameters_.parallel.topNb,
+      3003,
+      PETSC_COMM_WORLD,
+      &transport_request[4]
+    );
+    MPI_Irecv(
+      readTransportViscosityStencil.bottomTransportViscosityReadBuffer.get(),
+      localSize[0] * localSize[2],
+      MY_MPI_FLOAT,
+      parameters_.parallel.bottomNb,
+      3003,
+      PETSC_COMM_WORLD,
+      &transport_request[5]
+    );
+
+    // bottom to top eddy visc
+    MPI_Isend(
       fillViscosityStencil.bottomViscosityFillBuffer.get(),
       localSize[0] * localSize[2],
       MY_MPI_FLOAT,
@@ -334,8 +416,28 @@ void ParallelManagers::PetscTurbulentParallelManager::communicateViscosity() {
       PETSC_COMM_WORLD,
       &request[7]
     );
+    // bottom to top transport visc
     MPI_Isend(
-      // front to back
+      fillTransportViscosityStencil.bottomTransportViscosityFillBuffer.get(),
+      localSize[0] * localSize[2],
+      MY_MPI_FLOAT,
+      parameters_.parallel.bottomNb,
+      3004,
+      PETSC_COMM_WORLD,
+      &transport_request[6]
+    );
+    MPI_Irecv(
+      readTransportViscosityStencil.topTransportViscosityReadBuffer.get(),
+      localSize[0] * localSize[2],
+      MY_MPI_FLOAT,
+      parameters_.parallel.topNb,
+      3004,
+      PETSC_COMM_WORLD,
+      &transport_request[7]
+    );
+
+    // front to back eddy visc
+    MPI_Isend(
       fillViscosityStencil.frontViscosityFillBuffer.get(),
       localSize[0] * localSize[1],
       MY_MPI_FLOAT,
@@ -353,8 +455,29 @@ void ParallelManagers::PetscTurbulentParallelManager::communicateViscosity() {
       PETSC_COMM_WORLD,
       &request[9]
     );
+
+    // front to back transport visc
     MPI_Isend(
-      // back to front
+      fillTransportViscosityStencil.frontTransportViscosityFillBuffer.get(),
+      localSize[0] * localSize[1],
+      MY_MPI_FLOAT,
+      parameters_.parallel.frontNb,
+      3005,
+      PETSC_COMM_WORLD,
+      &transport_request[8]
+    );
+    MPI_Irecv(
+      readTransportViscosityStencil.backTransportViscosityReadBuffer.get(),
+      localSize[0] * localSize[1],
+      MY_MPI_FLOAT,
+      parameters_.parallel.backNb,
+      3005,
+      PETSC_COMM_WORLD,
+      &transport_request[9]
+    );
+
+    // back to front eddy visc
+    MPI_Isend(
       fillViscosityStencil.backViscosityFillBuffer.get(),
       localSize[0] * localSize[1],
       MY_MPI_FLOAT,
@@ -373,19 +496,49 @@ void ParallelManagers::PetscTurbulentParallelManager::communicateViscosity() {
       &request[11]
     );
 
+    // back to front transport visc
+    MPI_Isend(
+      fillTransportViscosityStencil.backTransportViscosityFillBuffer.get(),
+      localSize[0] * localSize[1],
+      MY_MPI_FLOAT,
+      parameters_.parallel.backNb,
+      3006,
+      PETSC_COMM_WORLD,
+      &transport_request[10]
+    );
+    MPI_Irecv(
+      readTransportViscosityStencil.frontTransportViscosityReadBuffer.get(),
+      localSize[0] * localSize[1],
+      MY_MPI_FLOAT,
+      parameters_.parallel.frontNb,
+      3006,
+      PETSC_COMM_WORLD,
+      &transport_request[11]
+    );
+
     for (size_t i = 0; i < 12; i++) {
       MPI_Wait(&request[i], &status[i]);
+      MPI_Wait(&transport_request[i], &transport_status[i]);
+
     }
   }
-
+  //********************************************************
+  //for 2D
+  //********************************************************
   if (parameters_.geometry.dim == 2) {
+    
+    // for eddy visc
     MPI_Request request[8];
     MPI_Status  status[8];
 
+    // for transport visc
+    MPI_Request transport_request[8];
+    MPI_Status  transport_status[8];
+
     const int* localSize = fillViscosityStencil.localSize;
 
+    // left to right eddy visc
     MPI_Isend(
-      // left to right
       fillViscosityStencil.leftViscosityFillBuffer.get(),
       localSize[1],
       MY_MPI_FLOAT,
@@ -404,8 +557,28 @@ void ParallelManagers::PetscTurbulentParallelManager::communicateViscosity() {
       &request[1]
     );
 
+    // left to right transport visc
     MPI_Isend(
-      // right to left
+      fillTransportViscosityStencil.leftTransportViscosityFillBuffer.get(),
+      localSize[1],
+      MY_MPI_FLOAT,
+      parameters_.parallel.leftNb,
+      3001,
+      PETSC_COMM_WORLD,
+      &transport_request[0]
+    );
+    MPI_Irecv(
+      readTransportViscosityStencil.rightTransportViscosityReadBuffer.get(),
+      localSize[1],
+      MY_MPI_FLOAT,
+      parameters_.parallel.rightNb,
+      3001,
+      PETSC_COMM_WORLD,
+      &transport_request[1]
+    );
+
+    // right to left eddy visc
+    MPI_Isend(
       fillViscosityStencil.rightViscosityFillBuffer.get(),
       localSize[1],
       MY_MPI_FLOAT,
@@ -423,8 +596,29 @@ void ParallelManagers::PetscTurbulentParallelManager::communicateViscosity() {
       PETSC_COMM_WORLD,
       &request[3]
     );
+
+    // right to left transport visc
     MPI_Isend(
-      // top to bottom
+      fillTransportViscosityStencil.rightTransportViscosityFillBuffer.get(),
+      localSize[1],
+      MY_MPI_FLOAT,
+      parameters_.parallel.rightNb,
+      3002,
+      PETSC_COMM_WORLD,
+      &transport_request[2]
+    );
+    MPI_Irecv(
+      readTransportViscosityStencil.leftTransportViscosityReadBuffer.get(),
+      localSize[1],
+      MY_MPI_FLOAT,
+      parameters_.parallel.leftNb,
+      3002,
+      PETSC_COMM_WORLD,
+      &transport_request[3]
+    );
+
+    // top to bottom eddy visc
+    MPI_Isend(
       fillViscosityStencil.topViscosityFillBuffer.get(),
       localSize[0],
       MY_MPI_FLOAT,
@@ -442,8 +636,28 @@ void ParallelManagers::PetscTurbulentParallelManager::communicateViscosity() {
       PETSC_COMM_WORLD,
       &request[5]
     );
+    //top to bottom transport viscs
     MPI_Isend(
-      // bottom to top
+      fillTransportViscosityStencil.topTransportViscosityFillBuffer.get(),
+      localSize[0],
+      MY_MPI_FLOAT,
+      parameters_.parallel.topNb,
+      3003,
+      PETSC_COMM_WORLD,
+      &transport_request[4]
+    );
+    MPI_Irecv(
+      readTransportViscosityStencil.bottomTransportViscosityReadBuffer.get(),
+      localSize[0],
+      MY_MPI_FLOAT,
+      parameters_.parallel.bottomNb,
+      3003,
+      PETSC_COMM_WORLD,
+      &transport_request[5]
+    );
+
+    // bottom to top eddy visc
+    MPI_Isend(
       fillViscosityStencil.bottomViscosityFillBuffer.get(),
       localSize[0],
       MY_MPI_FLOAT,
@@ -461,11 +675,35 @@ void ParallelManagers::PetscTurbulentParallelManager::communicateViscosity() {
       PETSC_COMM_WORLD,
       &request[7]
     );
+
+    // bottom to top transport Visc
+        MPI_Isend(
+      fillTransportViscosityStencil.bottomTransportViscosityFillBuffer.get(),
+      localSize[0],
+      MY_MPI_FLOAT,
+      parameters_.parallel.bottomNb,
+      3004,
+      PETSC_COMM_WORLD,
+      &transport_request[6]
+    );
+    MPI_Irecv(
+      readTransportViscosityStencil.topTransportViscosityReadBuffer.get(),
+      localSize[0],
+      MY_MPI_FLOAT,
+      parameters_.parallel.topNb,
+      3004,
+      PETSC_COMM_WORLD,
+      &transport_request[7]
+    );
     for (size_t i = 0; i < 8; i++) {
       MPI_Wait(&request[i], &status[i]);
+      MPI_Wait(&transport_request[i], &transport_status[i]);
+
     }
   }
+  
   viscosityreadIterator.iterate();
+  transportViscosityreadIterator.iterate();
 }
 
 void ParallelManagers::PetscParallelManager::communicateVelocity() {
