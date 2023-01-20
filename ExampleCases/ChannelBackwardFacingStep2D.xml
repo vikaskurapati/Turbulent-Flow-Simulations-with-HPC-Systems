@@ -13,8 +13,8 @@
     <solver gamma="0.5" />
     <geometry
       dim="2"
-      lengthX="15.0" lengthY="1.0" lengthZ="1.0"
-      sizeX="150" sizeY="30" sizeZ="10"
+      lengthX="25.0" lengthY="1.0" lengthZ="1.0"
+      sizeX="100" sizeY="20" sizeZ="10"
       stretchX="false" stretchY="false" stretchZ="false"
     >
       <mesh>uniform</mesh>
