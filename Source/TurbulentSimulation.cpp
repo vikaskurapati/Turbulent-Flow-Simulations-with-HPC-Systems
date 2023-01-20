@@ -37,9 +37,11 @@ void TurbulentSimulation::initializeFlowField() {
     FieldIterator<FlowField>    iterator(turbulentFlowField_, parameters_, stencil, 0, 1);
     iterator.iterate();
     wallVelocityIterator_.iterate();
-    int N__x = parameters_.geometry.sizeX;
-    int N__y = parameters_.geometry.sizeY;
+    int N__x = parameters_.parallel.localSize[0];
+    int N__y = parameters_.parallel.localSize[1];
 
+    //Making it only to run for channel
+    if(parameters_.bfStep.xRatio * parameters_.geometry.sizeX <= 0 && parameters_.bfStep.xRatio * parameters_.geometry.sizeX <= 0){
     for (int i = 0; i < N__x + 2; i++) {
       for (int j = 0; j < N__y + 2; j++) {
         // 6.0 * parameters.walls.vectorLeft[0] / (inletYSize * inletYSize) * y * (inletYSize - y)
@@ -51,6 +53,7 @@ void TurbulentSimulation::initializeFlowField() {
           * (parameters_.geometry.lengthY - (parameters_.meshsize->getPosY(i, j) + 0.5 *
           parameters_.meshsize->getDy(i, j)));
       }
+    }
     }
 
   } else if (parameters_.simulation.scenario == "pressure-channel") {
@@ -132,7 +135,8 @@ void TurbulentSimulation::setTimeStep() {
 
 void TurbulentSimulation::solveTimestep() {
 
-  // int N__x = parameters_.geometry.sizeX;
+
+  // int N__x = parameters_.geometry.sizeX;   
   // int N__y = parameters_.geometry.sizeY;
 
   // uodated nu_tilda field
@@ -158,7 +162,7 @@ void TurbulentSimulation::solveTimestep() {
 #endif
 
   // Determine and set max. timestep which is allowed in this simulation
-  parallel_manager_.communicateViscosity();
+  
   setTimeStep();
   // Compute FGH
   turbulentfghIterator_.iterate();
@@ -178,10 +182,18 @@ void TurbulentSimulation::solveTimestep() {
   // Iterate for velocities on the boundary
   wallVelocityIterator_.iterate();
 
-
+  if(parameters_.simulation.type=="turbulence-sa"){
+  parallel_manager_.communicateTransportViscosity();
   turbulentTransportViscosityIterator_.iterate();  
+  }
+
   turbulentViscosityIterator_.iterate();
+  
+  parallel_manager_.communicateViscosity();
+
+  if(parameters_.simulation.type=="turbulence-sa"){
   turbulentFlowField_.setPreviousViscosityTransport();
+  }
 }
 
 void TurbulentSimulation::plotVTK(int timeStep, RealType simulationTime) {

@@ -168,6 +168,11 @@ namespace ParallelManagers {
      */
     void communicateViscosity();
     /**
+     * @brief Method to communicate transport viscosity in a parallel simulation using MPI
+     *
+     */
+    void communicateTransportViscosity();
+    /**
      * @brief Destroy the Petsc Turbulent Parallel Manager object
      *
      */

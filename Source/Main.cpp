@@ -134,10 +134,11 @@ int main(int argc, char* argv[]) {
 
     n += 1;
 
-    // if (n == 11) {
+    // if (n == 1) {
     //   exit(0);
     // }
-    // std::cout<<" n "<<n<<std::endl;  
+
+    std::cout<<" n "<<n<<std::endl;  
 
     timeSteps++;
     time += parameters.timestep.dt;

@@ -229,6 +229,7 @@ void Stencils::TurbulentVTKStencil::write(TurbulentFlowField& flowField, int tim
     // Write viscosity, nearest wall distance(h), boundary layer thickness(delta)
     ofile_ << "SCALARS viscosity float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
     ofile_ << viscosityStream_.str() << std::endl;
+    
     viscosityStream_.str("");
 #ifndef NDEBUG
 

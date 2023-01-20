@@ -37,6 +37,7 @@ GlobalBoundaryFactory::GlobalBoundaryFactory(Parameters& parameters):
     parameters.walls.typeFront  = DIRICHLET;
     parameters.walls.typeBack   = DIRICHLET;
   } else if (scenario == "channel") {
+    
     // To the left, we have the input
     velocityStencils_[0] = channelInput_[0];
     FGHStencils_[0]      = channelInput_[1];
