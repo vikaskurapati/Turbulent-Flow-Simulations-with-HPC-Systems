@@ -39,21 +39,43 @@ void TurbulentSimulation::initializeFlowField() {
     wallVelocityIterator_.iterate();
     int N__x = parameters_.parallel.localSize[0];
     int N__y = parameters_.parallel.localSize[1];
+    int N__z = parameters_.parallel.localSize[2];
 
-    //Making it only to run for channel
-    if(parameters_.bfStep.xRatio * parameters_.geometry.sizeX <= 0 && parameters_.bfStep.xRatio * parameters_.geometry.sizeX <= 0){
-    for (int i = 0; i < N__x + 2; i++) {
-      for (int j = 0; j < N__y + 2; j++) {
-        // 6.0 * parameters.walls.vectorLeft[0] / (inletYSize * inletYSize) * y * (inletYSize - y)
+    // Initializing entire domain as parabolic for channel 2D
+    if((parameters_.bfStep.xRatio * parameters_.geometry.sizeX <= 0) && (parameters_.bfStep.yRatio * parameters_.geometry.sizeY <= 0) && (parameters_.geometry.dim==2)){
+      for (int i = 0; i < N__x + 2; i++) {
+        for (int j = 0; j < N__y + 2; j++) {
+          // 6.0 * parameters.walls.vectorLeft[0] / (inletYSize * inletYSize) * y * (inletYSize - y)
 
-        // turbulentFlowField_.getVelocity().getVector(i, j)[0] = parameters_.walls.vectorLeft[0];
-        turbulentFlowField_.getVelocity().getVector(i, j)[0]
-        = 6.0 * parameters_.walls.vectorLeft[0] / (parameters_.geometry.lengthY * parameters_.geometry.lengthY)
-          * (parameters_.meshsize->getPosY(i, j) + 0.5 * parameters_.meshsize->getDy(i, j))
-          * (parameters_.geometry.lengthY - (parameters_.meshsize->getPosY(i, j) + 0.5 *
-          parameters_.meshsize->getDy(i, j)));
+          // turbulentFlowField_.getVelocity().getVector(i, j)[0] = parameters_.walls.vectorLeft[0];
+          turbulentFlowField_.getVelocity().getVector(i, j)[0]
+            = 6.0 * parameters_.walls.vectorLeft[0] / (parameters_.geometry.lengthY * parameters_.geometry.lengthY)
+              * (parameters_.meshsize->getPosY(i, j) + 0.5 * parameters_.meshsize->getDy(i, j))
+              * (parameters_.geometry.lengthY - (parameters_.meshsize->getPosY(i, j) + 0.5 * parameters_.meshsize->getDy(i, j)));
+        }
       }
     }
+
+    RealType inletZSize = parameters_.geometry.lengthZ;
+    RealType inletYSize = parameters_.geometry.lengthY;
+    // Initializing entire domain as parabolic for channel 3D
+    if((parameters_.bfStep.xRatio * parameters_.geometry.sizeX <= 0) && (parameters_.bfStep.yRatio * parameters_.geometry.sizeY <= 0) && (parameters_.geometry.dim==3)){
+      for (int i = 0; i < N__x + 2; i++) {
+        for (int j = 0; j < N__y + 2; j++) {
+          for (int k = 0; k < N__z + 2; k++) {
+          
+          // return 36.0 * parameters.walls.vectorLeft[0] / (inletZSize * inletZSize * inletYSize * inletYSize) * y
+          // * (y - inletYSize) * z * (z - inletZSize);
+
+
+            RealType y = parameters_.meshsize->getPosY(i, j, k) + 0.5 * parameters_.meshsize->getDy(i, j, k);
+            RealType z = parameters_.meshsize->getPosZ(i, j, k) + 0.5 * parameters_.meshsize->getDz(i, j, k);
+
+          turbulentFlowField_.getVelocity().getVector(i, j,k)[0] =  36.0 * parameters_.walls.vectorLeft[0] / (inletZSize * inletZSize * inletYSize * inletYSize) * y
+           * (y - inletYSize) * z * (z - inletZSize);
+          }
+        }
+      }
     }
 
   } else if (parameters_.simulation.scenario == "pressure-channel") {
@@ -135,8 +157,7 @@ void TurbulentSimulation::setTimeStep() {
 
 void TurbulentSimulation::solveTimestep() {
 
-
-  // int N__x = parameters_.geometry.sizeX;   
+  // int N__x = parameters_.geometry.sizeX;
   // int N__y = parameters_.geometry.sizeY;
 
   // uodated nu_tilda field
@@ -162,7 +183,7 @@ void TurbulentSimulation::solveTimestep() {
 #endif
 
   // Determine and set max. timestep which is allowed in this simulation
-  
+
   setTimeStep();
   // Compute FGH
   turbulentfghIterator_.iterate();
@@ -182,17 +203,17 @@ void TurbulentSimulation::solveTimestep() {
   // Iterate for velocities on the boundary
   wallVelocityIterator_.iterate();
 
-  if(parameters_.simulation.type=="turbulence-sa"){
-  parallel_manager_.communicateTransportViscosity();
-  turbulentTransportViscosityIterator_.iterate();  
+  if (parameters_.simulation.type == "turbulence-sa") {
+    parallel_manager_.communicateTransportViscosity();
+    turbulentTransportViscosityIterator_.iterate();
   }
 
   turbulentViscosityIterator_.iterate();
-  
+
   parallel_manager_.communicateViscosity();
 
-  if(parameters_.simulation.type=="turbulence-sa"){
-  turbulentFlowField_.setPreviousViscosityTransport();
+  if (parameters_.simulation.type == "turbulence-sa") {
+    turbulentFlowField_.setPreviousViscosityTransport();
   }
 }
 
