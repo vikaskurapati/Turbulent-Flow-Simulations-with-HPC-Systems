@@ -41,7 +41,7 @@ void TurbulentSimulation::initializeFlowField() {
     int N__y = parameters_.parallel.localSize[1];
     int N__z = parameters_.parallel.localSize[2];
 
-    // Initializing entire domain as parabolic for channel 2D
+    // Initializing entire domain as parabolic for ONLY channel 2D
     if((parameters_.bfStep.xRatio * parameters_.geometry.sizeX <= 0) && (parameters_.bfStep.yRatio * parameters_.geometry.sizeY <= 0) && (parameters_.geometry.dim==2)){
       for (int i = 0; i < N__x + 2; i++) {
         for (int j = 0; j < N__y + 2; j++) {
@@ -58,7 +58,7 @@ void TurbulentSimulation::initializeFlowField() {
 
     RealType inletZSize = parameters_.geometry.lengthZ;
     RealType inletYSize = parameters_.geometry.lengthY;
-    // Initializing entire domain as parabolic for channel 3D
+    // Initializing entire domain as parabolic for ONLY channel 3D
     if((parameters_.bfStep.xRatio * parameters_.geometry.sizeX <= 0) && (parameters_.bfStep.yRatio * parameters_.geometry.sizeY <= 0) && (parameters_.geometry.dim==3)){
       for (int i = 0; i < N__x + 2; i++) {
         for (int j = 0; j < N__y + 2; j++) {
