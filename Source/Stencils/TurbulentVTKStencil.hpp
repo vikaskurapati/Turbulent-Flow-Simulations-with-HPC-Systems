@@ -23,6 +23,8 @@ namespace Stencils {
     std::stringstream viscosityStream_; //! Stream for the viscosity data
     std::stringstream hStream;          //! Stream for the nearest neighbour data
     std::stringstream deltaStream;      //! Stream for the boundary layer thickness
+    std::stringstream tauStream_;      //! Stream for the shear stress
+
 
     void writeVTKHeader(std::ostream& file) const;
     void writePoints(std::ostream& file, RealType simulationTime) const;
