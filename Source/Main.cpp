@@ -138,7 +138,7 @@ int main(int argc, char* argv[]) {
     //   exit(0);
     // }
 
-    std::cout<<" n "<<n<<std::endl;  
+    //std::cout<<" n "<<n<<std::endl;  
 
     timeSteps++;
     time += parameters.timestep.dt;

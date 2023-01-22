@@ -192,37 +192,25 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
       //***********************************************
       // Boundary Conditions for nu_transport:
       //***********************************************
-      // std::cout << parameters_.bfStep.xRatio << ":   " << parameters_.bfStep.yRatio << std::endl;
 
-      // int rrrank;
-      // MPI_Comm_rank(PETSC_COMM_WORLD, &rrrank);
-
-      // if (rrrank == 1) {
-      //   std::cout << parameters_.geometry.sizeX << "  " << parameters_.geometry.sizeY << std::endl;
-      // }
-
-      // Boundary condition for channel flow
+      // Boundary condition for ONLY channel flow
       if ((parameters_.bfStep.xRatio * parameters_.geometry.sizeX <= 0) && (parameters_.bfStep.yRatio * parameters_.geometry.sizeY <= 0)) {
-
         // at the lower wall of the channel (no slip)
         if (((j + parameters_.parallel.firstCorner[1]) == 2) && ((i + parameters_.parallel.firstCorner[0]) > 1)) {
           flowField.getCurrentTurbulentViscosityTransport().getScalar(
             i, j - 1
           ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
         }
-
         // at the top wall of the channel (no slip)
         if (((j + parameters_.parallel.firstCorner[1]) == parameters_.geometry.sizeY + 1) && ((i + parameters_.parallel.firstCorner[0]) > 1)) {
           flowField.getCurrentTurbulentViscosityTransport().getScalar(
             i, j + 1
           ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
         }
-
         // at the inlet of the channel
         if (((i + parameters_.parallel.firstCorner[0]) == 2) && ((j + parameters_.parallel.firstCorner[1]) > 1)) {
           flowField.getCurrentTurbulentViscosityTransport().getScalar(i - 1, j) = 3.0 / parameters_.flow.Re;
         }
-
         // //at the outlet of the channel
         if (((i + parameters_.parallel.firstCorner[0]) == parameters_.geometry.sizeX + 1) && ((j + parameters_.parallel.firstCorner[1]) > 1)) {
           flowField.getCurrentTurbulentViscosityTransport().getScalar(
@@ -235,32 +223,26 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
 
       // Boundary condition for BFS
       else {
-
+        //if the current cell is an obstacle
         if ((obstacle & OBSTACLE_SELF) == 1) {
           // If top cell is fluid, then the no-slip boundary has to be enforced
           if ((obstacle & OBSTACLE_TOP) == 0) {
-
             flowField.getCurrentTurbulentViscosityTransport().getScalar(
               i, j
             ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j + 1);
           }
           // Same for bottom
           if ((obstacle & OBSTACLE_BOTTOM) == 0) {
-
             flowField.getCurrentTurbulentViscosityTransport().getScalar(
               i, j
             ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j - 1);
           }
           // If right cell is fluid, then the no-slip boundary has to be enforced
           if ((obstacle & OBSTACLE_RIGHT) == 0) {
-
             if ((obstacle & OBSTACLE_TOP) == 0) {
-
               flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j) = -0.5*(flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j+1) + flowField.getCurrentTurbulentViscosityTransport().getScalar(i+1, j) );
             }
-
             else {
-
               flowField.getCurrentTurbulentViscosityTransport().getScalar(
                 i, j
               ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i + 1, j);
@@ -268,7 +250,6 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
           }
           // Same for left
           if ((obstacle & OBSTACLE_LEFT) == 0) {
-
             flowField.getCurrentTurbulentViscosityTransport().getScalar(
               i, j
             ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i - 1, j);
@@ -294,8 +275,6 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
 
         // at the outlet of the BFS channel
         if ((i + parameters_.parallel.firstCorner[0] == parameters_.geometry.sizeX + 1) && (j + parameters_.parallel.firstCorner[1] > 1)) {
-          // std::cout<<i<<"  "<<j<<std::endl;
-
           flowField.getCurrentTurbulentViscosityTransport().getScalar(
             i + 1, j
           ) = flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
@@ -304,6 +283,7 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
 
       chi  = flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j) * parameters_.flow.Re;
       f_v1 = std::pow(chi, 3.0) / (std::pow(chi, 3.0) + std::pow(7.1, 3.0));
+      //calculating eddy viscosity from nu_tilda
       flowField.getTurbulentViscosity().getScalar(
         i, j
       ) = f_v1 * flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j);
@@ -387,7 +367,7 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
       RealType dvdz = (flowField.getVelocity().getVector(i, j ,k+1)[1] - flowField.getVelocity().getVector(i, j ,k-1)[1])
                       / (0.5*parameters_.meshsize->getDz(i, j,k-1) + parameters_.meshsize->getDz(i,j,k) + 0.5*parameters_.meshsize->getDz(i,j,k+1));
 
-      RealType W_23 = 0.5 * (dwdx - dudz);
+      RealType W_23 = 0.5 * (dwdy - dvdz);
 
       RealType chi = flowField.getPreviousTurbulentViscosityTransport().getScalar(i, j, k) / (1 / parameters_.flow.Re);
 
@@ -621,13 +601,88 @@ void Stencils::TurbulentViscosityStencil::apply(TurbulentFlowField& flowField, i
           ) = flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j, k);
         }
 
-        // BFS BC NEEDS TO BE WRITTEN
+      } // end of BC for 3D Channel
 
-      } // end of BC 3D
+      // Boundary conditions for BFS
+      else {
+        //if the current cell is an obstacle
+        if ((obstacle & OBSTACLE_SELF) == 1) {
+          // If top cell is fluid, then the no-slip boundary has to be enforced
+          if ((obstacle & OBSTACLE_TOP) == 0) {
+            flowField.getCurrentTurbulentViscosityTransport().getScalar(
+              i, j,k
+            ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j + 1,k);
+          }
+          // Same for bottom
+          if ((obstacle & OBSTACLE_BOTTOM) == 0) {
+
+            flowField.getCurrentTurbulentViscosityTransport().getScalar(
+              i, j,k
+            ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j - 1,k);
+          }
+          // If right cell is fluid, then the no-slip boundary has to be enforced
+          if ((obstacle & OBSTACLE_RIGHT) == 0) {
+            if ((obstacle & OBSTACLE_TOP) == 0) {
+              //no need for k+1 becasue the step exists completely in the z direction, so no fluid neighbour for the corner element in the z direction
+              flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j,k) = -0.5*(flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j+1,k) + flowField.getCurrentTurbulentViscosityTransport().getScalar(i+1, j,k) );
+            }
+            else {
+              flowField.getCurrentTurbulentViscosityTransport().getScalar(
+                i, j,k
+              ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i + 1, j,k);
+            }
+          }
+          // Same for left
+          if ((obstacle & OBSTACLE_LEFT) == 0) {
+            flowField.getCurrentTurbulentViscosityTransport().getScalar(
+              i, j,k
+            ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i - 1, j,k);
+          }
+        }
+        // at the lower wall of the channel (no slip)
+        if (((j + parameters_.parallel.firstCorner[1]) == 2) && ((k + parameters_.parallel.firstCorner[2]) > 1) && ((i + parameters_.parallel.firstCorner[0]) > 1)) {
+          flowField.getCurrentTurbulentViscosityTransport().getScalar(
+            i, j - 1, k
+          ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j, k);
+        }
+        // at the top wall of the channel (no slip)
+        if (((j + parameters_.parallel.firstCorner[1]) == parameters_.geometry.sizeY + 1) && ((k + parameters_.parallel.firstCorner[2]) > 1) && ((i + parameters_.parallel.firstCorner[0]) > 1)) {
+          flowField.getCurrentTurbulentViscosityTransport().getScalar(
+            i, j + 1, k
+          ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j, k);
+        }
+        // at the front wall of the channel (no slip)
+        if (((k + parameters_.parallel.firstCorner[2]) == 2) && ((j + parameters_.parallel.firstCorner[1]) > 1) && ((i + parameters_.parallel.firstCorner[0]) > 1)) {
+          flowField.getCurrentTurbulentViscosityTransport().getScalar(
+            i, j, k - 1
+          ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j, k);
+        }
+        // at the back wall of the channel (no slip)
+        if (((k + parameters_.parallel.firstCorner[2]) == parameters_.geometry.sizeZ + 1) && ((j + parameters_.parallel.firstCorner[0]) > 1) && ((i + parameters_.parallel.firstCorner[0]) > 1)) {
+          flowField.getCurrentTurbulentViscosityTransport().getScalar(
+            i, j, k + 1
+          ) = -flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j, k);
+        }
+        // at the inlet of the channel generating constant turbulent transport visc throughout the duration of the
+        // simulation
+        if (((i + parameters_.parallel.firstCorner[0]) == 2) && ((j + parameters_.parallel.firstCorner[1]) > 1) && ((k + parameters_.parallel.firstCorner[2]) > 1) && ((obstacle & OBSTACLE_SELF) == 0)) {
+          flowField.getCurrentTurbulentViscosityTransport().getScalar(i - 1, j, k) = 3.0 / parameters_.flow.Re;
+        }
+        // at the outlet of the channel
+        if (((i + parameters_.parallel.firstCorner[0]) == parameters_.geometry.sizeX + 1) && ((j + parameters_.parallel.firstCorner[1]) > 1) && ((k + parameters_.parallel.firstCorner[2]) > 1)) {
+          flowField.getCurrentTurbulentViscosityTransport().getScalar(
+            i + 1, j, k
+          ) = flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j, k);
+        }
+
+        
+      } //end of BC for BFS
 
       chi = flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j, k) * parameters_.flow.Re;
 
       f_v1 = std::pow(chi, 3.0) / (std::pow(chi, 3.0) + std::pow(7.1, 3.0));
+
+      //calculating eddy viscosity from nu_tilda
       flowField.getTurbulentViscosity().getScalar(
         i, j, k
       ) = f_v1 * flowField.getCurrentTurbulentViscosityTransport().getScalar(i, j, k);
