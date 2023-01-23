@@ -115,22 +115,82 @@ void Stencils::TurbulentVTKStencil::apply(TurbulentFlowField& flowField, int i, 
 #endif
 
   ASSERTION(FieldStencil<TurbulentFlowField>::parameters_.geometry.dim == 2);
-
+  //std::cout<< i << "  "<<j<<std::endl; 
   RealType pressure    = 0.0;
   RealType velocity[2] = {0.0, 0.0};
   RealType viscosity   = 0.0;
 
-  RealType u_avg_jm1, u_avg_j, u_avg_jp1, dudy_avg, tau;
+  // RealType u_avg_jm1, u_avg_j, u_avg_jp1, dudy_avg, tau_net, tau;
 
-  u_avg_jm1 = 0.5
-              * (flowField.getVelocity().getVector(i, j - 1)[0] + flowField.getVelocity().getVector(i - 1, j - 1)[0]);
-  u_avg_j   = 0.5 * (flowField.getVelocity().getVector(i, j)[0] + flowField.getVelocity().getVector(i - 1, j)[0]);
-  u_avg_jp1 = 0.5
-              * (flowField.getVelocity().getVector(i, j + 1)[0] + flowField.getVelocity().getVector(i - 1, j + 1)[0]);
+  // u_avg_jm1 = 0.5
+  //             * (flowField.getVelocity().getVector(i, j - 1)[0] + flowField.getVelocity().getVector(i - 1, j - 1)[0]);
+  // u_avg_j   = 0.5 * (flowField.getVelocity().getVector(i, j)[0] + flowField.getVelocity().getVector(i - 1, j)[0]);
+  // u_avg_jp1 = 0.5
+  //             * (flowField.getVelocity().getVector(i, j + 1)[0] + flowField.getVelocity().getVector(i - 1, j + 1)[0]);
 
-  dudy_avg =  0.5 * (((u_avg_jp1-u_avg_j)/((parameters_.meshsize->getDy(i, j+1)/2)+(parameters_.meshsize->getDy(i, j)/2)))+((u_avg_j - u_avg_jm1 )/((parameters_.meshsize->getDy(i, j)/2) + (parameters_.meshsize->getDy(i, j-1)/2))));
+  // dudy_avg =  0.5 * (((u_avg_jp1-u_avg_j)/((parameters_.meshsize->getDy(i, j+1)*0.5)+(parameters_.meshsize->getDy(i, j)*0.5)))+((u_avg_j - u_avg_jm1 )/((parameters_.meshsize->getDy(i, j)*0.5) + (parameters_.meshsize->getDy(i, j-1)*0.5))));
+
+  RealType tau_net, dudy_avg;
+  RealType u_avg_im1_top,u_avg_im1_bottom,u_avg_i_top,u_avg_i_bottom, u_avg_top, u_avg_bottom;
+
+  u_avg_im1_top = 0.5 * (flowField.getVelocity().getVector(i-1, j + 1)[0] + flowField.getVelocity().getVector(i - 1, j )[0]);
+  u_avg_im1_bottom = 0.5 * (flowField.getVelocity().getVector(i-1, j)[0] + flowField.getVelocity().getVector(i - 1, j-1 )[0]);
   
-  tau = std::fabs(dudy_avg) / parameters_.flow.Re;
+  u_avg_i_top = 0.5 * (flowField.getVelocity().getVector(i, j + 1)[0] + flowField.getVelocity().getVector(i, j )[0]);
+  u_avg_i_bottom = 0.5 * (flowField.getVelocity().getVector(i, j)[0] + flowField.getVelocity().getVector(i, j-1 )[0]);
+  
+  u_avg_top = 0.5*(u_avg_i_top + u_avg_im1_top);
+  u_avg_bottom = 0.5*(u_avg_i_bottom + u_avg_im1_bottom);
+
+  dudy_avg = (u_avg_top - u_avg_bottom) / parameters_.meshsize->getDy(i,j);
+
+  RealType nu_top, nu_bottom, nu_avg; 
+  nu_top=  0.5*(flowField.getTurbulentViscosity().getScalar(i,j+1) + flowField.getTurbulentViscosity().getScalar(i,j));
+  nu_bottom = 0.5*(flowField.getTurbulentViscosity().getScalar(i,j) + flowField.getTurbulentViscosity().getScalar(i,j-1));
+
+  nu_avg = 0.5*(nu_top + nu_bottom);
+
+  //tau_net = std::fabs(dudy_avg)*((1 / parameters_.flow.Re) + 0.5*(flowField.getTurbulentViscosity().getScalar(i,j+1) + flowField.getTurbulentViscosity().getScalar(i,j-1)));
+  tau_net = std::fabs(dudy_avg)*((1 / parameters_.flow.Re) + nu_avg);
+
+
+  // calculate the wall shear stress and then normalize tau
+  // RealType u_avg_jm1_wall, u_avg_j_wall, u_avg_jp1_wall, dudy_wall_avg, tau_wall;
+  // u_avg_jm1_wall = 0.5 * (flowField.getVelocity().getVector(i, 1)[0] + flowField.getVelocity().getVector(i - 1, 1)[0]);
+  // u_avg_j_wall   = 0.5 * (flowField.getVelocity().getVector(i, 2)[0] + flowField.getVelocity().getVector(i - 1, 2)[0]);
+  // u_avg_jp1_wall = 0.5 * (flowField.getVelocity().getVector(i, 3)[0] + flowField.getVelocity().getVector(i - 1, 3)[0]);
+
+  
+  RealType u_avg_im1_wall_top,  u_avg_i_wall_top, u_avg_wall_top, dudy_wall_avg, tau_wall, tau;
+  u_avg_im1_wall_top = 0.5 * (flowField.getVelocity().getVector(i-1, 3)[0] + flowField.getVelocity().getVector(i - 1, 2 )[0]);
+  u_avg_i_wall_top = 0.5 * (flowField.getVelocity().getVector(i, 3)[0] + flowField.getVelocity().getVector(i, 2 )[0]);
+  
+  u_avg_wall_top = 0.5*(u_avg_i_wall_top + u_avg_im1_wall_top);
+  
+  dudy_wall_avg = 0.5*(u_avg_wall_top)/ parameters_.meshsize->getDy(i,2);
+  
+  // RealType mid = 0.5*(u_avg_jp1_wall + u_avg_j_wall);
+
+  // dudy_wall_avg = mid/parameters_.meshsize->getDy(i, 2);
+
+  //std::cout<<0.5*(flowField.getTurbulentViscosity().getScalar(i,2)+flowField.getTurbulentViscosity().getScalar(i,1));
+
+  //dudy_wall_avg = 0.5 * (((u_avg_jp1_wall-u_avg_j_wall)/((parameters_.meshsize->getDy(i, 3)*0.5)+(parameters_.meshsize->getDy(i, 2)*0.5)))+((u_avg_j_wall - u_avg_jm1_wall )/((parameters_.meshsize->getDy(i, 2)*0.5) + (parameters_.meshsize->getDy(i, 1)*0.5))));
+
+  //dudy_wall_avg = (flowField.getVelocity().getVector(i, 3)[0] - flowField.getVelocity().getVector(i, 2 )[0]) /parameters_.meshsize->getDy(i, 2);
+ 
+
+  //tau_wall = std::fabs(dudy_wall_avg)*((1/parameters_.flow.Re)+0.5*(flowField.getTurbulentViscosity().getScalar(i,2)+flowField.getTurbulentViscosity().getScalar(i,1)));
+
+  // RealType nu_top_wall, nu_bottom_wall, nu_avg_wall;
+  // nu_top_wall=  0.5*(flowField.getTurbulentViscosity().getScalar(i,3) + flowField.getTurbulentViscosity().getScalar(i,2));
+  // nu_bottom_wall = 0.0; // at the no slip wall
+
+  // nu_avg_wall= 0.5*(nu_top_wall+ nu_bottom_wall);
+
+  tau_wall = std::fabs(dudy_wall_avg)*((1/parameters_.flow.Re));
+
+  tau = tau_net/tau_wall;
 
   // if not an obstacle, write the data
   if ((flowField.getFlags().getValue(i, j) & OBSTACLE_SELF) == 0) {
@@ -142,11 +202,13 @@ void Stencils::TurbulentVTKStencil::apply(TurbulentFlowField& flowField, int i, 
     viscosityStream_ << viscosity << std::endl;
     tauStream_ << tau << std::endl;
 
+
 #ifndef NDEBUG
     flowField.getH(h, i, j);
     flowField.getDelta(delta, i, j);
     hStream << h << std::endl;
     deltaStream << delta << std::endl;
+
 #endif
   } else {
     pressureStream_ << "0.0" << std::endl;
@@ -154,9 +216,11 @@ void Stencils::TurbulentVTKStencil::apply(TurbulentFlowField& flowField, int i, 
     viscosityStream_ << "0.0" << std::endl;
     tauStream_ << "0.0" << std::endl;
 
+
 #ifndef NDEBUG
     hStream << "0.0" << std::endl;
     deltaStream << "0.0" << std::endl;
+
 #endif
   }
 }
@@ -178,14 +242,7 @@ void Stencils::TurbulentVTKStencil::apply(TurbulentFlowField& flowField, int i, 
   dudy_avg
     = 0.5
       * (((u_avg_jp1 - u_avg_j) / parameters_.meshsize->getDy(i, j, k)) + ((u_avg_j - u_avg_jm1) / parameters_.meshsize->getDy(i, j, k)));
-  tau = std::fabs(dudy_avg) / parameters_.flow.Re;
-
-  //calculating the wall shear
-  if(j==2){
-
-
-  }
-
+  tau = std::fabs(dudy_avg)*((1 / parameters_.flow.Re) +  flowField.getTurbulentViscosity().getScalar(i,j));
 
 #ifndef NDEBUG
   RealType h     = 0.0;
@@ -200,11 +257,13 @@ void Stencils::TurbulentVTKStencil::apply(TurbulentFlowField& flowField, int i, 
     viscosityStream_ << viscosity << std::endl;
     tauStream_ << tau << std::endl;
 
+
 #ifndef NDEBUG
     flowField.getH(h, i, j, k);
     flowField.getDelta(delta, i, j, k);
     hStream << h << std::endl;
     deltaStream << delta << std::endl;
+
 #endif
   } else {
     pressureStream_ << "0.0" << std::endl;
@@ -253,6 +312,7 @@ void Stencils::TurbulentVTKStencil::write(TurbulentFlowField& flowField, int tim
     ofile_ << "SCALARS delta float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
     ofile_ << deltaStream.str() << std::endl;
     deltaStream.str("");
+
 #endif
   }
 
@@ -288,6 +348,7 @@ void Stencils::TurbulentVTKStencil::write(TurbulentFlowField& flowField, int tim
     ofile_ << "SCALARS delta float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
     ofile_ << deltaStream.str() << std::endl;
     deltaStream.str("");
+
 #endif
   }
 
