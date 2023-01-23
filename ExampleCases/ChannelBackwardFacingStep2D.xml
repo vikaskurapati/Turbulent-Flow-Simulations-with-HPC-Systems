@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
-    <flow Re="10000" />
-    <simulation finalTime="30.0" >
+    <flow Re="47606" />
+    <simulation finalTime="20.0" >
         <type>turbulence-sa</type>
         <scenario>channel</scenario>
     </simulation>
     <turbulent kappa = "0.41">
         <boundaryLayerType>turbulent</boundaryLayerType>
     </turbulent>
-    <backwardFacingStep xRatio="0.2" yRatio="0.2" />
+    <backwardFacingStep xRatio="0.16666666666" yRatio="0.5" />
     <timestep dt="1" tau="0.5" />
     <solver gamma="0.5" />
     <geometry
       dim="2"
-      lengthX="25.0" lengthY="1.0" lengthZ="1.0"
-      sizeX="100" sizeY="20" sizeZ="10"
+      lengthX="12.0" lengthY="2.0" lengthZ="1.0"
+      sizeX="100" sizeY="30" sizeZ="10"
       stretchX="false" stretchY="false" stretchZ="false"
     >
       <mesh>uniform</mesh>
