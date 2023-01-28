@@ -2,8 +2,6 @@
 
 #include "VTKStencil.hpp"
 
-#include "TurbulentFlowField.hpp"
-
 Stencils::VTKStencil::VTKStencil(const Parameters& parameters):
   FieldStencil<FlowField>(parameters),
   written_(false),
