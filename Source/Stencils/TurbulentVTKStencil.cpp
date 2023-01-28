@@ -110,16 +110,76 @@ void Stencils::TurbulentVTKStencil::openFile(int timeStep, RealType simulationTi
 
 void Stencils::TurbulentVTKStencil::apply(TurbulentFlowField& flowField, int i, int j) {
 #ifndef NDEBUG
-  RealType h         = 0.0;
-  RealType delta     = 0.0;
+  RealType h     = 0.0;
+  RealType delta = 0.0;
 #endif
 
   ASSERTION(FieldStencil<TurbulentFlowField>::parameters_.geometry.dim == 2);
-
+  //std::cout<< i << "  "<<j<<std::endl; 
   RealType pressure    = 0.0;
   RealType velocity[2] = {0.0, 0.0};
-  RealType viscosity = 0.0;
+  RealType viscosity   = 0.0;
 
+  //*********************************************************************
+  // Shear Stress (tau_net) Calculation
+  // //******************************************************************
+
+  RealType tau_net, dudy_avg;
+  RealType u_avg_im1_top,u_avg_im1_bottom,u_avg_i_top,u_avg_i_bottom, u_avg_top, u_avg_bottom;
+
+  u_avg_im1_top = 0.5 * (flowField.getVelocity().getVector(i-1, j + 1)[0] + flowField.getVelocity().getVector(i - 1, j )[0]);
+  u_avg_im1_bottom = 0.5 * (flowField.getVelocity().getVector(i-1, j)[0] + flowField.getVelocity().getVector(i - 1, j-1 )[0]);
+  
+  u_avg_i_top = 0.5 * (flowField.getVelocity().getVector(i, j + 1)[0] + flowField.getVelocity().getVector(i, j )[0]);
+  u_avg_i_bottom = 0.5 * (flowField.getVelocity().getVector(i, j)[0] + flowField.getVelocity().getVector(i, j-1 )[0]);
+  
+  u_avg_top = 0.5*(u_avg_i_top + u_avg_im1_top);
+  u_avg_bottom = 0.5*(u_avg_i_bottom + u_avg_im1_bottom);
+
+  dudy_avg = (u_avg_top - u_avg_bottom) / parameters_.meshsize->getDy(i,j);
+
+  // RealType nu_top, nu_bottom, nu_avg; 
+  // nu_top=  0.5*(flowField.getTurbulentViscosity().getScalar(i,j+1) + flowField.getTurbulentViscosity().getScalar(i,j));
+  // nu_bottom = 0.5*(flowField.getTurbulentViscosity().getScalar(i,j) + flowField.getTurbulentViscosity().getScalar(i,j-1));
+
+  // nu_avg = 0.5*(nu_top + nu_bottom);
+
+  //tau_net = std::fabs(dudy_avg)*((1 / parameters_.flow.Re) + 0.5*(flowField.getTurbulentViscosity().getScalar(i,j+1) + flowField.getTurbulentViscosity().getScalar(i,j-1)));
+  tau_net = std::fabs(dudy_avg)*((1 / parameters_.flow.Re) + flowField.getTurbulentViscosity().getScalar(i,j));
+  
+
+  //*********************************************************************
+  // Wall Shear Stress Calculation
+  // //******************************************************************
+  RealType u_avg_im1_wall_top,  u_avg_i_wall_top, u_avg_wall_top, dudy_wall_avg, tau_wall, tau;
+  u_avg_im1_wall_top = 0.5 * (flowField.getVelocity().getVector(i-1, 3)[0] + flowField.getVelocity().getVector(i - 1, 2 )[0]);
+  u_avg_i_wall_top = 0.5 * (flowField.getVelocity().getVector(i, 3)[0] + flowField.getVelocity().getVector(i, 2 )[0]);
+  
+  u_avg_wall_top = 0.5*(u_avg_i_wall_top + u_avg_im1_wall_top);
+  
+  dudy_wall_avg = 0.5*(u_avg_wall_top)/ parameters_.meshsize->getDy(i,2);
+
+
+  //std::cout<<i<<"   "<<j<<"   "<<flowField.getVelocity().getVector(i, 3)[0] <<"  "<<flowField.getVelocity().getVector(i, 2)[0] <<"  " << flowField.getVelocity().getVector(i, 1)[0] <<"  " << flowField.getVelocity().getVector(i, 0)[0]<<std::endl;
+
+  //dudy_wall_avg = 2*(flowField.getVelocity().getVector(i, 2)[0]  ) / 0.5*(parameters_.meshsize->getDy(i,2) + parameters_.meshsize->getDy(i,1) );
+
+  tau_wall = std::fabs(dudy_wall_avg)*((1/parameters_.flow.Re));
+
+  RealType u_tau, l_plus, y_plus, u_plus;
+
+  //wall shear velocity
+  u_tau = std::sqrt(tau_wall);
+  //wall_unit
+  l_plus = 1.0/(parameters_.flow.Re*u_tau);
+  //wall shear reynolds number
+  y_plus = parameters_.meshsize->getPosY(i, j) / l_plus;
+
+  u_plus = (0.5*( flowField.getVelocity().getVector(i-1, j)[0] + flowField.getVelocity().getVector(i, j)[0] ) )/(u_tau);
+
+  tau = tau_net/1.0;
+
+  // if not an obstacle, write the data
   if ((flowField.getFlags().getValue(i, j) & OBSTACLE_SELF) == 0) {
     flowField.getPressureAndVelocity(pressure, velocity, i, j);
 
@@ -127,20 +187,29 @@ void Stencils::TurbulentVTKStencil::apply(TurbulentFlowField& flowField, int i, 
     velocityStream_ << velocity[0] << " " << velocity[1] << " 0" << std::endl;
     flowField.getViscosity(viscosity, i, j);
     viscosityStream_ << viscosity << std::endl;
+    tauStream_ << tau << std::endl;
+    u_plusStream_ << u_plus<<std::endl;
+    y_plusStream_ << y_plus<<std::endl;
 
 #ifndef NDEBUG
     flowField.getH(h, i, j);
     flowField.getDelta(delta, i, j);
     hStream << h << std::endl;
     deltaStream << delta << std::endl;
+
 #endif
   } else {
     pressureStream_ << "0.0" << std::endl;
     velocityStream_ << "0.0 0.0 0.0" << std::endl;
     viscosityStream_ << "0.0" << std::endl;
+    tauStream_ << "0.0" << std::endl;
+    u_plusStream_ << "0.0" << std::endl;
+    y_plusStream_ << "0.0" << std::endl;
+
 #ifndef NDEBUG
     hStream << "0.0" << std::endl;
     deltaStream << "0.0" << std::endl;
+
 #endif
   }
 }
@@ -150,11 +219,23 @@ void Stencils::TurbulentVTKStencil::apply(TurbulentFlowField& flowField, int i, 
 
   RealType pressure    = 0.0;
   RealType velocity[3] = {0.0, 0.0, 0.0};
-  RealType viscosity = 0.0;
-#ifndef NDEBUG
+  RealType viscosity   = 0.0;
 
-  RealType h         = 0.0;
-  RealType delta     = 0.0;
+  RealType u_avg_jm1, u_avg_j, u_avg_jp1, dudy_avg, tau;
+  u_avg_jm1
+    = 0.5 * (flowField.getVelocity().getVector(i, j - 1, k)[0] + flowField.getVelocity().getVector(i - 1, j - 1, k)[0]);
+  u_avg_j = 0.5 * (flowField.getVelocity().getVector(i, j, k)[0] + flowField.getVelocity().getVector(i - 1, j, k)[0]);
+  u_avg_jp1
+    = 0.5 * (flowField.getVelocity().getVector(i, j + 1, k)[0] + flowField.getVelocity().getVector(i - 1, j + 1, k)[0]);
+
+  dudy_avg
+    = 0.5
+      * (((u_avg_jp1 - u_avg_j) / parameters_.meshsize->getDy(i, j, k)) + ((u_avg_j - u_avg_jm1) / parameters_.meshsize->getDy(i, j, k)));
+  tau = std::fabs(dudy_avg)*((1 / parameters_.flow.Re) +  flowField.getTurbulentViscosity().getScalar(i,j));
+
+#ifndef NDEBUG
+  RealType h     = 0.0;
+  RealType delta = 0.0;
 #endif
   if ((flowField.getFlags().getValue(i, j, k) & OBSTACLE_SELF) == 0) {
     flowField.getPressureAndVelocity(pressure, velocity, i, j, k);
@@ -163,17 +244,21 @@ void Stencils::TurbulentVTKStencil::apply(TurbulentFlowField& flowField, int i, 
     velocityStream_ << velocity[0] << " " << velocity[1] << " " << velocity[2] << std::endl;
     flowField.getViscosity(viscosity, i, j, k);
     viscosityStream_ << viscosity << std::endl;
-#ifndef NDEBUG
+    tauStream_ << tau << std::endl;
 
+
+#ifndef NDEBUG
     flowField.getH(h, i, j, k);
     flowField.getDelta(delta, i, j, k);
     hStream << h << std::endl;
     deltaStream << delta << std::endl;
+
 #endif
   } else {
     pressureStream_ << "0.0" << std::endl;
     velocityStream_ << "0.0 0.0 0.0" << std::endl;
     viscosityStream_ << "0.0" << std::endl;
+    tauStream_ << "0.0" << std::endl;
 #ifndef NDEBUG
     hStream << "0.0" << std::endl;
     deltaStream << "0.0" << std::endl;
@@ -197,11 +282,28 @@ void Stencils::TurbulentVTKStencil::write(TurbulentFlowField& flowField, int tim
     ofile_ << "VECTORS velocity float" << std::endl;
     ofile_ << velocityStream_.str() << std::endl;
     velocityStream_.str("");
+
+    // Write viscosity
     ofile_ << "SCALARS viscosity float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
     ofile_ << viscosityStream_.str() << std::endl;
     viscosityStream_.str("");
 
-// Write viscosity, nearest wall thickness(h) and boundary layer thickness(delta)
+    // Write shear stress tau
+    ofile_ << "SCALARS shear_stress float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
+    ofile_ << tauStream_.str() << std::endl;
+    tauStream_.str("");
+
+    // Write u_plus
+    ofile_ << "SCALARS u_plus float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
+    ofile_ << u_plusStream_.str() << std::endl;
+    u_plusStream_.str("");
+
+    // Write y_plus
+    ofile_ << "SCALARS y_plus float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
+    ofile_ << y_plusStream_.str() << std::endl;
+    y_plusStream_.str("");
+
+// Write nearest wall thickness(h) and boundary layer thickness(delta)
 #ifndef NDEBUG
     ofile_ << "SCALARS h float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
     ofile_ << hStream.str() << std::endl;
@@ -209,6 +311,7 @@ void Stencils::TurbulentVTKStencil::write(TurbulentFlowField& flowField, int tim
     ofile_ << "SCALARS delta float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
     ofile_ << deltaStream.str() << std::endl;
     deltaStream.str("");
+
 #endif
   }
 
@@ -226,19 +329,25 @@ void Stencils::TurbulentVTKStencil::write(TurbulentFlowField& flowField, int tim
     ofile_ << velocityStream_.str() << std::endl;
     velocityStream_.str("");
 
-    // Write viscosity, nearest wall distance(h), boundary layer thickness(delta)
+    // Write viscosity
     ofile_ << "SCALARS viscosity float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
     ofile_ << viscosityStream_.str() << std::endl;
-    
     viscosityStream_.str("");
-#ifndef NDEBUG
 
+    // Write shear stress
+    ofile_ << "SCALARS shear_stress float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
+    ofile_ << tauStream_.str() << std::endl;
+    tauStream_.str("");
+
+#ifndef NDEBUG
+    // Write , nearest wall distance(h), boundary layer thickness(delta)
     ofile_ << "SCALARS h float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
     ofile_ << hStream.str() << std::endl;
     hStream.str("");
     ofile_ << "SCALARS delta float 1" << std::endl << "LOOKUP_TABLE default" << std::endl;
     ofile_ << deltaStream.str() << std::endl;
     deltaStream.str("");
+
 #endif
   }
 

@@ -42,22 +42,21 @@ void TurbulentSimulation::initializeFlowField() {
     int N__z = parameters_.parallel.localSize[2];
 
     // Initializing entire domain as parabolic for ONLY channel 2D
+    RealType inletYSize = parameters_.geometry.lengthY;
+
     if((parameters_.bfStep.xRatio * parameters_.geometry.sizeX <= 0) && (parameters_.bfStep.yRatio * parameters_.geometry.sizeY <= 0) && (parameters_.geometry.dim==2)){
       for (int i = 0; i < N__x + 2; i++) {
         for (int j = 0; j < N__y + 2; j++) {
-          // 6.0 * parameters.walls.vectorLeft[0] / (inletYSize * inletYSize) * y * (inletYSize - y)
 
-          // turbulentFlowField_.getVelocity().getVector(i, j)[0] = parameters_.walls.vectorLeft[0];
-          turbulentFlowField_.getVelocity().getVector(i, j)[0]
-            = 6.0 * parameters_.walls.vectorLeft[0] / (parameters_.geometry.lengthY * parameters_.geometry.lengthY)
-              * (parameters_.meshsize->getPosY(i, j) + 0.5 * parameters_.meshsize->getDy(i, j))
-              * (parameters_.geometry.lengthY - (parameters_.meshsize->getPosY(i, j) + 0.5 * parameters_.meshsize->getDy(i, j)));
+          //RealType y = parameters_.meshsize->getPosY(i, j) + 0.5 * parameters_.meshsize->getDy(i, j);
+          //turbulentFlowField_.getVelocity().getVector(i, j)[0] = 6.0 * parameters_.walls.vectorLeft[0] / (inletYSize * inletYSize) * y * (inletYSize - y);
+            
+          turbulentFlowField_.getVelocity().getVector(i, j)[0]=parameters_.walls.vectorLeft[0];
         }
       }
     }
 
     RealType inletZSize = parameters_.geometry.lengthZ;
-    RealType inletYSize = parameters_.geometry.lengthY;
     // Initializing entire domain as parabolic for ONLY channel 3D
     if((parameters_.bfStep.xRatio * parameters_.geometry.sizeX <= 0) && (parameters_.bfStep.yRatio * parameters_.geometry.sizeY <= 0) && (parameters_.geometry.dim==3)){
       for (int i = 0; i < N__x + 2; i++) {
@@ -210,8 +209,10 @@ void TurbulentSimulation::solveTimestep() {
 
   turbulentViscosityIterator_.iterate();
 
+  if (parameters_.simulation.type != "turbulence-sa") {
   parallel_manager_.communicateViscosity();
-
+  }
+  
   if (parameters_.simulation.type == "turbulence-sa") {
     turbulentFlowField_.setPreviousViscosityTransport();
   }
@@ -220,6 +221,7 @@ void TurbulentSimulation::solveTimestep() {
 void TurbulentSimulation::plotVTK(int timeStep, RealType simulationTime) {
   Stencils::TurbulentVTKStencil     vtkStencil(parameters_);
   FieldIterator<TurbulentFlowField> vtkIterator(turbulentFlowField_, parameters_, vtkStencil, 1, 0);
+  //std::cout<<"inside Plot VTK"<<std::endl;
 
   vtkIterator.iterate();
   vtkStencil.write(turbulentFlowField_, timeStep, simulationTime);

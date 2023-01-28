@@ -113,7 +113,6 @@ void Simulation::solveTimestep() {
 void Simulation::plotVTK(int timeStep, RealType simulationTime) {
   Stencils::VTKStencil     vtkStencil(parameters_);
   FieldIterator<FlowField> vtkIterator(flowField_, parameters_, vtkStencil, 1, 0);
-
   vtkIterator.iterate();
   vtkStencil.write(flowField_, timeStep, simulationTime);
 }
