@@ -33,11 +33,7 @@ Simulation::Simulation(Parameters& parameters, FlowField& flowField):
 #else
   solver_(std::make_unique<Solvers::SORSolver>(flowField_, parameters)),
 #endif
-  // comm_(parameters, flowField),
-  parallel_manager_(parameters, flowField)
-// velocityParallelBoundaryIterator_(flowField, parameters, velocityStencil_, 1, 0)
-//  fghParallelBoundaryIterator_(flowField, parameters, fghStencil_, 1, -1)
-{
+  parallel_manager_(parameters, flowField) {
 }
 
 void Simulation::initializeFlowField() {
@@ -95,17 +91,14 @@ void Simulation::solveTimestep() {
   fghIterator_.iterate();
   // Set global boundary values
   wallFGHIterator_.iterate();
-  // TODO WS1: compute the right hand side (RHS)
   rhsIterator_.iterate();
   // Solve for pressure
   solver_->solve();
   parallel_manager_.communicatePressure();
-  // TODO WS2: communicate pressure values
   // Compute velocity
   velocityIterator_.iterate();
   obstacleIterator_.iterate();
   parallel_manager_.communicateVelocity();
-  // TODO WS2: communicate velocity values
   // Iterate for velocities on the boundary
   wallVelocityIterator_.iterate();
 }
@@ -134,8 +127,6 @@ void Simulation::setTimeStep() {
     parameters_.timestep.dt = 1.0 / (maxUStencil_.getMaxValues()[0] + EPSILON);
   }
 
-  // localMin = std::min(parameters_.timestep.dt, std::min(std::min(parameters_.flow.Re/(2 * factor), 1.0 /
-  // maxUStencil_.getMaxValues()[0]), 1.0 / maxUStencil_.getMaxValues()[1]));
   localMin = std::min(
     parameters_.flow.Re / (2 * factor),
     std::min(

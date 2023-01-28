@@ -96,9 +96,20 @@ public:
  */
 class ScalarField: public Field<RealType> {
 private:
+  /**
+   * @brief Initializes the scalar value
+   *
+   * @param default_value the default value which the field is initialized to
+   */
   void initialize(RealType default_value = 0.0);
 
 public:
+  /**
+   * @brief Copy assignment constructor
+   *
+   * @param other the other class
+   * @return ScalarField& reference of the copied class
+   */
   ScalarField& operator=(const ScalarField& other) {
     assert(sizeX_ == other.sizeX_);
     assert(sizeY_ == other.sizeY_);

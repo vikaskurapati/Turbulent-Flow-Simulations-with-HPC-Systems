@@ -47,11 +47,7 @@ void TurbulentSimulation::initializeFlowField() {
     if((parameters_.bfStep.xRatio * parameters_.geometry.sizeX <= 0) && (parameters_.bfStep.yRatio * parameters_.geometry.sizeY <= 0) && (parameters_.geometry.dim==2)){
       for (int i = 0; i < N__x + 2; i++) {
         for (int j = 0; j < N__y + 2; j++) {
-
-          //RealType y = parameters_.meshsize->getPosY(i, j) + 0.5 * parameters_.meshsize->getDy(i, j);
-          //turbulentFlowField_.getVelocity().getVector(i, j)[0] = 6.0 * parameters_.walls.vectorLeft[0] / (inletYSize * inletYSize) * y * (inletYSize - y);
-            
-          turbulentFlowField_.getVelocity().getVector(i, j)[0]=parameters_.walls.vectorLeft[0];
+          turbulentFlowField_.getVelocity().getVector(i, j)[0] = parameters_.walls.vectorLeft[0];
         }
       }
     }
@@ -62,16 +58,13 @@ void TurbulentSimulation::initializeFlowField() {
       for (int i = 0; i < N__x + 2; i++) {
         for (int j = 0; j < N__y + 2; j++) {
           for (int k = 0; k < N__z + 2; k++) {
-          
-          // return 36.0 * parameters.walls.vectorLeft[0] / (inletZSize * inletZSize * inletYSize * inletYSize) * y
-          // * (y - inletYSize) * z * (z - inletZSize);
-
 
             RealType y = parameters_.meshsize->getPosY(i, j, k) + 0.5 * parameters_.meshsize->getDy(i, j, k);
             RealType z = parameters_.meshsize->getPosZ(i, j, k) + 0.5 * parameters_.meshsize->getDz(i, j, k);
 
-          turbulentFlowField_.getVelocity().getVector(i, j,k)[0] =  36.0 * parameters_.walls.vectorLeft[0] / (inletZSize * inletZSize * inletYSize * inletYSize) * y
-           * (y - inletYSize) * z * (z - inletZSize);
+            turbulentFlowField_.getVelocity().getVector(i, j, k)[0]
+              = 36.0 * parameters_.walls.vectorLeft[0] / (inletZSize * inletZSize * inletYSize * inletYSize) * y
+                * (y - inletYSize) * z * (z - inletZSize);
           }
         }
       }
@@ -156,24 +149,6 @@ void TurbulentSimulation::setTimeStep() {
 
 void TurbulentSimulation::solveTimestep() {
 
-  // int N__x = parameters_.geometry.sizeX;
-  // int N__y = parameters_.geometry.sizeY;
-
-  // uodated nu_tilda field
-  //  current_visc_field=TurbulentFlowField::getCurrentTurbulentViscosityTransport() ;
-
-  // turbulentFlowField_.getPreviousTurbulentViscosityTransport().show("previous Turbulent Viscosity before exchange");
-
-  // turbulentFlowField_.getCurrentTurbulentViscosityTransport().show("current Turbulent Viscosity before exchange");
-  // exit(0);
-
-  // turbulentFlowField_.getPreviousTurbulentViscosityTransport().show("previous Turbulent Viscosity after exchange");
-
-  // turbulentFlowField_.getCurrentTurbulentViscosityTransport().show("current Turbulent Viscosity after exchange");
-
-  // TurbulentFlowField::setPreviousTurbulentViscosityTransport(current_visc_field); // Need to reset the
-  // CurrentTurbulentViscosityTransport field to zero?
-
 #ifndef NDEBUG
 
   feclearexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
@@ -188,17 +163,14 @@ void TurbulentSimulation::solveTimestep() {
   turbulentfghIterator_.iterate();
   // Set global boundary values
   wallFGHIterator_.iterate();
-  // TODO WS1: compute the right hand side (RHS)
   rhsIterator_.iterate();
   // Solve for pressure
   solver_->solve();
   parallel_manager_.communicatePressure();
-  // TODO WS2: communicate pressure values
   // Compute velocity
   velocityIterator_.iterate();
   obstacleIterator_.iterate();
   parallel_manager_.communicateVelocity();
-  // TODO WS2: communicate velocity values
   // Iterate for velocities on the boundary
   wallVelocityIterator_.iterate();
 
@@ -210,9 +182,9 @@ void TurbulentSimulation::solveTimestep() {
   turbulentViscosityIterator_.iterate();
 
   if (parameters_.simulation.type != "turbulence-sa") {
-  parallel_manager_.communicateViscosity();
+    parallel_manager_.communicateViscosity();
   }
-  
+
   if (parameters_.simulation.type == "turbulence-sa") {
     turbulentFlowField_.setPreviousViscosityTransport();
   }

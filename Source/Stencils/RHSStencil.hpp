@@ -5,9 +5,6 @@
 #include "Parameters.hpp"
 
 namespace Stencils {
-
-  // TODO WS1: implement RHSStencil class
-
   class RHSStencil:public FieldStencil<FlowField>{
     public:
     RHSStencil(const Parameters& parameters);

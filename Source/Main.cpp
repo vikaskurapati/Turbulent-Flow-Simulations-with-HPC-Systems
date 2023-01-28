@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
 
   // Read configuration and store information in parameters object
   Configuration configuration(argv[1]);
-  Parameters    parameters;
+  Parameters    parameters; // the extra parameter for the file name
   std::string   parameter{"0"};
   if (argc > 2) {
     parameter = argv[2];

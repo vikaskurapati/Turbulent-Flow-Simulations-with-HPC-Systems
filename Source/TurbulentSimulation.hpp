@@ -101,5 +101,5 @@ private:
    */
   ParallelManagers::PetscTurbulentParallelManager parallel_manager_;
 
-  std::string method_;
+  std::string method_; //turbulent-sa or mixing length model
 };
