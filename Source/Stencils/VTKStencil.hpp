@@ -30,7 +30,7 @@ namespace Stencils {
      * @param timeStep Current time step of the simulation
      * @param simulationTime Current simulation time in double format
      */
-    void openFile(int timeStep, RealType simulationTime);
+    void openFile(int timeStep, RealType simulationTime, std::string parameter="0");
 
     /** Finish writing. Must be called once the file has been written.
      *
@@ -45,7 +45,7 @@ namespace Stencils {
     void apply(FlowField& flowField, int i, int j) override;
     void apply(FlowField& flowField, int i, int j, int k) override;
 
-    void write(FlowField& flowField, int timeStep, RealType simulationTime);
+    void write(FlowField& flowField, int timeStep, RealType simulationTime, std::string parameter="0");
   };
 
 } // namespace Stencils

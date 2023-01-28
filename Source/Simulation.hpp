@@ -65,5 +65,5 @@ public:
   virtual void solveTimestep();
 
   /** Plots the flow field */
-  virtual void plotVTK(int timeStep, RealType simulationTime);
+  virtual void plotVTK(int timeStep, RealType simulationTime, std::string parameter="0");
 };

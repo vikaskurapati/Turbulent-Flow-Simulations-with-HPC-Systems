@@ -218,11 +218,10 @@ void TurbulentSimulation::solveTimestep() {
   }
 }
 
-void TurbulentSimulation::plotVTK(int timeStep, RealType simulationTime) {
+void TurbulentSimulation::plotVTK(int timeStep, RealType simulationTime, std::string parameter) {
   Stencils::TurbulentVTKStencil     vtkStencil(parameters_);
   FieldIterator<TurbulentFlowField> vtkIterator(turbulentFlowField_, parameters_, vtkStencil, 1, 0);
-  //std::cout<<"inside Plot VTK"<<std::endl;
 
   vtkIterator.iterate();
-  vtkStencil.write(turbulentFlowField_, timeStep, simulationTime);
+  vtkStencil.write(turbulentFlowField_, timeStep, simulationTime, parameter);
 }

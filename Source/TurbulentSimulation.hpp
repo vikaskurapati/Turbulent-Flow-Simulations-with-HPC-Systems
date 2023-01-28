@@ -89,7 +89,7 @@ private:
  * @param timeStep timestep of the global domain
  * @param simulationTime time of the simulation elapsed
  */
-  void plotVTK(int timeStep, RealType simulationTime) override;
+  void plotVTK(int timeStep, RealType simulationTime, std::string parameter="0") override;
   /**
    * @brief Set the Time Step object
    * 

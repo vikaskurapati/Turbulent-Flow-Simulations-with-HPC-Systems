@@ -54,6 +54,10 @@ int main(int argc, char* argv[]) {
   // Read configuration and store information in parameters object
   Configuration configuration(argv[1]);
   Parameters    parameters;
+  std::string   parameter{"0"};
+  if (argc > 2) {
+    parameter = argv[2];
+  }
   configuration.loadParameters(parameters);
   ParallelManagers::PetscParallelConfiguration parallelConfiguration(parameters);
   MeshsizeFactory::getInstance().initMeshsize(parameters);
@@ -122,23 +126,13 @@ int main(int argc, char* argv[]) {
   int      timeSteps  = 0;
 
   // Plot initial state
-  simulation->plotVTK(timeSteps, time);
+  simulation->plotVTK(timeSteps, time, parameter);
 
   Clock clock;
   // Time loop
 
-  int n = 0;
-
   while (time < parameters.simulation.finalTime) {
     simulation->solveTimestep();
-
-    n += 1;
-
-    // if (n == 6) {
-    //   exit(0);
-    // }
-
-    //std::cout<<" n "<<n<<std::endl;  
 
     timeSteps++;
     time += parameters.timestep.dt;
@@ -149,14 +143,14 @@ int main(int argc, char* argv[]) {
     }
 
     if (timeVtk <= time) {
-      simulation->plotVTK(timeSteps, time);
+      simulation->plotVTK(timeSteps, time, parameter);
       timeVtk += parameters.vtk.interval;
     }
   }
   spdlog::info("Finished simulation with a duration of {}ns", clock.getTime());
 
   // Plot final solution
-  simulation->plotVTK(timeSteps, time);
+  simulation->plotVTK(timeSteps, time, parameter);
 
   free(simulation);
   simulation = NULL;

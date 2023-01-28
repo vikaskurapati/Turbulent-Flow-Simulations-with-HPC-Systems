@@ -127,14 +127,14 @@ void Stencils::VTKStencil::apply(FlowField& flowField, int i, int j, int k) {
   }
 }
 
-void Stencils::VTKStencil::openFile(int timeStep, RealType simulationTime) {
+void Stencils::VTKStencil::openFile(int timeStep, RealType simulationTime, std::string parameter) {
   written_ = false;
   std::stringstream namestream;
   std::string       name;
   namestream.precision(4);
   namestream
     << "Output"
-    << "/" << prefix_ << "/" << prefix_ << "." << parameters_.parallel.rank << "." << timeStep << ".vtk";
+    << "/" << prefix_ << "/" << prefix_ << "." << parameter << "." << parameters_.parallel.rank << "." << timeStep << ".vtk";
   name = namestream.str();
   ofile_.open(name.c_str());
   namestream.str("");
@@ -143,8 +143,8 @@ void Stencils::VTKStencil::openFile(int timeStep, RealType simulationTime) {
   writePoints(ofile_, simulationTime);
 }
 
-void Stencils::VTKStencil::write(FlowField& flowField, int timeStep, RealType simulationTime) {
-  openFile(timeStep, simulationTime);
+void Stencils::VTKStencil::write(FlowField& flowField, int timeStep, RealType simulationTime, std::string parameter) {
+  openFile(timeStep, simulationTime, parameter);
 
   if (FieldStencil<FlowField>::parameters_.geometry.dim == 2) {
     // Write pressure

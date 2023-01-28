@@ -37,7 +37,7 @@ namespace Stencils {
      * @param timeStep Current time step of the simulation
      * @param simulationTime Current simulation time in double format
      */
-    void openFile(int timeStep, RealType simulationTime);
+    void openFile(int timeStep, RealType simulationTime, std::string paramater="0");
 
     /** Finish writing. Must be called once the file has been written.
      *
@@ -81,7 +81,7 @@ namespace Stencils {
      * @param timeStep timestep of the global domain
      * @param simulationTime simulation time elapsed
      */
-    void write(TurbulentFlowField& turbulentFlowField, int timeStep, RealType simulationTime);
+    void write(TurbulentFlowField& turbulentFlowField, int timeStep, RealType simulationTime, std::string parameter="0");
   };
 
 } // namespace Stencils
