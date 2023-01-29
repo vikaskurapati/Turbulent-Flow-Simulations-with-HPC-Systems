@@ -168,7 +168,7 @@ void Stencils::TurbulentVTKStencil::apply(TurbulentFlowField& flowField, int i, 
   u_plus = (0.5 * (flowField.getVelocity().getVector(i - 1, j)[0] + flowField.getVelocity().getVector(i, j)[0]))
            / (u_tau);
 
-  tau = tau_net / 1.0;
+  tau = tau_net / tau_wall;
 
   // if not an obstacle, write the data
   if ((flowField.getFlags().getValue(i, j) & OBSTACLE_SELF) == 0) {
