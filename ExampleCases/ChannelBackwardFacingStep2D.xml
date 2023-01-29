@@ -13,7 +13,7 @@
     <solver gamma="0.5" />
     <geometry
       dim="2"
-      lengthX="12.0" lengthY="2.0" lengthZ="1.0"
+      lengthX="1.2" lengthY="0.2" lengthZ="1.0"
       sizeX="100" sizeY="30" sizeZ="10"
       stretchX="false" stretchY="false" stretchZ="false"
     >
