@@ -12,6 +12,8 @@
 #include "Stencils/VelocityBufferReadStencil.hpp"
 #include "Stencils/ViscosityBufferFillStencil.hpp"
 #include "Stencils/ViscosityBufferReadStencil.hpp"
+#include "Stencils/TransportViscosityBufferReadStencil.hpp"
+#include "Stencils/TransportViscosityBufferFillStencil.hpp"
 
 namespace ParallelManagers {
   class PetscParallelManager {
